@@ -17,11 +17,16 @@ function Header() {
     // 본문 구간으로 넘어가면 자연스럽게 분리된다.
     <header className="sticky top-0 z-20 bg-ink-950/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-baseline gap-2">
+        <Link href="/" className="flex items-center gap-2.5">
+          {/* 로고 슬롯 — 실제 심볼 이미지가 오면 이 마크를 <img> 로 교체한다 */}
+          <span
+            aria-hidden
+            className="h-4 w-4 shrink-0 rounded-sm bg-[var(--color-brand-bright)]"
+          />
           <span className="text-base font-semibold tracking-tight text-white">
             {BRAND.shortName}
           </span>
-          <span className="hidden text-sm text-ink-400 sm:inline">기술 데모 포털</span>
+          <span className="hidden text-sm text-ink-400 sm:inline">{BRAND.productName}</span>
         </Link>
 
         {/* 랜딩(3단계)·솔루션(5단계) 링크는 해당 화면이 붙을 때 추가한다. */}
@@ -47,8 +52,21 @@ function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <p className="text-base font-semibold text-white">{BRAND.name}</p>
-            <p className="mt-1 text-sm text-ink-400">{BRAND.tagline}</p>
+            <div className="flex items-baseline gap-2.5">
+              <p className="text-base font-semibold text-white">{BRAND.name}</p>
+              <p className="text-sm tracking-wide text-[var(--color-brand-bright)]">
+                {BRAND.slogan}
+              </p>
+            </div>
+            <p className="mt-1.5 text-sm text-ink-400">{BRAND.tagline}</p>
+
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-500">
+              {BRAND.companyFacts.map((fact) => (
+                <span key={fact.label}>
+                  {fact.label} <span className="text-ink-300">{fact.value}</span>
+                </span>
+              ))}
+            </div>
           </div>
           <a
             href={`mailto:${BRAND.contact.email}`}

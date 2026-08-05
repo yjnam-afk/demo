@@ -46,8 +46,14 @@ export default async function TechCatalogPage({
       */}
       <section className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <p className="text-sm font-medium tracking-wide text-ink-400 uppercase">
-            {narrative ? narrative.title : '기술 카탈로그'}
+          <p
+            className={
+              narrative
+                ? 'text-sm font-medium tracking-wide text-ink-400 uppercase'
+                : 'text-sm font-medium tracking-wide text-[var(--color-brand-bright)]'
+            }
+          >
+            {narrative ? narrative.title : BRAND.slogan}
           </p>
           <h1 className="headline mt-4 max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
             {narrative ? narrative.lead : BRAND.headline}
