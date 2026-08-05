@@ -1,8 +1,10 @@
 import { MetricStat } from '@/components/tech/MetricDisplay';
+import { VideoSources } from '@/components/ui/Video';
 import type { PublicMetric } from '@/lib/domain/types';
 
 export interface FallbackContent {
   video?: string;
+  video_webm?: string;
   poster?: string;
   metric?: PublicMetric | null;
   /** 영상도 지표도 없는 기술의 마지막 시각 자료 */
@@ -45,12 +47,13 @@ export function DemoFallback({
         {content.video ? (
           <video
             className="w-full rounded bg-ink-900"
-            src={content.video}
             poster={content.poster}
             controls
             playsInline
             preload="metadata"
-          />
+          >
+            <VideoSources mp4={content.video} webm={content.video_webm} />
+          </video>
         ) : content.metric ? (
           <MetricStat metric={content.metric} size="lg" />
         ) : content.thumbnail ? (

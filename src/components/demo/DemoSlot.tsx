@@ -17,6 +17,7 @@ export function DemoSlot({ tech }: { tech: PublicTech }) {
   // 영상 → 대표 수치 → 썸네일 순으로 물러난다.
   const fallback: FallbackContent = {
     video: tech.media.video,
+    video_webm: tech.media.video_webm,
     poster: tech.media.thumbnail,
     metric: pickHeadlineMetric(tech.metrics as never),
     thumbnail: tech.media.thumbnail,
@@ -35,7 +36,14 @@ export function DemoSlot({ tech }: { tech: PublicTech }) {
     case 'embed':
       return <EmbedDemo techId={tech.id} title={`${tech.name_ko} 데모`} fallback={fallback} />;
     case 'video':
-      return <VideoDemo src={tech.demo.src} poster={tech.demo.poster} fallback={fallback} />;
+      return (
+        <VideoDemo
+          src={tech.demo.src}
+          srcWebm={tech.demo.src_webm}
+          poster={tech.demo.poster}
+          fallback={fallback}
+        />
+      );
     case 'metric':
       return <MetricDemo metrics={tech.metrics} highlight={tech.demo.highlight_metric} />;
   }

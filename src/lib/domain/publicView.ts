@@ -13,7 +13,7 @@ function toPublicDemo(demo: Demo): PublicDemo {
       // embed_url 과 chromeless_params 는 서버의 리버스 프록시만 사용한다.
       return { type: 'embed' };
     case 'video':
-      return { type: 'video', src: demo.src, poster: demo.poster };
+      return { type: 'video', src: demo.src, src_webm: demo.src_webm, poster: demo.poster };
     case 'metric':
       return { type: 'metric', highlight_metric: demo.highlight_metric };
   }

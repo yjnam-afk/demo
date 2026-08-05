@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
+import { VideoSources } from '@/components/ui/Video';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
 import { DOMAIN_SHORT_LABELS } from '@/lib/domain/enums';
 import type { PublicMetric, PublicTech } from '@/lib/domain/types';
@@ -91,17 +92,20 @@ export function TechCard({ tech }: { tech: PublicTech }) {
         )}
       >
         {tech.media.loop ? (
+          // poster 를 두지 않는다 — 포스터는 상세용 전체 화면 구도라 카드용 루프와
+          // 구도가 달라, 재생이 시작되는 순간 화면이 튄다. 로드 전에는 어두운
+          // 배경 위의 대표 수치가 그대로 보이므로 빈 화면이 생기지 않는다.
           <video
             className="absolute inset-0 h-full w-full object-cover opacity-70"
-            src={tech.media.loop}
-            poster={tech.media.thumbnail}
             autoPlay
             muted
             loop
             playsInline
-            preload="none"
+            preload="metadata"
             aria-hidden
-          />
+          >
+            <VideoSources mp4={tech.media.loop} webm={tech.media.loop_webm} />
+          </video>
         ) : tech.media.thumbnail ? (
           // 로컬 자산이고 LCP 대상이 아니므로 최적화 파이프라인을 태우지 않는다.
           // eslint-disable-next-line @next/next/no-img-element

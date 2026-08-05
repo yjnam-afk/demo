@@ -5,7 +5,10 @@
     "name_en": "Intrusion Detection",
     "domain": "ai",
     "category": "이상행동인지",
-    "industries": ["보안", "공공"],
+    "industries": [
+      "보안",
+      "공공"
+    ],
     "summary": "통제선을 넘어 출입 불가 지역에 진입하는 인원을 실시간 탐지",
     "team": "요소기술연구팀",
     "project": "대테러",
@@ -32,7 +35,11 @@
     ],
     "business": {
       "problem": "관제 요원이 다수 CCTV를 동시 감시할 수 없어 이상상황을 놓친다",
-      "target_industries": ["공항·항만", "발전소", "대규모 행사"],
+      "target_industries": [
+        "공항·항만",
+        "발전소",
+        "대규모 행사"
+      ],
       "io": {
         "input": "RTSP 영상 스트림",
         "output": "이벤트 알림 + 대상 좌표"
@@ -43,7 +50,10 @@
       ],
       "maturity": "field_proven"
     },
-    "verification": { "level": "third_party", "body": "KISA" },
+    "verification": {
+      "level": "third_party",
+      "body": "KISA"
+    },
     "dev_type": "opensource_finetune",
     "base_model": "YOLOv8 + ByteTrack + Rule-based",
     "demo": {
@@ -52,17 +62,43 @@
       "api_name": "/predict",
       "input_kind": "video_upload",
       "samples": [
-        { "label": "실외 통제선 침입", "path": "/samples/intrusion_01.mp4" },
-        { "label": "야간 담장 월담", "path": "/samples/intrusion_02.mp4" }
+        {
+          "label": "실외 통제선 침입",
+          "path": "/samples/intrusion_01.mp4"
+        },
+        {
+          "label": "야간 담장 월담",
+          "path": "/samples/intrusion_02.mp4"
+        }
       ]
     },
-    "media": { "thumbnail": "/thumbnails/intrusion-detection.svg" },
+    "media": {
+      "thumbnail": "/thumbnails/intrusion-detection.jpg",
+      "loop": "/videos/intrusion-detection.loop.mp4",
+      "video": "/videos/intrusion-detection.mp4",
+      "loop_webm": "/videos/intrusion-detection.loop.webm",
+      "video_webm": "/videos/intrusion-detection.webm"
+    },
     "resources": [
-      { "label": "KISA 성능시험 결과서", "url": "https://www.kisa.or.kr/", "internal": false },
-      { "label": "내부 모델 학습 리포트", "url": "http://10.100.110.20/wiki/intrusion", "internal": true }
+      {
+        "label": "KISA 성능시험 결과서",
+        "url": "https://www.kisa.or.kr/",
+        "internal": false
+      },
+      {
+        "label": "내부 모델 학습 리포트",
+        "url": "http://10.100.110.20/wiki/intrusion",
+        "internal": true
+      }
     ],
-    "related_tech": ["crowd-counting", "flood-simulation"],
-    "visibility": { "internal": true, "external": true },
+    "related_tech": [
+      "crowd-counting",
+      "flood-simulation"
+    ],
+    "visibility": {
+      "internal": true,
+      "external": true
+    },
     "status": "published",
     "order": 0,
     "created_at": "2026-01-12T02:00:00.000Z",
@@ -74,7 +110,10 @@
     "name_en": "Crowd Counting",
     "domain": "ai",
     "category": "영상인식",
-    "industries": ["공공", "교통"],
+    "industries": [
+      "공공",
+      "교통"
+    ],
     "summary": "밀집 구역의 인원 수와 밀도를 추정해 압사 위험 수준을 사전 경보",
     "team": "요소기술연구팀",
     "project": "안전관리",
@@ -100,7 +139,11 @@
     ],
     "business": {
       "problem": "행사장·역사에서 인파 밀집을 육안으로 판단해 경보 시점이 늦다",
-      "target_industries": ["지자체", "철도·지하철", "대규모 행사"],
+      "target_industries": [
+        "지자체",
+        "철도·지하철",
+        "대규모 행사"
+      ],
       "io": {
         "input": "CCTV 정지영상 또는 스트림 프레임",
         "output": "추정 인원 수 + 밀도 히트맵"
@@ -111,7 +154,10 @@
       ],
       "maturity": "pilot_done"
     },
-    "verification": { "level": "self_test", "body": "" },
+    "verification": {
+      "level": "self_test",
+      "body": ""
+    },
     "dev_type": "custom",
     "base_model": "자체 설계 밀도맵 회귀 네트워크",
     "demo": {
@@ -120,10 +166,19 @@
     },
     "media": {},
     "resources": [
-      { "label": "실증 적용 사례 요약", "url": "/docs/crowd-counting-pilot.pdf", "internal": false }
+      {
+        "label": "실증 적용 사례 요약",
+        "url": "/docs/crowd-counting-pilot.pdf",
+        "internal": false
+      }
     ],
-    "related_tech": ["intrusion-detection"],
-    "visibility": { "internal": true, "external": true },
+    "related_tech": [
+      "intrusion-detection"
+    ],
+    "visibility": {
+      "internal": true,
+      "external": true
+    },
     "status": "published",
     "order": 1,
     "created_at": "2026-02-03T02:00:00.000Z",
@@ -135,14 +190,21 @@
     "name_en": "Plant Digital Twin",
     "domain": "digital_twin",
     "category": "3D 시각화",
-    "industries": ["제조", "에너지"],
+    "industries": [
+      "제조",
+      "에너지"
+    ],
     "summary": "설비 3D 모델에 실시간 센서 값을 결합해 현장 상태를 원격에서 확인",
     "team": "공간정보연구팀",
     "project": "스마트플랜트",
     "metrics": [],
     "business": {
       "problem": "설비 상태 확인을 위해 현장 순회가 필요해 이상 감지가 늦고 인력이 소모된다",
-      "target_industries": ["석유화학", "발전소", "수처리 시설"],
+      "target_industries": [
+        "석유화학",
+        "발전소",
+        "수처리 시설"
+      ],
       "io": {
         "input": "설비 3D 모델(IFC/glTF) + 센서 태그 스트림",
         "output": "웹 기반 3D 뷰어 + 이상 설비 하이라이트"
@@ -153,20 +215,41 @@
       ],
       "maturity": "pilot_done"
     },
-    "verification": { "level": "self_test", "body": "" },
+    "verification": {
+      "level": "self_test",
+      "body": ""
+    },
     "dev_type": "opensource",
     "base_model": "Three.js + 자체 센서 연동 레이어",
     "demo": {
       "type": "embed",
       "embed_url": "http://10.100.110.102:22023",
-      "chromeless_params": { "ui": "minimal", "toolbar": "0" }
+      "chromeless_params": {
+        "ui": "minimal",
+        "toolbar": "0"
+      }
     },
-    "media": { "thumbnail": "/thumbnails/digital-twin-plant.svg" },
+    "media": {
+      "thumbnail": "/thumbnails/digital-twin-plant.jpg",
+      "loop": "/videos/digital-twin-plant.loop.mp4",
+      "video": "/videos/digital-twin-plant.mp4",
+      "loop_webm": "/videos/digital-twin-plant.loop.webm",
+      "video_webm": "/videos/digital-twin-plant.webm"
+    },
     "resources": [
-      { "label": "연동 가능 프로토콜 목록", "url": "/docs/dt-protocols.pdf", "internal": false }
+      {
+        "label": "연동 가능 프로토콜 목록",
+        "url": "/docs/dt-protocols.pdf",
+        "internal": false
+      }
     ],
-    "related_tech": ["flood-simulation"],
-    "visibility": { "internal": true, "external": true },
+    "related_tech": [
+      "flood-simulation"
+    ],
+    "visibility": {
+      "internal": true,
+      "external": true
+    },
     "status": "published",
     "order": 2,
     "created_at": "2026-03-11T02:00:00.000Z",
@@ -178,7 +261,10 @@
     "name_en": "Urban Flood Simulation",
     "domain": "spatial",
     "category": "재해 분석",
-    "industries": ["공공", "건설"],
+    "industries": [
+      "공공",
+      "건설"
+    ],
     "summary": "강우 시나리오별 도심 침수 범위와 깊이를 지형·배수 데이터 기반으로 예측",
     "team": "공간정보연구팀",
     "project": "도시안전",
@@ -195,7 +281,11 @@
     ],
     "business": {
       "problem": "침수 취약 구간을 사전에 특정하지 못해 배수 시설 투자 우선순위를 정하기 어렵다",
-      "target_industries": ["지자체", "건설 엔지니어링", "보험"],
+      "target_industries": [
+        "지자체",
+        "건설 엔지니어링",
+        "보험"
+      ],
       "io": {
         "input": "수치표고모델(DEM) + 배수관망 + 강우 시나리오",
         "output": "격자별 침수심 래스터 + 위험 구간 목록"
@@ -206,23 +296,39 @@
       ],
       "maturity": "lab_verified"
     },
-    "verification": { "level": "self_test", "body": "" },
+    "verification": {
+      "level": "self_test",
+      "body": ""
+    },
     "dev_type": "custom",
     "base_model": "2차원 천수방정식 수치해석 엔진",
     "demo": {
       "type": "video",
       "src": "/videos/flood-simulation.mp4",
-      "poster": "/thumbnails/flood-simulation.svg"
+      "poster": "/thumbnails/flood-simulation.jpg",
+      "src_webm": "/videos/flood-simulation.webm"
     },
     "media": {
-      "thumbnail": "/thumbnails/flood-simulation.svg",
-      "video": "/videos/flood-simulation.mp4"
+      "thumbnail": "/thumbnails/flood-simulation.jpg",
+      "loop": "/videos/flood-simulation.loop.mp4",
+      "video": "/videos/flood-simulation.mp4",
+      "loop_webm": "/videos/flood-simulation.loop.webm",
+      "video_webm": "/videos/flood-simulation.webm"
     },
     "resources": [
-      { "label": "적용 지자체 사례", "url": "/docs/flood-case.pdf", "internal": false }
+      {
+        "label": "적용 지자체 사례",
+        "url": "/docs/flood-case.pdf",
+        "internal": false
+      }
     ],
-    "related_tech": ["digital-twin-plant"],
-    "visibility": { "internal": true, "external": true },
+    "related_tech": [
+      "digital-twin-plant"
+    ],
+    "visibility": {
+      "internal": true,
+      "external": true
+    },
     "status": "published",
     "order": 3,
     "created_at": "2026-04-02T02:00:00.000Z",
@@ -234,7 +340,9 @@
     "name_en": "Photorealistic 3D Synthesis",
     "domain": "ai",
     "category": "생성모델",
-    "industries": ["국방"],
+    "industries": [
+      "국방"
+    ],
     "summary": "저품질 3D 모델을 실사 수준 렌더링으로 변환 (내부 과제 — 외부 비공개)",
     "team": "요소기술연구팀",
     "project": "가상훈련",
@@ -252,12 +360,20 @@
     ],
     "business": {
       "problem": "가상훈련 콘텐츠의 시각 품질이 낮아 훈련 몰입도가 떨어진다",
-      "target_industries": ["국방"],
-      "io": { "input": "3D 렌더 이미지", "output": "실사화 변환 이미지" },
+      "target_industries": [
+        "국방"
+      ],
+      "io": {
+        "input": "3D 렌더 이미지",
+        "output": "실사화 변환 이미지"
+      },
       "requirements": [],
       "maturity": "research"
     },
-    "verification": { "level": "in_development", "body": "" },
+    "verification": {
+      "level": "in_development",
+      "body": ""
+    },
     "dev_type": "opensource_finetune",
     "base_model": "Diffusion 기반 Image-to-Image",
     "demo": {
@@ -266,10 +382,17 @@
     },
     "media": {},
     "resources": [
-      { "label": "내부 과제 보고서", "url": "http://10.100.110.20/wiki/photoreal", "internal": true }
+      {
+        "label": "내부 과제 보고서",
+        "url": "http://10.100.110.20/wiki/photoreal",
+        "internal": true
+      }
     ],
     "related_tech": [],
-    "visibility": { "internal": true, "external": false },
+    "visibility": {
+      "internal": true,
+      "external": false
+    },
     "status": "published",
     "order": 4,
     "created_at": "2026-05-19T02:00:00.000Z",

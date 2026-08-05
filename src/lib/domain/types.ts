@@ -69,6 +69,8 @@ export type Demo =
   | {
       type: 'video';
       src: string;
+      /** WebM/VP9 대체 소스 (선택) */
+      src_webm?: string;
       poster?: string;
     }
   | {
@@ -83,6 +85,13 @@ export interface Media {
   loop?: string;
   /** 상세 화면 및 데모 실패 시 폴백으로 쓰는 전체 데모 영상 */
   video?: string;
+  /**
+   * 같은 영상의 WebM/VP9 판본(선택).
+   * mp4(H.264)를 우선 제공하되, H.264 디코더가 없는 브라우저 빌드에서도
+   * 재생되도록 대체 소스를 함께 내보낸다. 없으면 mp4 만 쓴다.
+   */
+  loop_webm?: string;
+  video_webm?: string;
 }
 
 export interface Resource {
@@ -136,7 +145,7 @@ export interface Tech {
 export type PublicDemo =
   | { type: 'api'; input_kind: InputKind; samples: DemoSample[] }
   | { type: 'embed' }
-  | { type: 'video'; src: string; poster?: string }
+  | { type: 'video'; src: string; src_webm?: string; poster?: string }
   | { type: 'metric'; highlight_metric?: string };
 
 export type PublicMetric = Omit<Metric, 'dataset_url'>;
