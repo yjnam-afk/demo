@@ -4,19 +4,35 @@
  * 자유 입력으로 흘러 들어가 데이터가 오염되는 것을 막기 위해 값은 여기서만 늘린다.
  */
 
-export const DOMAINS = ['ai', 'digital_twin', 'spatial'] as const;
-export type Domain = (typeof DOMAINS)[number];
+/**
+ * 대분류(축)는 이 파일에 고정하지 않는다.
+ *
+ * 연구소의 기술 축은 조직 개편이나 신규 사업으로 바뀐다. 열거형에 박아 두면
+ * 축 하나 추가하는 데 배포가 필요하므로, 마스터를 data/domains.json 에 두고
+ * 관리자 화면에서 관리한다. 여기서는 id 가 문자열이라는 것만 정한다.
+ *
+ * 다만 자유 문자열이 그대로 들어오면 산업군에서 겪은 문제("자율주행"과
+ * "자율 주행"이 따로 쌓이는)가 반복되므로, 저장 시 마스터에 있는 id 인지
+ * 반드시 검사한다 (parseTechInput 의 allowedDomains).
+ */
+export type Domain = string;
 
-export const DOMAIN_LABELS: Record<Domain, string> = {
-  ai: 'AI 요소기술',
-  digital_twin: '디지털 트윈',
-  spatial: '공간 분석',
-};
+/**
+ * 축에 붙일 수 있는 강조색.
+ *
+ * 색은 자유 입력이 아니라 이 목록에서 고른다. 임의의 hex 를 허용하면
+ * 채도 높은 색이 들어와 화면이 무너진다. 값은 globals.css 의 CSS 변수와
+ * 1:1 로 대응한다.
+ */
+export const ACCENTS = ['blue', 'teal', 'bronze', 'plum', 'slate'] as const;
+export type Accent = (typeof ACCENTS)[number];
 
-export const DOMAIN_SHORT_LABELS: Record<Domain, string> = {
-  ai: 'AI',
-  digital_twin: '디지털트윈',
-  spatial: '공간분석',
+export const ACCENT_LABELS: Record<Accent, string> = {
+  blue: '청색',
+  teal: '청록',
+  bronze: '갈색',
+  plum: '자주',
+  slate: '회청',
 };
 
 export const VERIFICATION_LEVELS = ['third_party', 'self_test', 'in_development'] as const;

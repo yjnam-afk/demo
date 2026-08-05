@@ -1,4 +1,5 @@
 import type {
+  Accent,
   DemoType,
   Deployment,
   DevType,
@@ -163,6 +164,16 @@ export type PublicTech = Omit<Tech, 'demo' | 'metrics' | 'resources' | 'health' 
   demo: PublicDemo;
   metrics: PublicMetric[];
   resources: Resource[];
+  /**
+   * 대분류의 표시 정보를 이 경계에서 붙여 보낸다.
+   *
+   * domain 은 id 만 담고 있어 화면이 그대로 쓰면 "digital_twin" 이 노출된다.
+   * 컴포넌트마다 마스터를 다시 조회하면 같은 변환이 흩어지므로, 산업군
+   * 라벨과 같은 방식으로 여기서 한 번만 해결한다.
+   */
+  domain_label: string;
+  domain_short: string;
+  domain_accent: Accent;
 };
 
 export interface SolutionStep {
@@ -215,10 +226,30 @@ export interface Solution {
   updated_at: string;
 }
 
-/** 하위 카테고리 마스터. 관리자는 선택이 기본이고 신규 생성은 별도 동작이다. */
-export interface CategoryStore {
-  /** 대분류별 하위 카테고리 목록 */
-  ai: string[];
-  digital_twin: string[];
-  spatial: string[];
+/**
+ * 하위 카테고리 마스터. 관리자는 선택이 기본이고 신규 생성은 별도 동작이다.
+ * 키는 대분류 id — 대분류가 관리자에서 늘어나므로 고정 키를 쓰지 않는다.
+ */
+export type CategoryStore = Record<string, string[]>;
+
+/**
+ * 대분류(축) 마스터.
+ *
+ * 산업군과 같은 이유로 목록에서 고르게 한다. 다른 점은 축이 화면 구성까지
+ * 좌우한다는 것이다 — 랜딩의 축 카드, 카드의 색 점, 필터 칩이 모두 여기서
+ * 나온다. 그래서 라벨 외에 화면에 쓰는 문구와 색까지 함께 갖는다.
+ */
+export interface DomainDef {
+  id: string;
+  /** 필터와 상세에 쓰는 정식 이름 (예: "AI 요소기술") */
+  label: string;
+  /** 카드처럼 폭이 좁은 자리에 쓰는 짧은 이름 (예: "AI") */
+  short_label: string;
+  /** 축 카드의 한 줄 주장 */
+  lead: string;
+  /** 축 카드의 설명 문단 */
+  description: string;
+  /** ACCENTS 중 하나. 임의 hex 를 허용하지 않는다. */
+  accent: Accent;
+  order: number;
 }

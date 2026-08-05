@@ -31,17 +31,27 @@
   --color-brand-bright: #7ba3d0;
 
   /* 3축 구분색 — 밝은 배경용 */
-  --color-domain-ai: #3d5a80;
-  --color-domain-ai-soft: #eaeff5;
-  --color-domain-twin: #2f6f66;
-  --color-domain-twin-soft: #e6f0ee;
-  --color-domain-spatial: #7a5c3e;
-  --color-domain-spatial-soft: #f3ede6;
+  /*
+    축 강조색 팔레트. 축 자체는 관리자에서 만들지만 색은 이 목록에서만
+    고른다 — 임의 hex 를 허용하면 채도 높은 색이 들어와 화면이 무너진다.
+  */
+  --color-accent-blue: #3d5a80;
+  --color-accent-blue-soft: #eaeff5;
+  --color-accent-teal: #2f6f66;
+  --color-accent-teal-soft: #e6f0ee;
+  --color-accent-bronze: #7a5c3e;
+  --color-accent-bronze-soft: #f3ede6;
+  --color-accent-plum: #6b4a63;
+  --color-accent-plum-soft: #f1ebef;
+  --color-accent-slate: #4a5a67;
+  --color-accent-slate-soft: #ecf0f3;
 
   /* 3축 구분색 — 어두운 배경용. 같은 색을 그대로 쓰면 대비가 무너진다. */
-  --color-domain-ai-bright: #7ba3d0;
-  --color-domain-twin-bright: #5faa9d;
-  --color-domain-spatial-bright: #bf9a6a;
+  --color-accent-blue-bright: #7ba3d0;
+  --color-accent-teal-bright: #5faa9d;
+  --color-accent-bronze-bright: #bf9a6a;
+  --color-accent-plum-bright: #b089a6;
+  --color-accent-slate-bright: #8fa3b3;
 
   --color-signal-ok: #2f6b4f;
   --color-signal-ok-soft: #e7f0eb;

@@ -10,10 +10,11 @@ import {
 } from '@/components/tech/catalogView';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { TrustBar } from '@/components/site/TrustBar';
-import { BRAND, DOMAIN_NARRATIVE } from '@/lib/brand';
+import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
-import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
+import { toPublicTech } from '@/lib/domain/publicView';
+import { loadPublicMaps } from '@/lib/domain/publicMaps';
 import type { Domain } from '@/lib/domain/enums';
 import { PAGE_SIZE, parseTechQuery, toSearchParams } from '@/lib/ui/query';
 
@@ -55,12 +56,14 @@ export default async function TechCatalogPage({
     repo.publicSummary(),
     repo.listIndustries(),
   ]);
-  const labels = industryLabelMap(industries);
+  const maps = await loadPublicMaps(repo);
 
   const carriedQuery = new URLSearchParams(params);
   carriedQuery.delete('offset');
 
-  const narrative = selectedDomain ? DOMAIN_NARRATIVE[selectedDomain] : null;
+  // 축이 선택되면 히어로 문구를 그 축의 것으로 바꾼다. 축 정의가 데이터라
+  // 문구도 마스터에서 가져온다.
+  const narrative = selectedDomain ? (maps.domains.get(selectedDomain) ?? null) : null;
 
   /**
    * 보기 기준별 본문.
@@ -82,12 +85,16 @@ export default async function TechCatalogPage({
           산업군이 이미 분류 역할을 하므로, 이 블록은 기술별 보기에만 둔다.
         */}
         <div className="mb-6">
-          <DomainPillars counts={summary.domainCounts} selected={selectedDomain} />
+          <DomainPillars
+            domains={maps.domainList}
+            counts={summary.domainCounts}
+            selected={selectedDomain}
+          />
         </div>
         <CatalogFilters facets={facets} params={params} />
         <div className="mt-6">
           <TechGrid
-            initialItems={page.items.map((tech) => toPublicTech(tech, labels))}
+            initialItems={page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains))}
             total={page.total}
             hasMore={page.hasMore}
             query={carriedQuery.toString()}
@@ -137,7 +144,7 @@ export default async function TechCatalogPage({
         // 산업 판정은 id 를 들고 있는 원본으로 하고, 카드에는 라벨이 붙은 형태를 넘긴다.
         techs: all.items
           .filter((tech) => tech.industries.includes(industry.id))
-          .map((tech) => toPublicTech(tech, labels)),
+          .map((tech) => toPublicTech(tech, maps.labels, maps.domains)),
       }))
       // 항목이 하나도 없는 산업군은 감춘다 — 빈 칸이 늘어나면 목록이 못 미덥게 읽힌다.
       .filter((group) => group.products.length > 0 || group.techs.length > 0);
@@ -167,7 +174,7 @@ export default async function TechCatalogPage({
                 : 'text-sm font-medium tracking-wide text-[var(--color-brand-bright)]'
             }
           >
-            {narrative ? narrative.title : BRAND.slogan}
+            {narrative ? narrative.label : BRAND.slogan}
           </p>
           <h1 className="headline mt-4 max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
             {narrative ? narrative.lead : BRAND.headline}

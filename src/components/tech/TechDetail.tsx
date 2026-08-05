@@ -4,13 +4,12 @@ import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
 import { MetricTable } from './MetricDisplay';
 import {
   DEV_TYPE_LABELS,
-  DOMAIN_LABELS,
   MATURITY_LABELS,
   type Maturity,
 } from '@/lib/domain/enums';
 import type { PublicTech } from '@/lib/domain/types';
 import { BRAND } from '@/lib/brand';
-import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
+import { accentStyle, cn } from '@/lib/ui/domain';
 
 function Section({
   title,
@@ -60,7 +59,7 @@ export function TechDetail({
   /** 이 기술을 구성으로 쓰는 제품 — 제품 데이터에서 역으로 조회한 결과다. */
   usedIn?: { id: string; title: string; name_en?: string }[];
 }) {
-  const style = DOMAIN_STYLES[tech.domain];
+  const style = accentStyle(tech.domain_accent);
   const business = tech.business;
   const industries = business.target_industries?.length
     ? business.target_industries
@@ -77,7 +76,7 @@ export function TechDetail({
               className="inline-flex items-center gap-1.5 font-medium text-white/90 hover:text-white"
             >
               <span className={cn('h-1.5 w-1.5 rounded-full', style.dotBright)} />
-              {DOMAIN_LABELS[tech.domain]}
+              {tech.domain_label}
             </Link>
             <span className="text-ink-600">·</span>
             <span className="text-ink-300">{tech.category}</span>

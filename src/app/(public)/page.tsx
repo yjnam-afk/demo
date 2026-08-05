@@ -7,7 +7,8 @@ import { TechCard } from '@/components/tech/TechCard';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
-import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
+import { toPublicTech } from '@/lib/domain/publicView';
+import { loadPublicMaps } from '@/lib/domain/publicMaps';
 
 /**
  * 저장소를 매 요청 읽는다.
@@ -29,8 +30,8 @@ export default async function HomePage() {
     listPublicOfferings('product'),
   ]);
 
-  const labels = industryLabelMap(industries);
-  const techs = page.items.map((tech) => toPublicTech(tech, labels));
+  const maps = await loadPublicMaps(repo);
+  const techs = page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains));
 
   // 대표 데모는 순서가 가장 앞선 기술 중 재생할 영상이 있는 것으로 고른다.
   // 특정 기술 id 를 박아 두면 관리자가 순서를 바꿔도 히어로가 따라오지 않는다.
@@ -114,7 +115,7 @@ export default async function HomePage() {
             세 축의 기술을 조합해 현장의 문제를 해결합니다.
           </p>
           <div className="mt-8">
-            <DomainPillars counts={summary.domainCounts} />
+            <DomainPillars domains={maps.domainList} counts={summary.domainCounts} />
           </div>
         </section>
 

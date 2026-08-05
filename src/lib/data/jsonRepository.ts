@@ -1,9 +1,10 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { CategoryStore, Health, Industry, Solution, Tech } from '@/lib/domain/types';
+import type { CategoryStore, DomainDef, Health, Industry, Solution, Tech } from '@/lib/domain/types';
 import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
 import { isExternallyVisible } from '@/lib/domain/publicView';
 import { summarizeAchievement } from '@/lib/domain/metric';
+import { FALLBACK_ACCENT } from '@/lib/ui/domain';
 import type { PublicSummary, TechPage, TechQuery, TechRepository } from './repository';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -11,6 +12,7 @@ const TECH_FILE = path.join(DATA_DIR, 'technologies.json');
 const SOLUTION_FILE = path.join(DATA_DIR, 'solutions.json');
 const CATEGORY_FILE = path.join(DATA_DIR, 'categories.json');
 const INDUSTRY_FILE = path.join(DATA_DIR, 'industries.json');
+const DOMAIN_FILE = path.join(DATA_DIR, 'domains.json');
 
 const DEFAULT_LIMIT = 12;
 
@@ -192,11 +194,14 @@ export class JsonTechRepository implements TechRepository {
   async publicSummary(): Promise<PublicSummary> {
     const all = (await this.allTech()).filter(isExternallyVisible);
 
-    const domainCounts: Record<Domain, number> = { ai: 0, digital_twin: 0, spatial: 0 };
+    // 마스터에 있는 축은 0건이어도 키를 만들어 둔다. 그래야 새로 만든 축이
+    // 기술을 붙이기 전에도 랜딩의 축 카드에 나타난다.
+    const domainCounts: Record<string, number> = {};
+    for (const def of await this.listDomains()) domainCounts[def.id] = 0;
     const certifiers = new Set<string>();
 
     for (const tech of all) {
-      domainCounts[tech.domain] += 1;
+      domainCounts[tech.domain] = (domainCounts[tech.domain] ?? 0) + 1;
       if (tech.verification.level === 'third_party' && tech.verification.body) {
         certifiers.add(tech.verification.body);
       }
@@ -217,6 +222,9 @@ export class JsonTechRepository implements TechRepository {
   async publicFacets() {
     const all = (await this.allTech()).filter(isExternallyVisible);
     const industryLabels = new Map((await this.listIndustries()).map((i) => [i.id, i.label]));
+    // 필터 칩도 라벨과 색이 필요하다. 화면이 마스터를 다시 조회하지 않도록
+    // 산업군과 같은 방식으로 여기서 붙여 보낸다.
+    const domainDefs = new Map((await this.listDomains()).map((d) => [d.id, d]));
 
     const domains = new Map<Domain, number>();
     const categories = new Map<string, { domain: Domain; count: number }>();
@@ -243,7 +251,13 @@ export class JsonTechRepository implements TechRepository {
     }
 
     return {
-      domains: [...domains].map(([value, count]) => ({ value, count })),
+      domains: [...domains].map(([value, count]) => ({
+        value,
+        label: domainDefs.get(value)?.label ?? value,
+        short_label: domainDefs.get(value)?.short_label ?? value,
+        accent: domainDefs.get(value)?.accent ?? FALLBACK_ACCENT,
+        count,
+      })),
       categories: [...categories].map(([value, meta]) => ({ value, ...meta })),
       verification: [...verification].map(([value, count]) => ({ value, count })),
       industries: [...industries]
@@ -253,18 +267,61 @@ export class JsonTechRepository implements TechRepository {
   }
 
   async listCategories(): Promise<CategoryStore> {
-    return readJson<CategoryStore>(CATEGORY_FILE, { ai: [], digital_twin: [], spatial: [] });
+    return readJson<CategoryStore>(CATEGORY_FILE, {});
   }
 
   async addCategory(domain: Domain, name: string): Promise<CategoryStore> {
     return serialized(async () => {
       const store = await this.listCategories();
       const trimmed = name.trim();
-      if (trimmed && !store[domain].includes(trimmed)) {
-        store[domain] = [...store[domain], trimmed].sort((a, b) => a.localeCompare(b));
+      // 새로 만든 축에는 아직 키가 없다. 첫 카테고리를 넣을 때 만들어 준다.
+      const list = store[domain] ?? [];
+      if (trimmed && !list.includes(trimmed)) {
+        store[domain] = [...list, trimmed].sort((a, b) => a.localeCompare(b));
         await writeJson(CATEGORY_FILE, store);
       }
       return store;
+    });
+  }
+
+  async listDomains(): Promise<DomainDef[]> {
+    const all = await readJson<DomainDef[]>(DOMAIN_FILE, []);
+    return [...all].sort((a, b) => a.order - b.order);
+  }
+
+  async saveDomains(next: DomainDef[]): Promise<DomainDef[]> {
+    return serialized(async () => {
+      const ordered = next.map((domain, index) => ({ ...domain, order: index }));
+      await writeJson(DOMAIN_FILE, ordered);
+      return ordered;
+    });
+  }
+
+  /**
+   * 축 삭제.
+   *
+   * 사용 중인 축을 지우면 그 기술들이 필터에서도 축 카드에서도 사라져
+   * 관리자에게만 보이지 않는 유령이 된다. 그래서 쓰는 기술이 하나라도
+   * 있으면 막고, 몇 건이 걸려 있는지 알려 준다.
+   */
+  async removeDomain(id: string): Promise<{ removed: boolean; usedBy: number }> {
+    return serialized(async () => {
+      const usedBy = (await this.allTech()).filter((tech) => tech.domain === id).length;
+      if (usedBy > 0) return { removed: false, usedBy };
+
+      const all = await readJson<DomainDef[]>(DOMAIN_FILE, []);
+      const next = all
+        .filter((domain) => domain.id !== id)
+        .map((domain, index) => ({ ...domain, order: index }));
+      await writeJson(DOMAIN_FILE, next);
+
+      // 카테고리 마스터에 남은 빈 키도 함께 정리한다.
+      const store = await this.listCategories();
+      if (id in store) {
+        delete store[id];
+        await writeJson(CATEGORY_FILE, store);
+      }
+      return { removed: true, usedBy: 0 };
     });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
-import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
+import { toPublicTech } from '@/lib/domain/publicView';
+import { loadPublicMaps } from '@/lib/domain/publicMaps';
 import { parseTechQuery } from '@/lib/ui/query';
 
 export const runtime = 'nodejs';
@@ -16,11 +17,10 @@ export async function GET(request: Request) {
   const query = parseTechQuery(params);
 
   const repo = getRepo();
-  const [page, industries] = await Promise.all([repo.listPublic(query), repo.listIndustries()]);
-  const labels = industryLabelMap(industries);
+  const [page, maps] = await Promise.all([repo.listPublic(query), loadPublicMaps(repo)]);
 
   return NextResponse.json({
-    items: page.items.map((tech) => toPublicTech(tech, labels)),
+    items: page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains)),
     total: page.total,
     hasMore: page.hasMore,
   });

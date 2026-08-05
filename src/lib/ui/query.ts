@@ -1,4 +1,4 @@
-import { DOMAINS, VERIFICATION_LEVELS, isOneOf } from '@/lib/domain/enums';
+import { VERIFICATION_LEVELS, isOneOf } from '@/lib/domain/enums';
 import type { TechQuery } from '@/lib/data/repository';
 
 export const PAGE_SIZE = 12;
@@ -14,7 +14,10 @@ export function parseTechQuery(params: URLSearchParams): TechQuery {
   const limit = Number.parseInt(params.get('limit') ?? String(PAGE_SIZE), 10);
 
   return {
-    domain: isOneOf(DOMAINS, domain) ? domain : undefined,
+    // 대분류는 마스터가 데이터라 여기서 화이트리스트로 거를 수 없다.
+    // 없는 id 가 들어오면 저장소가 0건을 돌려주므로 빈 목록이 될 뿐,
+    // 값이 다른 필터로 새지는 않는다.
+    domain: domain?.trim() || undefined,
     categories: categories.length ? categories : undefined,
     verification: verification.length ? verification : undefined,
     industries: industries.length ? industries : undefined,

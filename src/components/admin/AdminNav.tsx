@@ -21,6 +21,11 @@ const ITEMS = [
     label: '제품 · 구성 제안',
     match: (p: string) => p.startsWith('/admin/solutions'),
   },
+  {
+    href: '/admin/domains',
+    label: '대분류',
+    match: (p: string) => p.startsWith('/admin/domains'),
+  },
 ];
 
 export function AdminNav() {

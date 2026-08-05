@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { DOMAIN_NARRATIVE } from '@/lib/brand';
-import { DOMAINS, type Domain } from '@/lib/domain/enums';
-import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
+import type { DomainDef } from '@/lib/domain/types';
+import { accentStyle, cn } from '@/lib/ui/domain';
 
 /**
  * 기술 3축 소개 블록.
@@ -13,18 +12,31 @@ import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
  * 각 축은 해당 축으로 필터가 걸린 카탈로그로 연결된다.
  */
 export function DomainPillars({
+  domains,
   counts,
   selected,
 }: {
-  counts: Record<Domain, number>;
+  /** 축 마스터. 개수도 순서도 데이터가 정한다 — 3개로 가정하지 않는다. */
+  domains: DomainDef[];
+  counts: Record<string, number>;
   /** 카탈로그에서 이미 선택된 축. 선택 상태를 시각적으로 되짚어 준다. */
-  selected?: Domain | null;
+  selected?: string | null;
 }) {
+  if (domains.length === 0) return null;
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      {DOMAINS.map((domain) => {
-        const narrative = DOMAIN_NARRATIVE[domain];
-        const style = DOMAIN_STYLES[domain];
+    // 축 개수를 코드에 박지 않는다. 관리자가 4개를 만들면 4열이 되어야 한다.
+    <div
+      className={cn(
+        'grid grid-cols-1 gap-4',
+        domains.length === 2 && 'md:grid-cols-2',
+        domains.length === 3 && 'md:grid-cols-3',
+        domains.length >= 4 && 'sm:grid-cols-2 lg:grid-cols-4',
+      )}
+    >
+      {domains.map((def) => {
+        const domain = def.id;
+        const style = accentStyle(def.accent);
         const count = counts[domain] ?? 0;
         const isSelected = selected === domain;
 
@@ -42,13 +54,13 @@ export function DomainPillars({
             <span className={cn('-mt-5 -mx-5 mb-4 h-1 rounded-t-lg', style.bar)} />
 
             <div className="flex items-baseline justify-between">
-              <h3 className={cn('text-lg font-semibold', style.text)}>{narrative.title}</h3>
+              <h3 className={cn('text-lg font-semibold', style.text)}>{def.label}</h3>
               <span className="numeric text-sm text-ink-400">{count}건</span>
             </div>
 
-            <p className="mt-2 text-sm font-medium text-ink-900">{narrative.lead}</p>
+            <p className="mt-2 text-sm font-medium text-ink-900">{def.lead}</p>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-500">
-              {narrative.description}
+              {def.description}
             </p>
 
             <span className="mt-4 text-sm text-ink-600 group-hover:text-ink-900">

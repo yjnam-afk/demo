@@ -1,5 +1,5 @@
-import type { CategoryStore, Health, Industry, Solution, Tech } from '@/lib/domain/types';
-import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
+import type { CategoryStore, DomainDef, Health, Industry, Solution, Tech } from '@/lib/domain/types';
+import type { Accent, Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
 
 export interface TechQuery {
   domain?: Domain;
@@ -23,7 +23,7 @@ export interface PublicSummary {
   provenCount: number;
   /** 인증 기관명 목록 (KISA, TTA 등) */
   certifiers: string[];
-  domainCounts: Record<Domain, number>;
+  domainCounts: Record<string, number>;
 }
 
 export interface TechPage {
@@ -66,7 +66,13 @@ export interface TechRepository {
 
   /** 공개 화면의 필터 선택지를 실제 데이터에서 뽑아낸다. */
   publicFacets(): Promise<{
-    domains: { value: Domain; count: number }[];
+    domains: {
+      value: string;
+      label: string;
+      short_label: string;
+      accent: Accent;
+      count: number;
+    }[];
     categories: { value: string; domain: Domain; count: number }[];
     verification: { value: VerificationLevel; count: number }[];
     industries: { value: string; label: string; count: number }[];
@@ -75,7 +81,13 @@ export interface TechRepository {
   listCategories(): Promise<CategoryStore>;
   addCategory(domain: Domain, name: string): Promise<CategoryStore>;
 
-  /** 산업군 마스터. 관리자 입력을 이 목록으로 제한한다. */
+  /** 대분류 마스터. 관리자 입력을 이 목록으로 제한한다. */
+  listDomains(): Promise<DomainDef[]>;
+  /** 전체 목록을 통째로 저장한다. 배열 순서가 그대로 표시 순서가 된다. */
+  saveDomains(next: DomainDef[]): Promise<DomainDef[]>;
+  /** 사용 중인 축은 지우지 않는다. removed:false 와 걸린 건수를 돌려준다. */
+  removeDomain(id: string): Promise<{ removed: boolean; usedBy: number }>;
+
   listIndustries(): Promise<Industry[]>;
   addIndustry(label: string, description?: string): Promise<Industry[]>;
 

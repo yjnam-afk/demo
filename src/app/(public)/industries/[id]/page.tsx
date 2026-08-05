@@ -5,7 +5,8 @@ import { TechCard } from '@/components/tech/TechCard';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
-import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
+import { toPublicTech } from '@/lib/domain/publicView';
+import { loadPublicMaps } from '@/lib/domain/publicMaps';
 import { DEPLOYMENT_LABELS, RELEASE_STAGE_LABELS } from '@/lib/domain/enums';
 
 export const dynamic = 'force-dynamic';
@@ -43,8 +44,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
     repo.listPublic({ industries: [id], limit: 60 }),
   ]);
 
-  const labels = industryLabelMap(industries);
-  const techs = page.items.map((tech) => toPublicTech(tech, labels));
+  const maps = await loadPublicMaps(repo);
+  const techs = page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains));
   const relatedProducts = products.filter((item) => item.offering.industries.includes(id));
   const relatedScenarios = scenarios.filter((item) => item.offering.industries.includes(id));
 

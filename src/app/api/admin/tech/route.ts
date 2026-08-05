@@ -31,7 +31,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `이미 존재하는 id 입니다: ${incomingId}` }, { status: 409 });
     }
 
-    const tech = parseTechInput(body.tech, existing);
+    // 대분류는 마스터 데이터라 parse 가 혼자 검증할 수 없다. 등록된 축
+    // 목록을 넘겨 임의 문자열이 들어오는 것을 막는다.
+    const allowedDomains = (await repo.listDomains()).map((d) => d.id);
+    const tech = parseTechInput(body.tech, existing, allowedDomains);
 
     if (tech.status === 'published') {
       const issues = validateForPublish(tech);

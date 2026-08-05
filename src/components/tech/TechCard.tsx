@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
 import { LoopVideo } from '@/components/ui/LoopVideo';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
-import { DOMAIN_SHORT_LABELS } from '@/lib/domain/enums';
 import type { PublicMetric, PublicTech } from '@/lib/domain/types';
-import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
+import { accentStyle, cn } from '@/lib/ui/domain';
 
 /**
  * 대표 수치 표시.
@@ -67,7 +66,7 @@ function HeadlineMetric({
 }
 
 export function TechCard({ tech }: { tech: PublicTech }) {
-  const style = DOMAIN_STYLES[tech.domain];
+  const style = accentStyle(tech.domain_accent);
   const headline = pickHeadlineMetric(
     tech.metrics as never,
     tech.demo.type === 'metric' ? tech.demo.highlight_metric : undefined,
@@ -122,7 +121,7 @@ export function TechCard({ tech }: { tech: PublicTech }) {
             )}
           >
             <span className={cn('h-1.5 w-1.5 rounded-full', hasVisual ? style.dotBright : style.dot)} />
-            {DOMAIN_SHORT_LABELS[tech.domain]}
+            {tech.domain_short}
           </span>
           <VerificationBadge
             level={tech.verification.level}

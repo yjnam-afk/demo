@@ -126,15 +126,21 @@ export function TagList({
 export function Section({
   title,
   description,
+  action,
   children,
 }: {
   title: string;
   description?: string;
+  /** 제목 줄 오른쪽에 붙는 조작 (순서 변경·삭제 등) */
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className="rounded-lg border border-ink-300 bg-white p-5">
-      <h2 className="text-base font-semibold text-ink-900">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-base font-semibold text-ink-900">{title}</h2>
+        {action}
+      </div>
       {description ? <p className="mt-1 text-sm text-ink-500">{description}</p> : null}
       <div className="mt-4 flex flex-col gap-4">{children}</div>
     </section>

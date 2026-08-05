@@ -10,8 +10,6 @@ import {
   DEMO_TYPE_LABELS,
   DEV_TYPES,
   DEV_TYPE_LABELS,
-  DOMAINS,
-  DOMAIN_LABELS,
   INPUT_KINDS,
   INPUT_KIND_LABELS,
   MATURITY_LABELS,
@@ -24,7 +22,7 @@ import {
   type MetricDirection,
 } from '@/lib/domain/enums';
 import { validateForPublish } from '@/lib/domain/validate';
-import type { CategoryStore, Industry, Tech } from '@/lib/domain/types';
+import type { CategoryStore, DomainDef, Industry, Tech } from '@/lib/domain/types';
 
 /** 방향은 기본값을 두지 않는다 — 관리자가 반드시 고르게 하려면 빈 값에서 출발해야 한다. */
 type MetricDraft = {
@@ -114,11 +112,14 @@ export function TechForm({
   existing,
   categories: initialCategories,
   industries: initialIndustries,
+  domains,
   otherTechs,
 }: {
   existing: Tech | null;
   categories: CategoryStore;
   industries: Industry[];
+  /** 대분류 마스터. 선택지는 코드가 아니라 이 목록이 정한다. */
+  domains: DomainDef[];
   otherTechs: { id: string; name: string }[];
 }) {
   const router = useRouter();
@@ -181,7 +182,8 @@ export function TechForm({
   }
 
   async function addCategory() {
-    const name = prompt(`${DOMAIN_LABELS[draft.domain]} 에 추가할 카테고리명`)?.trim();
+    const domainLabel = domains.find((d) => d.id === draft.domain)?.label ?? draft.domain;
+    const name = prompt(`${domainLabel} 에 추가할 카테고리명`)?.trim();
     if (!name) return;
 
     const response = await fetch('/api/admin/categories', {
@@ -202,7 +204,11 @@ export function TechForm({
     set({ category: name });
   }
 
-  const categoryOptions = categories[draft.domain].map((name) => ({ value: name, label: name }));
+  // 새로 만든 축에는 카테고리 키가 아직 없다. 없으면 빈 목록으로 둔다.
+  const categoryOptions = (categories[draft.domain] ?? []).map((name) => ({
+    value: name,
+    label: name,
+  }));
 
   return (
     <div className="flex flex-col gap-5 pb-32">
@@ -235,12 +241,12 @@ export function TechForm({
               onChange={(event) => set({ name_en: event.target.value })}
             />
           </Field>
-          <Field label="대분류" required hint="세 축 중 하나만 고를 수 있습니다.">
+          <Field label="대분류" required hint="대분류 관리에서 추가·수정할 수 있습니다.">
             <Select
               value={draft.domain}
-              options={options(DOMAINS, DOMAIN_LABELS)}
+              options={domains.map((d) => ({ value: d.id, label: d.label }))}
               // 대분류가 바뀌면 이전 축의 카테고리는 더 이상 유효하지 않다.
-              onChange={(domain: Domain) => set({ domain, category: '' })}
+              onChange={(domain: string) => set({ domain, category: '' })}
             />
           </Field>
         </Row>

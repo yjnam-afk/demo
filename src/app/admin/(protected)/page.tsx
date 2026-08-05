@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { TechTable, type AdminRow } from '@/components/admin/TechTable';
 import { getRepo } from '@/lib/data';
-import { DEMO_TYPE_LABELS, DOMAIN_SHORT_LABELS } from '@/lib/domain/enums';
+import { DEMO_TYPE_LABELS } from '@/lib/domain/enums';
 import { collectWarnings, validateForPublish } from '@/lib/domain/validate';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminTechListPage() {
-  const page = await getRepo().listAll();
+  const repo = getRepo();
+  const [page, domains] = await Promise.all([repo.listAll(), repo.listDomains()]);
+  const domainShort = new Map(domains.map((d) => [d.id, d.short_label]));
 
   /**
    * 목록에 필요한 값만 골라 내려보낸다.
@@ -17,7 +19,9 @@ export default async function AdminTechListPage() {
   const rows: AdminRow[] = page.items.map((tech) => ({
     id: tech.id,
     name: tech.name_ko,
-    domain: DOMAIN_SHORT_LABELS[tech.domain],
+    // 축이 삭제된 뒤 남은 기술은 id 를 그대로 보여준다. 빈칸으로 두면
+    // 관리자가 무엇이 잘못됐는지 알 수 없다.
+    domain: domainShort.get(tech.domain) ?? tech.domain,
     category: tech.category,
     demoType: DEMO_TYPE_LABELS[tech.demo.type],
     status: tech.status,

@@ -16,10 +16,11 @@ export default async function AdminTechFormPage({
   const { id } = await params;
   const repo = getRepo();
 
-  const [existing, categories, industries, all] = await Promise.all([
+  const [existing, categories, industries, domains, all] = await Promise.all([
     id === NEW ? Promise.resolve(null) : repo.get(id),
     repo.listCategories(),
     repo.listIndustries(),
+    repo.listDomains(),
     repo.listAll(),
   ]);
 
@@ -61,6 +62,7 @@ export default async function AdminTechFormPage({
         existing={existing}
         categories={categories}
         industries={industries}
+        domains={domains}
         otherTechs={otherTechs}
       />
     </div>

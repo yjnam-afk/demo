@@ -27,9 +27,9 @@ export const VIEW_TITLES: Record<CatalogView, string> = {
  * "지금 어떤 보기 모드인가"를 궁금해하지 않는다.
  */
 export const VIEW_HINTS: Record<CatalogView, string> = {
-  product: '지금 바로 현장에 넣을 수 있습니다.',
-  tech: '제품을 이루는 기술을 하나씩 열어 뒀습니다.',
-  industry: '이미 이 산업들에서 돌아가고 있습니다.',
+  product: '현장에 즉시 적용 가능한 제품입니다.',
+  tech: '제품을 구성하는 요소 기술입니다.',
+  industry: '산업별 적용 구성과 사례입니다.',
 };
 
 export function isCatalogView(value: unknown): value is CatalogView {

@@ -1,10 +1,10 @@
 import {
+  ACCENTS,
   DEMO_TYPES,
   DEPLOYMENTS,
   OFFERING_KINDS,
   RELEASE_STAGES,
   DEV_TYPES,
-  DOMAINS,
   INPUT_KINDS,
   MATURITY_LEVELS,
   METRIC_DIRECTIONS,
@@ -12,7 +12,16 @@ import {
   VERIFICATION_LEVELS,
   isOneOf,
 } from './enums';
-import type { Demo, DemoSample, Metric, Resource, Solution, SolutionStep, Tech } from './types';
+import type {
+  Demo,
+  DemoSample,
+  DomainDef,
+  Metric,
+  Resource,
+  Solution,
+  SolutionStep,
+  Tech,
+} from './types';
 
 export class InvalidInputError extends Error {
   constructor(message: string) {
@@ -57,6 +66,22 @@ function parseId(value: unknown): string {
   const id = str(value).toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(id)) {
     throw new InvalidInputError('id 는 영문 소문자·숫자·하이픈으로 2~64자여야 합니다.');
+  }
+  return id;
+}
+
+/**
+ * 대분류 id 는 밑줄을 허용한다.
+ *
+ * parseId 는 경로 세그먼트(`/tech/[id]`)용이라 슬러그 규칙이 엄격하다. 축 id 는
+ * 질의 문자열(`?domain=digital_twin`)에만 쓰이고, 이미 저장된 digital_twin 이
+ * 그 규칙에 걸린다. 그렇다고 자유 입력으로 두면 공백이나 한글이 들어와
+ * 링크가 깨지므로 밑줄만 더 허용한다.
+ */
+function parseDomainId(value: unknown): string {
+  const id = str(value).toLowerCase();
+  if (!/^[a-z0-9][a-z0-9_-]{1,63}$/.test(id)) {
+    throw new InvalidInputError('대분류 id 는 영문 소문자·숫자·하이픈·밑줄로 2~64자여야 합니다.');
   }
   return id;
 }
@@ -156,7 +181,19 @@ function parseResources(value: unknown): Resource[] {
  *
  * 자유 입력(기술명·요약·지표명·수치·데이터셋명·조건 단서)은 다듬기만 한다.
  */
-export function parseTechInput(input: unknown, existing?: Tech | null): Tech {
+export function parseTechInput(
+  input: unknown,
+  existing?: Tech | null,
+  /**
+   * 마스터에 등록된 대분류 id 목록.
+   *
+   * 대분류는 열거형이 아니라 데이터라 이 파일이 혼자 검증할 수 없다. 호출하는
+   * 라우트가 저장소에서 읽어 넘긴다. 넘기지 않으면 검사를 건너뛰므로,
+   * 관리자 API 는 반드시 넘겨야 한다 — 안 넘기면 임의 문자열이 들어와
+   * 필터와 축 카드에서 사라지는 기술이 생긴다.
+   */
+  allowedDomains?: readonly string[],
+): Tech {
   const raw = asRecord(input, '기술 정보');
   const business = asRecord(raw.business ?? {}, 'business');
   const io = asRecord(business.io ?? {}, 'business.io');
@@ -174,7 +211,7 @@ export function parseTechInput(input: unknown, existing?: Tech | null): Tech {
     id: parseId(raw.id),
     name_ko,
     name_en: str(raw.name_en) || undefined,
-    domain: pick(DOMAINS, raw.domain, '대분류'),
+    domain: allowedDomains ? pick(allowedDomains, raw.domain, '대분류') : str(raw.domain),
     category: str(raw.category),
     industries: strList(raw.industries),
     summary: str(raw.summary),
@@ -305,4 +342,48 @@ export function validateSolutionForPublish(solution: Solution): SolutionIssue[] 
   }
 
   return issues;
+}
+
+/**
+ * 관리자 입력 → 대분류 마스터.
+ *
+ * 축은 화면 구성을 좌우한다 — 랜딩의 축 카드, 카드의 색 점, 필터 칩이 전부
+ * 여기서 나온다. 그래서 라벨만 받지 않고 카드에 들어갈 문구와 색까지 받는다.
+ * 색은 자유 입력이 아니라 팔레트에서 고르게 해 채도 높은 색을 막는다.
+ */
+export function parseDomainInput(input: unknown, index: number): DomainDef {
+  const raw = asRecord(input, `대분류 ${index + 1}`);
+
+  const label = str(raw.label);
+  if (!label) throw new InvalidInputError(`대분류 ${index + 1} 의 이름이 비어 있습니다.`);
+
+  return {
+    id: parseDomainId(raw.id),
+    label,
+    // 짧은 이름을 비워 두면 카드의 좁은 자리에서 줄이 넘친다. 비면 정식
+    // 이름을 그대로 쓴다 — 빈 값보다는 넘치는 편이 낫다.
+    short_label: str(raw.short_label) || label,
+    lead: str(raw.lead),
+    description: str(raw.description),
+    accent: pick(ACCENTS, raw.accent, `대분류 "${label}" 의 색`),
+    order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : index,
+  };
+}
+
+/** 저장 전 전체 목록 검사. id 중복은 필터를 조용히 망가뜨리므로 여기서 막는다. */
+export function parseDomainList(input: unknown): DomainDef[] {
+  if (!Array.isArray(input)) throw new InvalidInputError('대분류 목록 형식이 올바르지 않습니다.');
+  if (input.length === 0) {
+    throw new InvalidInputError('대분류는 최소 1개가 있어야 합니다.');
+  }
+
+  const parsed = input.map(parseDomainInput);
+  const seen = new Set<string>();
+  for (const domain of parsed) {
+    if (seen.has(domain.id)) {
+      throw new InvalidInputError(`대분류 id 가 중복됩니다: ${domain.id}`);
+    }
+    seen.add(domain.id);
+  }
+  return parsed;
 }

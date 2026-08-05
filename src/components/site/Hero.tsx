@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { LoopVideo } from '@/components/ui/LoopVideo';
 import { BRAND } from '@/lib/brand';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
-import { DOMAIN_SHORT_LABELS } from '@/lib/domain/enums';
 import type { PublicTech } from '@/lib/domain/types';
-import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
+import { accentStyle, cn } from '@/lib/ui/domain';
 
 /**
  * 히어로.
@@ -19,7 +18,7 @@ import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
 export function Hero({ tech }: { tech: PublicTech | null }) {
   const headline = tech ? pickHeadlineMetric(tech.metrics as never) : null;
   const headlineEval = headline ? evaluateMetric(headline) : null;
-  const style = tech ? DOMAIN_STYLES[tech.domain] : null;
+  const style = tech ? accentStyle(tech.domain_accent) : null;
 
   const media = tech?.media;
   const heroVideo = media?.loop
@@ -84,7 +83,7 @@ export function Hero({ tech }: { tech: PublicTech | null }) {
           >
             <span className="flex items-center gap-1.5">
               <span className={cn('h-1.5 w-1.5 rounded-full', style?.dotBright)} />
-              {DOMAIN_SHORT_LABELS[tech.domain]}
+              {tech.domain_short}
             </span>
             <span className="font-medium text-white">{tech.name_ko}</span>
             {headline && headlineEval ? (

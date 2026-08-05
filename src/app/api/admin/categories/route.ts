@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
 import { requireAdminApi } from '@/lib/auth/guard';
-import { DOMAINS, isOneOf } from '@/lib/domain/enums';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,7 +18,11 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as { domain?: unknown; name?: unknown };
 
-  if (!isOneOf(DOMAINS, body.domain)) {
+  // 대분류는 열거형이 아니라 마스터 데이터다. 실제로 등록된 축인지 조회해서
+  // 확인한다 — 안 그러면 없는 축 밑에 카테고리가 쌓여 화면에서 사라진다.
+  const domains = await getRepo().listDomains();
+  const domain = typeof body.domain === 'string' ? body.domain : '';
+  if (!domains.some((d) => d.id === domain)) {
     return NextResponse.json({ error: '대분류를 먼저 선택해야 합니다.' }, { status: 400 });
   }
 
@@ -28,6 +31,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '카테고리명을 입력해야 합니다.' }, { status: 400 });
   }
 
-  const categories = await getRepo().addCategory(body.domain, name);
+  const categories = await getRepo().addCategory(domain, name);
   return NextResponse.json({ categories });
 }
