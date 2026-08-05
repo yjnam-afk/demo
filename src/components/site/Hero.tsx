@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { VideoSources } from '@/components/ui/Video';
+import { LoopVideo } from '@/components/ui/LoopVideo';
 import { BRAND } from '@/lib/brand';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
 import { DOMAIN_SHORT_LABELS } from '@/lib/domain/enums';
@@ -21,21 +21,27 @@ export function Hero({ tech }: { tech: PublicTech | null }) {
   const headlineEval = headline ? evaluateMetric(headline) : null;
   const style = tech ? DOMAIN_STYLES[tech.domain] : null;
 
+  const media = tech?.media;
+  const heroVideo = media?.loop
+    ? { mp4: media.loop, webm: media.loop_webm, poster: media.loop_poster ?? media.thumbnail }
+    : media?.video
+      ? { mp4: media.video, webm: media.video_webm, poster: media.thumbnail }
+      : null;
+
   return (
     <section className="relative isolate overflow-hidden bg-ink-950">
-      {tech?.media.video ? (
-        <video
+      {/*
+        배경에는 전체 데모 영상이 아니라 짧은 루프를 쓴다. 전체 영상은 장면이
+        바뀌고 용량이 몇 배라, 첫 화면에서만 수백 KB를 배경으로 흘려보내게 된다.
+        루프가 없는 기술이 대표로 올라오면 그때만 전체 영상을 쓴다.
+      */}
+      {heroVideo ? (
+        <LoopVideo
           className="absolute inset-0 -z-10 h-full w-full object-cover opacity-45"
-          poster={tech.media.thumbnail}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden
-        >
-          <VideoSources mp4={tech.media.video} webm={tech.media.video_webm} />
-        </video>
+          mp4={heroVideo.mp4}
+          webm={heroVideo.webm}
+          poster={heroVideo.poster}
+        />
       ) : null}
 
       {/* 영상 위 글자 가독성 확보. 아래쪽을 더 어둡게 눌러 지표 줄이 묻히지 않게 한다. */}

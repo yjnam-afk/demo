@@ -77,7 +77,8 @@
       "loop": "/videos/intrusion-detection.loop.mp4",
       "video": "/videos/intrusion-detection.mp4",
       "loop_webm": "/videos/intrusion-detection.loop.webm",
-      "video_webm": "/videos/intrusion-detection.webm"
+      "video_webm": "/videos/intrusion-detection.webm",
+      "loop_poster": "/thumbnails/intrusion-detection.loop.jpg"
     },
     "resources": [
       {
@@ -233,7 +234,8 @@
       "loop": "/videos/digital-twin-plant.loop.mp4",
       "video": "/videos/digital-twin-plant.mp4",
       "loop_webm": "/videos/digital-twin-plant.loop.webm",
-      "video_webm": "/videos/digital-twin-plant.webm"
+      "video_webm": "/videos/digital-twin-plant.webm",
+      "loop_poster": "/thumbnails/digital-twin-plant.loop.jpg"
     },
     "resources": [
       {
@@ -312,7 +314,8 @@
       "loop": "/videos/flood-simulation.loop.mp4",
       "video": "/videos/flood-simulation.mp4",
       "loop_webm": "/videos/flood-simulation.loop.webm",
-      "video_webm": "/videos/flood-simulation.webm"
+      "video_webm": "/videos/flood-simulation.webm",
+      "loop_poster": "/thumbnails/flood-simulation.loop.jpg"
     },
     "resources": [
       {

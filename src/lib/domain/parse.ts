@@ -202,6 +202,7 @@ export function parseTechInput(input: unknown, existing?: Tech | null): Tech {
       video: str(media.video) || undefined,
       loop_webm: str(media.loop_webm) || undefined,
       video_webm: str(media.video_webm) || undefined,
+      loop_poster: str(media.loop_poster) || undefined,
     },
     resources: parseResources(raw.resources),
     related_tech: strList(raw.related_tech),

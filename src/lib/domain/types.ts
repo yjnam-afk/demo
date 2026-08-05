@@ -95,6 +95,12 @@ export interface Media {
    */
   loop_webm?: string;
   video_webm?: string;
+  /**
+   * 카드 루프의 첫 화면.
+   * 상세용 thumbnail 은 전체 화면 구도라 카드 루프와 구도가 달라, 재생이
+   * 시작되는 순간 화면이 튄다. 루프와 같은 구도의 정지 이미지를 따로 둔다.
+   */
+  loop_poster?: string;
 }
 
 export interface Resource {
