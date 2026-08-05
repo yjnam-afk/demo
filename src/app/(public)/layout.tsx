@@ -49,6 +49,7 @@ function Footer() {
               </p>
             </div>
             <p className="mt-1.5 text-sm text-ink-400">{BRAND.tagline}</p>
+            <p className="mt-1 max-w-xl text-sm text-ink-500">{BRAND.positioning}</p>
 
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-500">
               {BRAND.companyFacts.map((fact) => (
