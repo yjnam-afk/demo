@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="침입 행위자 탐지 데모 화면 예시">
+  <rect width="640" height="360" fill="#1c2732"/>
+  <g stroke="#2c3a49" stroke-width="1">
+    <path d="M0 90h640M0 180h640M0 270h640M160 0v360M320 0v360M480 0v360"/>
+  </g>
+  <path d="M60 250 L580 210" stroke="#c2703c" stroke-width="3" stroke-dasharray="14 8"/>
+  <rect x="238" y="150" width="70" height="130" fill="none" stroke="#5fa8d3" stroke-width="3"/>
+  <rect x="238" y="130" width="96" height="20" fill="#5fa8d3"/>
+  <text x="244" y="145" font-family="system-ui, sans-serif" font-size="13" fill="#0f1720">PERSON 0.94</text>
+  <rect x="430" y="176" width="52" height="96" fill="none" stroke="#3d5a80" stroke-width="2"/>
+  <text x="24" y="40" font-family="system-ui, sans-serif" font-size="18" fill="#8fa3b8">CAM 03 · 통제선 침입 감지</text>
+</svg>
