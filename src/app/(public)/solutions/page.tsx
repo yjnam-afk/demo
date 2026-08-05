@@ -7,7 +7,7 @@ import { listPublicOfferings } from '@/lib/data/offerings';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '솔루션 시나리오',
+  title: '기술을 묶은 구성 제안',
   description: '요소기술을 묶어 현장 문제를 해결하는 구성 예시입니다.',
 };
 
@@ -19,7 +19,7 @@ export default async function SolutionsPage() {
       <section className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
           <p className="text-sm font-medium tracking-wide text-[var(--color-brand-bright)]">
-            솔루션 시나리오
+            구성 제안
           </p>
           <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             기술을 묶으면 현장의 문제가 풀립니다

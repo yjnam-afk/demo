@@ -102,9 +102,10 @@ export default async function TechCatalogPage({
 
           {scenarios.length > 0 ? (
             <div className="mt-12 border-t border-ink-300 pt-10">
-              <h2 className="text-lg font-semibold text-ink-900">솔루션 시나리오</h2>
+              <h2 className="text-lg font-semibold text-ink-900">기술을 묶은 구성 제안</h2>
               <p className="mt-1 mb-2 text-sm text-ink-500">
-                아직 제품으로 묶이지 않았지만 현장 조건에 맞춰 구성할 수 있는 조합입니다.
+                아직 하나의 제품으로 묶이지 않았지만, 기술 몇 개를 조합하면 바로 현장에
+                적용할 수 있는 구성입니다.
               </p>
               {scenarios.map((item) => (
                 <OfferingGroup key={item.offering.id} item={item} />

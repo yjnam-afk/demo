@@ -49,7 +49,11 @@ export function Hero({ tech }: { tech: PublicTech | null }) {
         <h1 className="headline mt-5 max-w-3xl text-4xl font-semibold text-white sm:text-5xl">
           {BRAND.headline}
         </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-ink-300">{BRAND.tagline}</p>
+        {/*
+          태그라인 대신 본문을 쓴다. 히어로 배경이 영상 데모 하나라 그대로 두면
+          영상 분석 회사로만 읽히므로, 다루는 데이터 종류를 여기서 밝힌다.
+        */}
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">{BRAND.intro}</p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <Link

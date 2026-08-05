@@ -20,9 +20,12 @@ function Header() {
         </Link>
 
         {/*
-          GNB 는 세 가지 보기 기준을 그대로 노출한다.
+          GNB 는 세 가지 보기 기준만 노출한다.
           메뉴는 서로 다른 목록이 아니라 같은 카탈로그를 여는 각각의 입구이며,
           어느 쪽으로 들어와도 화면 안에서 기준을 바꿀 수 있다.
+
+          솔루션 시나리오는 메뉴에 두지 않는다 — "시나리오"라는 말만으로는
+          무엇인지 알 수 없고, 제품별 보기 안에 이미 함께 나온다.
         */}
         <nav className="flex items-center gap-3 text-sm sm:gap-5">
           <Link
@@ -39,12 +42,6 @@ function Header() {
             className="text-ink-300 transition-colors hover:text-white"
           >
             산업
-          </Link>
-          <Link
-            href="/solutions"
-            className="hidden text-ink-300 transition-colors hover:text-white sm:inline"
-          >
-            시나리오
           </Link>
           <Link
             href="/#contact"
