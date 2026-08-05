@@ -1,24 +1,25 @@
 [
   {
-    "id": "heidi-ai-guard",
+    "id": "auron-i-industry",
     "kind": "product",
-    "title": "HEIDI AI Guard",
-    "name_en": "HEIDI AI Guard",
-    "summary": "군중 밀집도·침입·화재를 실시간 분석해 위험을 사전에 알립니다.",
-    "problem": "관제 인력이 다수 CCTV를 동시에 감시할 수 없어, 위험이 실제 사고로 번진 뒤에야 상황을 인지합니다.",
+    "title": "오론 인더스트리",
+    "name_en": "AURON-i Industry",
+    "summary": "침입·배회·화재·안전장비 미착용을 실시간 탐지해 알립니다. GS 1등급 인증(KTR)을 받았습니다.",
+    "problem": "제조·물류·건설 현장과 공공 시설에서 위험 상황을 사람이 계속 지켜볼 수 없어, 사고가 난 뒤에야 인지합니다.",
     "industries": [
       "safety_security",
+      "energy_plant",
       "public",
       "smart_city"
     ],
     "steps": [
       {
-        "tech_id": "crowd-counting",
-        "role": "구역별 인원과 밀도를 실시간 추정해 압사 위험을 사전 경보합니다."
-      },
-      {
         "tech_id": "intrusion-detection",
         "role": "통제구역에 진입하는 인원을 즉시 탐지해 알립니다."
+      },
+      {
+        "tech_id": "crowd-counting",
+        "role": "구역별 인원과 밀도를 실시간 추정해 밀집 위험을 사전 경보합니다."
       }
     ],
     "deployment": [
@@ -32,6 +33,73 @@
     },
     "status": "published",
     "order": 0,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "auron-i-auto-switch",
+    "kind": "product",
+    "title": "오론 오토 스위치",
+    "name_en": "AURON-i Auto Switch",
+    "summary": "우천·강설·야간 등 환경 변화를 자동 감지해 최적의 AI 모델로 전환합니다.",
+    "problem": "날씨와 조도가 바뀌면 인식 정확도가 떨어지는데, 모델을 사람이 바꿔 끼울 수 없습니다.",
+    "industries": [
+      "safety_security",
+      "smart_city",
+      "autonomous"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "published",
+    "order": 1,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "auron-i-smart-summary",
+    "kind": "product",
+    "title": "오론 스마트 서머리",
+    "name_en": "AURON-i Smart Summary",
+    "summary": "긴 녹화 영상에서 의미 있는 구간만 추려 요약합니다.",
+    "problem": "사건 발생 후 관련 장면을 찾기 위해 장시간 녹화를 사람이 되돌려 봐야 합니다.",
+    "industries": [
+      "safety_security",
+      "public",
+      "defense"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "published",
+    "order": 2,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "auron-defense",
+    "kind": "product",
+    "title": "오론 국방 플랫폼",
+    "name_en": "AURON for Defense",
+    "summary": "군수 문서를 데이터화해 정비 이력과 물자 현황을 검색·분석하고 대시보드로 보여줍니다.",
+    "problem": "군수 자료가 비정형 문서로 흩어져 있어 정비 이력과 물자 현황을 즉시 확인할 수 없습니다.",
+    "industries": [
+      "defense"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "published",
+    "order": 3,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"
   },
@@ -54,7 +122,7 @@
     "release": "ga",
     "media": {},
     "status": "published",
-    "order": 1,
+    "order": 4,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"
   },
@@ -63,7 +131,7 @@
     "kind": "product",
     "title": "HEIDI AI Private",
     "name_en": "HEIDI AI Private",
-    "summary": "영상·이미지의 개인정보를 자동으로 비식별화합니다.",
+    "summary": "영상·이미지의 개인정보를 자동으로 비식별화합니다. GDPR·APPI·CCPA 대응.",
     "problem": "영상 데이터를 활용하려면 개인정보 규제를 통과해야 하는데, 수작업 비식별화는 물량을 감당할 수 없습니다.",
     "industries": [
       "autonomous",
@@ -77,29 +145,7 @@
     "release": "ga",
     "media": {},
     "status": "published",
-    "order": 2,
-    "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
-  },
-  {
-    "id": "heidi-ai-max",
-    "kind": "product",
-    "title": "HEIDI AI MAX",
-    "name_en": "HEIDI AI MAX",
-    "summary": "대용량 영상에서 원하는 장면을 검색하고 이상행동을 모니터링합니다.",
-    "problem": "사건 발생 후 관련 장면을 찾기 위해 녹화 영상을 사람이 되돌려 보는 데 시간이 걸립니다.",
-    "industries": [
-      "safety_security",
-      "defense"
-    ],
-    "steps": [],
-    "deployment": [
-      "on_premise"
-    ],
-    "release": "ga",
-    "media": {},
-    "status": "published",
-    "order": 3,
+    "order": 5,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"
   },

@@ -20,12 +20,31 @@ function Header() {
         </Link>
 
         {/*
-          제품·기술·산업은 별도 메뉴가 아니라 카탈로그 안의 보기 기준이다.
-          메뉴를 나누면 방문자가 서로 다른 목록으로 오해한다.
+          GNB 는 세 가지 보기 기준을 그대로 노출한다.
+          메뉴는 서로 다른 목록이 아니라 같은 카탈로그를 여는 각각의 입구이며,
+          어느 쪽으로 들어와도 화면 안에서 기준을 바꿀 수 있다.
         */}
-        <nav className="flex items-center gap-4 text-sm sm:gap-6">
-          <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
-            기술 카탈로그
+        <nav className="flex items-center gap-3 text-sm sm:gap-5">
+          <Link
+            href="/tech?view=product"
+            className="text-ink-300 transition-colors hover:text-white"
+          >
+            제품
+          </Link>
+          <Link href="/tech?view=tech" className="text-ink-300 transition-colors hover:text-white">
+            기술
+          </Link>
+          <Link
+            href="/tech?view=industry"
+            className="text-ink-300 transition-colors hover:text-white"
+          >
+            산업
+          </Link>
+          <Link
+            href="/solutions"
+            className="hidden text-ink-300 transition-colors hover:text-white sm:inline"
+          >
+            시나리오
           </Link>
           <Link
             href="/#contact"
