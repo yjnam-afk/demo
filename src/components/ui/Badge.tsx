@@ -19,29 +19,44 @@ const VERIFICATION_STYLES: Record<VerificationLevel, string> = {
     'bg-[var(--color-signal-warn-soft)] text-[var(--color-signal-warn)] border-[var(--color-signal-warn)]/25',
 };
 
+/** 어두운 배경(카드 썸네일 위) 전용 변형 */
+const VERIFICATION_STYLES_DARK: Record<VerificationLevel, string> = {
+  third_party: 'bg-white/10 text-[var(--color-signal-ok-bright)] border-white/20',
+  self_test: 'bg-white/10 text-white/80 border-white/20',
+  in_development: 'bg-white/10 text-white/70 border-white/20',
+};
+
 export function VerificationBadge({
   level,
   body,
+  onDark = false,
 }: {
   level: VerificationLevel;
   body?: string;
+  onDark?: boolean;
 }) {
   // 인증 기관이 있으면 함께 노출한다 ("제3자 인증"만으로는 신뢰 근거가 약하다)
-  const label =
-    level === 'third_party' && body ? `${body} 인증` : VERIFICATION_LABELS[level];
+  const label = level === 'third_party' && body ? `${body} 인증` : VERIFICATION_LABELS[level];
+  const styles = onDark ? VERIFICATION_STYLES_DARK[level] : VERIFICATION_STYLES[level];
 
   return (
     <span
-      className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${VERIFICATION_STYLES[level]}`}
+      className={`inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium ${styles}`}
     >
       {label}
     </span>
   );
 }
 
-export function DemoTypeBadge({ type }: { type: DemoType }) {
+export function DemoTypeBadge({ type, onDark = false }: { type: DemoType; onDark?: boolean }) {
   return (
-    <span className="inline-flex items-center rounded border border-ink-300 bg-white px-2 py-0.5 text-xs font-medium text-ink-600">
+    <span
+      className={`inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium ${
+        onDark
+          ? 'border-white/20 bg-white/10 text-white/80'
+          : 'border-ink-300 bg-white text-ink-600'
+      }`}
+    >
       {DEMO_TYPE_LABELS[type]}
     </span>
   );

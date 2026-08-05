@@ -2,8 +2,10 @@
 
 /**
  * 디자인 토큰.
- * 국방·공공 대상 자료가 포함되므로 채도를 낮추고 대비로 위계를 만든다.
- * 그라디언트·네온 계열 색은 정의하지 않는다.
+ *
+ * 톤: 다크 인프라. 헤더와 히어로 구간은 진한 잉크색, 본문은 밝게 전환한다.
+ * 국방·공공 자료가 포함되므로 채도를 억제하고 대비와 여백으로 위계를 만든다.
+ * 그라디언트·네온 계열은 정의하지 않는다 — 정의가 없으면 쓸 수도 없다.
  */
 @theme {
   --color-ink-50: #f6f7f9;
@@ -16,8 +18,10 @@
   --color-ink-700: #363e4c;
   --color-ink-800: #232a35;
   --color-ink-900: #151a22;
+  /* 히어로·헤더 배경 전용. 900 보다 한 단계 더 내려 영상과 수치가 떠 보이게 한다. */
+  --color-ink-950: #0c1017;
 
-  /* 3축 구분색 — 채도를 억제해 나란히 놓아도 튀지 않게 한다 */
+  /* 3축 구분색 — 밝은 배경용 */
   --color-domain-ai: #3d5a80;
   --color-domain-ai-soft: #eaeff5;
   --color-domain-twin: #2f6f66;
@@ -25,8 +29,14 @@
   --color-domain-spatial: #7a5c3e;
   --color-domain-spatial-soft: #f3ede6;
 
+  /* 3축 구분색 — 어두운 배경용. 같은 색을 그대로 쓰면 대비가 무너진다. */
+  --color-domain-ai-bright: #7ba3d0;
+  --color-domain-twin-bright: #5faa9d;
+  --color-domain-spatial-bright: #bf9a6a;
+
   --color-signal-ok: #2f6b4f;
   --color-signal-ok-soft: #e7f0eb;
+  --color-signal-ok-bright: #5aa683;
   --color-signal-warn: #8a6320;
   --color-signal-warn-soft: #f6efe1;
   --color-signal-fail: #8d3b3b;
@@ -54,10 +64,27 @@ body {
 .numeric {
   font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
-/* 카드 썸네일 영상은 장식이므로 모션 민감 사용자에게는 정지 상태로 보인다 */
+/* 히어로 헤드라인 — 줄바꿈을 문구(brand.ts)가 통제한다 */
+.headline {
+  white-space: pre-line;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+/*
+ * 어두운 구간의 미세한 격자.
+ * 계측·관제 화면의 인상을 주되 배경으로만 남도록 대비를 낮게 유지한다.
+ */
+.grid-backdrop {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -67,7 +94,7 @@ body {
   }
 }
 
-/* 줄 수 제한 — 카드의 한 줄 요약이 카드 높이를 흔들지 않게 한다 */
+/* 줄 수 제한 — 카드의 요약문이 카드 높이를 흔들지 않게 한다 */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;

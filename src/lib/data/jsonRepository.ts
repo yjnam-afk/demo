@@ -3,7 +3,8 @@ import path from 'node:path';
 import type { CategoryStore, Health, Solution, Tech } from '@/lib/domain/types';
 import type { Domain, VerificationLevel } from '@/lib/domain/enums';
 import { isExternallyVisible } from '@/lib/domain/publicView';
-import type { TechPage, TechQuery, TechRepository } from './repository';
+import { summarizeAchievement } from '@/lib/domain/metric';
+import type { PublicSummary, TechPage, TechQuery, TechRepository } from './repository';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const TECH_FILE = path.join(DATA_DIR, 'technologies.json');
@@ -163,6 +164,31 @@ export class JsonTechRepository implements TechRepository {
       target.health = health;
       await this.saveTech(all);
     });
+  }
+
+  async publicSummary(): Promise<PublicSummary> {
+    const all = (await this.allTech()).filter(isExternallyVisible);
+
+    const domainCounts: Record<Domain, number> = { ai: 0, digital_twin: 0, spatial: 0 };
+    const certifiers = new Set<string>();
+
+    for (const tech of all) {
+      domainCounts[tech.domain] += 1;
+      if (tech.verification.level === 'third_party' && tech.verification.body) {
+        certifiers.add(tech.verification.body);
+      }
+    }
+
+    return {
+      techCount: all.length,
+      thirdPartyCount: all.filter((t) => t.verification.level === 'third_party').length,
+      metrics: summarizeAchievement(all.map((t) => t.metrics)),
+      provenCount: all.filter(
+        (t) => t.business.maturity === 'field_proven' || t.business.maturity === 'pilot_done',
+      ).length,
+      certifiers: [...certifiers].sort((a, b) => a.localeCompare(b)),
+      domainCounts,
+    };
   }
 
   async publicFacets() {

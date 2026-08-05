@@ -12,6 +12,20 @@ export interface TechQuery {
   offset?: number;
 }
 
+export interface PublicSummary {
+  /** 외부 공개 기술 수 */
+  techCount: number;
+  /** 제3자 인증 보유 기술 수 */
+  thirdPartyCount: number;
+  /** 정량 목표 달성 현황 */
+  metrics: { total: number; achieved: number };
+  /** 현장 적용 또는 실증을 마친 기술 수 */
+  provenCount: number;
+  /** 인증 기관명 목록 (KISA, TTA 등) */
+  certifiers: string[];
+  domainCounts: Record<Domain, number>;
+}
+
 export interface TechPage {
   items: Tech[];
   /** 필터를 만족하는 전체 건수 (페이지 크기와 무관) */
@@ -42,6 +56,13 @@ export interface TechRepository {
   /** id 배열 순서대로 order 를 다시 매긴다. */
   reorder(ids: string[]): Promise<void>;
   saveHealth(id: string, health: Health): Promise<void>;
+
+  /**
+   * 신뢰 지표 요약. 랜딩과 카탈로그 상단이 같은 값을 쓴다.
+   * 화면에서 전체 목록을 훑어 세지 않는 것은 DB 전환 시 집계 질의로
+   * 바로 바꿀 수 있게 하기 위해서다.
+   */
+  publicSummary(): Promise<PublicSummary>;
 
   /** 공개 화면의 필터 선택지를 실제 데이터에서 뽑아낸다. */
   publicFacets(): Promise<{

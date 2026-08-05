@@ -1,27 +1,40 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: '기술 데모 포털',
-    template: '%s · 기술 데모 포털',
+    default: `${BRAND.name} · 기술 데모 포털`,
+    template: `%s · ${BRAND.name}`,
   },
-  description: 'AI 요소기술 · 디지털 트윈 · 공간 분석 기술을 데모와 검증 지표로 확인합니다.',
+  description: BRAND.tagline,
 };
 
 function Header() {
   return (
-    <header className="sticky top-0 z-20 border-b border-ink-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-sm font-semibold tracking-tight text-ink-900">
-          기술 데모 포털
+    // 헤더는 히어로와 같은 색이다. 스크롤 전에는 경계가 보이지 않다가
+    // 본문 구간으로 넘어가면 자연스럽게 분리된다.
+    <header className="sticky top-0 z-20 bg-ink-950/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <Link href="/" className="flex items-baseline gap-2">
+          <span className="text-base font-semibold tracking-tight text-white">
+            {BRAND.shortName}
+          </span>
+          <span className="hidden text-sm text-ink-400 sm:inline">기술 데모 포털</span>
         </Link>
-        {/* 랜딩(3단계)·솔루션(5단계) 화면이 붙으면 해당 링크를 이 자리에 추가한다. */}
-        <nav className="flex items-center gap-5 text-sm">
-          <Link href="/tech" className="text-ink-600 hover:text-ink-900">
+
+        {/* 랜딩(3단계)·솔루션(5단계) 링크는 해당 화면이 붙을 때 추가한다. */}
+        <nav className="flex items-center gap-6 text-sm">
+          <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
             기술 카탈로그
           </Link>
+          <a
+            href={`mailto:${BRAND.contact.email}`}
+            className="rounded bg-white px-3.5 py-1.5 font-medium text-ink-900 transition-colors hover:bg-ink-200"
+          >
+            {BRAND.contact.label}
+          </a>
         </nav>
       </div>
     </header>
@@ -30,10 +43,25 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="mt-16 border-t border-ink-200 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-ink-500">
-        <p className="font-medium text-ink-700">기술 데모 포털</p>
-        <p>표기된 성능 지표는 각 항목에 명시된 평가 데이터셋과 조건에서 측정한 결과입니다.</p>
+    <footer className="mt-20 bg-ink-950">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div>
+            <p className="text-base font-semibold text-white">{BRAND.name}</p>
+            <p className="mt-1 text-sm text-ink-400">{BRAND.tagline}</p>
+          </div>
+          <a
+            href={`mailto:${BRAND.contact.email}`}
+            className="text-sm text-ink-300 underline underline-offset-4 hover:text-white"
+          >
+            {BRAND.contact.email}
+          </a>
+        </div>
+
+        <p className="border-t border-white/10 pt-6 text-xs leading-relaxed text-ink-500">
+          표기된 성능 지표는 각 항목에 명시된 평가 데이터셋과 측정 조건에서 얻은 결과입니다.
+          도입 환경에 따라 실제 성능은 달라질 수 있습니다.
+        </p>
       </div>
     </footer>
   );

@@ -15,5 +15,4 @@
   </g>
   <circle cx="240" cy="100" r="9" fill="#c2703c"/>
   <circle cx="410" cy="140" r="9" fill="#4e8f86"/>
-  <text x="24" y="40" font-family="system-ui, sans-serif" font-size="18" fill="#7f9c95">REACTOR-02 · 실시간 센서 연동</text>
 </svg>

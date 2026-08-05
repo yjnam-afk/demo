@@ -9,6 +9,7 @@ import {
   type Maturity,
 } from '@/lib/domain/enums';
 import type { PublicTech } from '@/lib/domain/types';
+import { BRAND } from '@/lib/brand';
 import { DOMAIN_STYLES, cn } from '@/lib/ui/domain';
 
 function Section({
@@ -63,46 +64,51 @@ export function TechDetail({
     : tech.industries;
 
   return (
-    <article className="mx-auto max-w-4xl px-4 py-10">
-      {/* 1. 헤더 */}
-      <header className="pb-8">
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded px-2 py-0.5 font-medium',
-              style.bg,
-              style.text,
-            )}
-          >
-            <span className={cn('h-1.5 w-1.5 rounded-full', style.dot)} />
-            {DOMAIN_LABELS[tech.domain]}
-          </span>
-          <span className="text-ink-400">·</span>
-          <span className="text-ink-600">{tech.category}</span>
-          {tech.team ? (
-            <>
-              <span className="text-ink-400">·</span>
-              <span className="text-ink-500">{tech.team}</span>
-            </>
-          ) : null}
-        </div>
+    <article>
+      {/* 1. 헤더 — 카탈로그 히어로와 같은 톤으로 이어 붙인다 */}
+      <header className="grid-backdrop bg-ink-950">
+        <div className="mx-auto max-w-4xl px-4 py-12">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <Link
+              href={`/tech?domain=${tech.domain}`}
+              className="inline-flex items-center gap-1.5 font-medium text-white/90 hover:text-white"
+            >
+              <span className={cn('h-1.5 w-1.5 rounded-full', style.dotBright)} />
+              {DOMAIN_LABELS[tech.domain]}
+            </Link>
+            <span className="text-ink-600">·</span>
+            <span className="text-ink-300">{tech.category}</span>
+            {tech.team ? (
+              <>
+                <span className="text-ink-600">·</span>
+                <span className="text-ink-400">{tech.team}</span>
+              </>
+            ) : null}
+          </div>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-900">{tech.name_ko}</h1>
-        {tech.name_en ? <p className="mt-1 text-sm text-ink-400">{tech.name_en}</p> : null}
-        <p className="mt-3 text-base text-ink-600">{tech.summary}</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            {tech.name_ko}
+          </h1>
+          {tech.name_en ? <p className="mt-1.5 text-sm text-ink-500">{tech.name_en}</p> : null}
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">{tech.summary}</p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <VerificationBadge level={tech.verification.level} body={tech.verification.body} />
-          <DemoTypeBadge type={tech.demo.type} />
-          {business.maturity ? (
-            <span className="text-sm text-ink-500">
-              성숙도 · {MATURITY_LABELS[business.maturity as Maturity]}
-            </span>
-          ) : null}
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <VerificationBadge
+              level={tech.verification.level}
+              body={tech.verification.body}
+              onDark
+            />
+            <DemoTypeBadge type={tech.demo.type} onDark />
+            {business.maturity ? (
+              <span className="text-sm text-ink-400">
+                성숙도 · {MATURITY_LABELS[business.maturity as Maturity]}
+              </span>
+            ) : null}
+          </div>
         </div>
       </header>
 
-      <div className="flex flex-col gap-8">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10">
         {/* 2. 해결하는 문제 / 적용 대상 산업 — 지표보다 먼저 온다 */}
         <section className={cn('rounded-lg border-l-4 bg-white p-5', style.border)}>
           <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
@@ -229,18 +235,24 @@ export function TechDetail({
             ) : null}
           </Section>
         ) : null}
-      </div>
 
-      <div className="mt-10 rounded-lg border border-ink-200 bg-white p-5">
-        <p className="text-sm text-ink-700">
-          이 기술의 적용 가능성을 검토하고 계신가요?
-        </p>
-        <Link
-          href="/#contact"
-          className="mt-3 inline-block rounded bg-ink-800 px-4 py-2 text-sm text-white hover:bg-ink-900"
-        >
-          도입 문의하기
-        </Link>
+        {/* 전환 지점 — 상세를 끝까지 읽은 방문자가 다음에 할 행동을 명시한다 */}
+        <section className="rounded-lg bg-ink-950 p-6 sm:p-8">
+          <p className="text-lg font-medium text-white">
+            {tech.name_ko} 적용을 검토하고 계신가요?
+          </p>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
+            {BRAND.contact.promise}
+          </p>
+          <a
+            href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent(
+              `[도입 문의] ${tech.name_ko}`,
+            )}`}
+            className="mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
+          >
+            {BRAND.contact.label}
+          </a>
+        </section>
       </div>
     </article>
   );
