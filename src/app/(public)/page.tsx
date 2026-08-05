@@ -111,8 +111,9 @@ export default async function HomePage() {
 
         <section className="border-t border-ink-200 py-16">
           <h2 className="text-2xl font-semibold tracking-tight text-ink-900">기술 영역</h2>
+          {/* 축 개수를 문장에 쓰지 않는다 — 관리자가 축을 늘리면 문구가 거짓이 된다 */}
           <p className="mt-2 text-sm text-ink-500">
-            세 축의 기술을 조합해 현장의 문제를 해결합니다.
+            여러 영역의 기술을 조합해 현장의 문제를 해결합니다.
           </p>
           <div className="mt-8">
             <DomainPillars domains={maps.domainList} counts={summary.domainCounts} />

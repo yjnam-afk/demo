@@ -7,18 +7,24 @@
 export const CATALOG_VIEWS = ['product', 'tech', 'industry'] as const;
 export type CatalogView = (typeof CATALOG_VIEWS)[number];
 
-/** 메뉴에 쓰는 짧은 이름 */
+/**
+ * 메뉴에 쓰는 짧은 이름.
+ *
+ * "제품 / 기술 / 산업" 으로 두면 서로 다른 것을 파는 세 개의 화면으로 읽힌다.
+ * 셋은 같은 기술 목록을 다르게 묶은 것뿐이므로 "~별" 을 붙여 묶는 기준임을
+ * 드러낸다. 이 사이트가 소개하는 대상은 언제나 기술이다.
+ */
 export const VIEW_LABELS: Record<CatalogView, string> = {
-  product: '제품',
-  tech: '기술',
-  industry: '산업',
+  product: '제품별',
+  tech: '기술 영역별',
+  industry: '산업별',
 };
 
 /** 본문 머리에 쓰는 제목 */
 export const VIEW_TITLES: Record<CatalogView, string> = {
-  product: '제품',
-  tech: '보유 기술',
-  industry: '산업별 적용',
+  product: '제품별 기술',
+  tech: '기술 영역별',
+  industry: '산업별 기술',
 };
 
 /**
@@ -27,9 +33,9 @@ export const VIEW_TITLES: Record<CatalogView, string> = {
  * "지금 어떤 보기 모드인가"를 궁금해하지 않는다.
  */
 export const VIEW_HINTS: Record<CatalogView, string> = {
-  product: '현장에 즉시 적용 가능한 제품입니다.',
-  tech: '제품을 구성하는 요소 기술입니다.',
-  industry: '산업별 적용 구성과 사례입니다.',
+  product: '각 제품에 실제로 들어가 있는 기술을 확인하실 수 있습니다.',
+  tech: '기술을 영역별로 나누어 확인하실 수 있습니다.',
+  industry: '산업 현장에 적용된 기술을 확인하실 수 있습니다.',
 };
 
 export function isCatalogView(value: unknown): value is CatalogView {

@@ -41,8 +41,9 @@ export default async function TechCatalogPage({
   const raw = await searchParams;
   const params = toSearchParams(raw);
 
-  // 기본은 제품별이다 — 방문자는 사업 의사결정자이고, 먼저 알고 싶은 것은
-  // "무엇을 도입할 수 있는가"이지 "어떤 기술이 있는가"가 아니다.
+  // 기본은 제품별이다. 세 기준 모두 기술 목록을 묶는 방식일 뿐이지만,
+  // 처음 들어온 방문자에게는 "어느 제품에 들어가는 기술인가" 가 가장
+  // 잡히는 실마리다.
   const viewParam = params.get('view');
   const view: CatalogView = isCatalogView(viewParam) ? viewParam : 'product';
 
@@ -81,8 +82,8 @@ export default async function TechCatalogPage({
     body = (
       <>
         {/*
-          3축은 기술의 분류다. 제품은 3축으로 나뉘지 않고 산업별 보기에서는
-          산업군이 이미 분류 역할을 하므로, 이 블록은 기술별 보기에만 둔다.
+          기술 영역은 기술 자체의 분류다. 제품별·산업별 보기에서는 제품과
+          산업군이 이미 묶는 기준이므로, 이 블록은 기술 영역별 보기에만 둔다.
         */}
         <div className="mb-6">
           <DomainPillars
@@ -107,11 +108,17 @@ export default async function TechCatalogPage({
       listPublicOfferings('product'),
       listPublicOfferings('scenario'),
     ]);
-    countLabel = `제품 ${products.length} · 솔루션 구성 ${scenarios.length}`;
+    // 세는 대상은 기술이다. 이 화면이 소개하는 것은 제품이 아니라 기술이고,
+    // 제품 수를 세면 판매 카탈로그로 읽힌다. 여러 제품에 함께 들어가는
+    // 기술은 한 번만 센다.
+    const shown = new Set(
+      [...products, ...scenarios].flatMap((item) => item.steps.map((step) => step.tech.id)),
+    );
+    countLabel = `기술 ${shown.size}건 · 제품 ${products.length}개`;
 
     body =
       products.length === 0 && scenarios.length === 0 ? (
-        <Empty label="공개된 제품이 아직 없습니다." />
+        <Empty label="공개된 항목이 아직 없습니다." />
       ) : (
         <div>
           {products.map((item) => (
@@ -120,9 +127,9 @@ export default async function TechCatalogPage({
 
           {scenarios.length > 0 ? (
             <div className="mt-12 border-t border-ink-300 pt-10">
-              <h2 className="text-lg font-semibold text-ink-900">솔루션 구성</h2>
+              <h2 className="text-lg font-semibold text-ink-900">현장 구성</h2>
               <p className="mt-1 mb-2 text-sm text-ink-500">
-                한 현장에서 함께 쓰이는 기술 조합입니다.
+                아직 하나의 제품으로 묶이지 않았지만, 한 현장에서 함께 쓰이는 기술 조합입니다.
               </p>
               {scenarios.map((item) => (
                 <OfferingGroup key={item.offering.id} item={item} />
@@ -149,7 +156,8 @@ export default async function TechCatalogPage({
       // 항목이 하나도 없는 산업군은 감춘다 — 빈 칸이 늘어나면 목록이 못 미덥게 읽힌다.
       .filter((group) => group.products.length > 0 || group.techs.length > 0);
 
-    countLabel = `${groups.length}개 산업`;
+    const shown = new Set(groups.flatMap((group) => group.techs.map((tech) => tech.id)));
+    countLabel = `기술 ${shown.size}건 · ${groups.length}개 산업`;
 
     body =
       groups.length === 0 ? (
@@ -203,6 +211,15 @@ export default async function TechCatalogPage({
             <p className="numeric text-sm text-ink-500">{countLabel}</p>
           </div>
           {body}
+
+          {/*
+            건수 바로 아래에 둔다. 이 목록에 보이는 수가 연구소가 가진 기술의
+            전부로 읽히면 곤란하다 — 여기 올라오는 것은 대외 공개가 가능한
+            항목뿐이다.
+          */}
+          <p className="mt-10 border-t border-ink-200 pt-6 text-sm text-ink-500">
+            {BRAND.scopeNote}
+          </p>
         </section>
       </div>
     </>
