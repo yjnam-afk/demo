@@ -58,6 +58,39 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     });
   }
 
+  /**
+   * 지표 자체의 완결성.
+   *
+   * 지표는 없어도 되지만, 있다면 판정에 필요한 값이 모두 있어야 한다.
+   * 특히 direction 이 비면 달성 여부를 계산할 수 없다 — 이 검사가 없으면
+   * 방향을 고르지 않은 지표를 넣고도 화면이 "발행 가능"으로 보인다.
+   */
+  tech.metrics.forEach((metric, index) => {
+    const name = metric.label?.trim() ? `지표 "${metric.label.trim()}"` : `지표 ${index + 1}`;
+
+    if (!metric.label?.trim()) {
+      issues.push({
+        field: `metrics.${index}.label`,
+        label: `지표 ${index + 1} 지표명`,
+        message: '지표명을 입력해야 합니다.',
+      });
+    }
+    if (!metric.direction) {
+      issues.push({
+        field: `metrics.${index}.direction`,
+        label: `${name} 방향`,
+        message: '높을수록 좋음 / 낮을수록 좋음 중 하나를 골라야 달성 여부를 계산할 수 있습니다.',
+      });
+    }
+    if (!Number.isFinite(metric.target) || !Number.isFinite(metric.value)) {
+      issues.push({
+        field: `metrics.${index}.value`,
+        label: `${name} 목표·달성값`,
+        message: '목표값과 달성값은 숫자여야 합니다.',
+      });
+    }
+  });
+
   // 샘플 없이 발행하면 방문자에게 파일 업로드를 먼저 요구하게 되어 이탈한다.
   if (tech.demo.type === 'api' && tech.demo.samples.length === 0) {
     issues.push({
