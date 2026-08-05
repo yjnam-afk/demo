@@ -98,7 +98,7 @@ export function OfferingSection({
 
       {steps.length === 0 ? (
         <p className="mt-8 text-sm text-ink-400">
-          구성 기술은 정리되는 대로 공개합니다. 상세 자료는 문의 주시면 안내해 드립니다.
+          상세 구성과 도입 사례는 문의 주시면 보내드립니다.
         </p>
       ) : (
       <div className="mt-8">

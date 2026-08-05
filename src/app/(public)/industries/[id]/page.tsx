@@ -71,7 +71,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
               제품 <span className="numeric font-semibold text-white">{relatedProducts.length}</span>
             </span>
             <span className="text-ink-400">
-              시나리오{' '}
+              솔루션 구성{' '}
               <span className="numeric font-semibold text-white">{relatedScenarios.length}</span>
             </span>
             <span className="text-ink-400">
@@ -84,7 +84,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
       <div className="mx-auto max-w-6xl px-4">
         {empty ? (
           <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
-            이 산업군에 공개된 항목이 아직 없습니다.
+            이 산업에 공개된 항목이 아직 없습니다.
           </div>
         ) : null}
 
@@ -124,7 +124,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
 
         {relatedScenarios.length > 0 ? (
           <section className="border-t border-ink-200 py-14">
-            <h2 className="text-xl font-semibold tracking-tight text-ink-900">솔루션 시나리오</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink-900">솔루션 구성</h2>
             <div className="mt-6 flex flex-wrap gap-2">
               {relatedScenarios.map(({ offering }) => (
                 <Link
@@ -152,7 +152,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
 
         <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
           <p className="text-lg font-medium text-white">
-            {industry.label} 현장 조건을 알려주시면 구성을 제안해 드립니다
+            {industry.label} 현장에 맞는 구성을 제안해 드립니다
           </p>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
             {BRAND.contact.promise}

@@ -37,7 +37,7 @@ export default async function AdminTechListPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">기술 목록</h1>
+          <h1 className="text-xl font-semibold text-ink-900">기술</h1>
           <p className="mt-1 text-sm text-ink-500">
             전체 {rows.length}건 · 발행 {publishedCount}건
             {blockedCount > 0 ? ` · 발행 불가 ${blockedCount}건` : ''}

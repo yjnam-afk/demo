@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
+import { MainNav } from '@/components/site/MainNav';
 import { BRAND } from '@/lib/brand';
 
 function Header() {
@@ -20,36 +22,13 @@ function Header() {
         </Link>
 
         {/*
-          GNB 는 세 가지 보기 기준만 노출한다.
-          메뉴는 서로 다른 목록이 아니라 같은 카탈로그를 여는 각각의 입구이며,
-          어느 쪽으로 들어와도 화면 안에서 기준을 바꿀 수 있다.
-
-          솔루션 시나리오는 메뉴에 두지 않는다 — "시나리오"라는 말만으로는
-          무엇인지 알 수 없고, 제품별 보기 안에 이미 함께 나온다.
+          보기 기준 전환은 GNB 에서만 한다. 헤더가 고정되어 있어 본문 어디서든
+          닿으므로, 본문에 같은 전환 버튼을 두면 같은 일을 하는 조작이 둘이 된다.
+          useSearchParams 를 쓰므로 Suspense 로 감싼다.
         */}
-        <nav className="flex items-center gap-3 text-sm sm:gap-5">
-          <Link
-            href="/tech?view=product"
-            className="text-ink-300 transition-colors hover:text-white"
-          >
-            제품
-          </Link>
-          <Link href="/tech?view=tech" className="text-ink-300 transition-colors hover:text-white">
-            기술
-          </Link>
-          <Link
-            href="/tech?view=industry"
-            className="text-ink-300 transition-colors hover:text-white"
-          >
-            산업
-          </Link>
-          <Link
-            href="/#contact"
-            className="rounded bg-white px-3.5 py-1.5 font-medium text-ink-900 transition-colors hover:bg-ink-200"
-          >
-            {BRAND.contact.label}
-          </Link>
-        </nav>
+        <Suspense fallback={<div className="h-8" />}>
+          <MainNav />
+        </Suspense>
       </div>
     </header>
   );

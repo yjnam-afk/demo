@@ -125,7 +125,7 @@ export function SolutionForm({
           />
         </Field>
 
-        <Field label={isProduct ? '제품 id' : '시나리오 id'} required hint={existing ? '등록 후에는 바꿀 수 없습니다.' : '영문 소문자·숫자·하이픈'}>
+        <Field label={isProduct ? '제품 id' : '항목 id'} required hint={existing ? '등록 후에는 바꿀 수 없습니다.' : '영문 소문자·숫자·하이픈'}>
           <TextInput
             value={draft.id}
             disabled={Boolean(existing)}
@@ -134,7 +134,7 @@ export function SolutionForm({
           />
         </Field>
 
-        <Field label={isProduct ? '제품명' : '시나리오 제목'} required>
+        <Field label={isProduct ? '제품명' : '제목'} required>
           <TextInput
             value={draft.title}
             placeholder={isProduct ? 'HEIDI AI Guard' : '대규모 행사장 안전관리'}
@@ -220,7 +220,7 @@ export function SolutionForm({
       >
         {hiddenWarning ? (
           <p className="rounded border border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)] px-3 py-2 text-sm text-[var(--color-signal-warn)]">
-            구성 기술이 모두 비공개입니다. 이대로 발행하면 공개 화면에서 이 시나리오가 보이지 않습니다.
+            구성 기술이 모두 비공개입니다. 이대로 발행하면 공개 화면에서 이 항목이 공개 화면에서 보이지 않습니다.
           </p>
         ) : null}
 

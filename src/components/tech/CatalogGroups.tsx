@@ -61,7 +61,7 @@ export function OfferingGroup({ item }: { item: ResolvedOffering }) {
       ) : null}
 
       {steps.length === 0 ? (
-        <p className="mt-6 text-sm text-ink-400">구성 기술은 정리되는 대로 공개합니다.</p>
+        <p className="mt-6 text-sm text-ink-400">상세 구성은 문의 주시면 안내해 드립니다.</p>
       ) : (
         <div className="mt-6 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {steps.map(({ role, tech }) => (

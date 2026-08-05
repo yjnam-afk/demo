@@ -32,7 +32,7 @@ export default async function AdminSolutionListPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">제품 · 솔루션 시나리오</h1>
+          <h1 className="text-xl font-semibold text-ink-900">제품 · 구성 제안</h1>
           <p className="mt-1 text-sm text-ink-500">
             제품 {rows.filter((row) => row.kind === 'product').length}건 · 시나리오{' '}
             {rows.filter((row) => row.kind === 'scenario').length}건 · 발행{' '}

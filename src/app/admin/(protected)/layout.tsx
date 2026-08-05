@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { LogoutButton } from '@/components/admin/LogoutButton';
+import { AdminNav } from '@/components/admin/AdminNav';
 import { isAuthenticated } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -20,25 +19,7 @@ export default async function ProtectedAdminLayout({
 
   return (
     <>
-      <div className="border-b border-ink-300 bg-white">
-        <div className="mx-auto flex h-11 max-w-6xl items-center justify-between px-4">
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/admin" className="text-ink-600 hover:text-ink-900">
-              기술 목록
-            </Link>
-            <Link href="/admin/tech/new" className="text-ink-600 hover:text-ink-900">
-              기술 등록
-            </Link>
-            <Link href="/admin/solutions" className="text-ink-600 hover:text-ink-900">
-              솔루션 시나리오
-            </Link>
-            <Link href="/" className="text-ink-400 hover:text-ink-900">
-              공개 사이트 보기 ↗
-            </Link>
-          </nav>
-          <LogoutButton />
-        </div>
-      </div>
+      <AdminNav />
       {children}
     </>
   );

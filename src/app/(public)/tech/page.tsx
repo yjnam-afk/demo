@@ -3,11 +3,11 @@ import { CatalogFilters } from '@/components/tech/CatalogFilters';
 import { IndustryGroup, OfferingGroup } from '@/components/tech/CatalogGroups';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
-  VIEW_LABELS,
-  ViewSwitcher,
+  VIEW_HINTS,
+  VIEW_TITLES,
   isCatalogView,
   type CatalogView,
-} from '@/components/tech/ViewSwitcher';
+} from '@/components/tech/catalogView';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { TrustBar } from '@/components/site/TrustBar';
 import { BRAND, DOMAIN_NARRATIVE } from '@/lib/brand';
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 function Empty({ label }: { label: string }) {
   return (
     <div className="rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
-      {label} 보기에 표시할 항목이 없습니다.
+      {label}
     </div>
   );
 }
@@ -70,10 +70,20 @@ export default async function TechCatalogPage({
    * 의심하게 된다.
    */
   let body: React.ReactNode;
+  // 보기마다 세는 대상이 다르다. 제품별 보기에서 "기술 N건"은 무엇을 센 것인지 모른다.
+  let countLabel: string;
 
   if (view === 'tech') {
+    countLabel = `${page.total}건`;
     body = (
       <>
+        {/*
+          3축은 기술의 분류다. 제품은 3축으로 나뉘지 않고 산업별 보기에서는
+          산업군이 이미 분류 역할을 하므로, 이 블록은 기술별 보기에만 둔다.
+        */}
+        <div className="mb-6">
+          <DomainPillars counts={summary.domainCounts} selected={selectedDomain} />
+        </div>
         <CatalogFilters facets={facets} params={params} />
         <div className="mt-6">
           <TechGrid
@@ -90,10 +100,11 @@ export default async function TechCatalogPage({
       listPublicOfferings('product'),
       listPublicOfferings('scenario'),
     ]);
+    countLabel = `제품 ${products.length} · 솔루션 구성 ${scenarios.length}`;
 
     body =
       products.length === 0 && scenarios.length === 0 ? (
-        <Empty label={VIEW_LABELS.product} />
+        <Empty label="공개된 제품이 아직 없습니다." />
       ) : (
         <div>
           {products.map((item) => (
@@ -102,10 +113,9 @@ export default async function TechCatalogPage({
 
           {scenarios.length > 0 ? (
             <div className="mt-12 border-t border-ink-300 pt-10">
-              <h2 className="text-lg font-semibold text-ink-900">기술을 묶은 구성 제안</h2>
+              <h2 className="text-lg font-semibold text-ink-900">솔루션 구성</h2>
               <p className="mt-1 mb-2 text-sm text-ink-500">
-                아직 하나의 제품으로 묶이지 않았지만, 기술 몇 개를 조합하면 바로 현장에
-                적용할 수 있는 구성입니다.
+                한 현장에서 함께 쓰이는 기술 조합입니다.
               </p>
               {scenarios.map((item) => (
                 <OfferingGroup key={item.offering.id} item={item} />
@@ -132,9 +142,11 @@ export default async function TechCatalogPage({
       // 항목이 하나도 없는 산업군은 감춘다 — 빈 칸이 늘어나면 목록이 못 미덥게 읽힌다.
       .filter((group) => group.products.length > 0 || group.techs.length > 0);
 
+    countLabel = `${groups.length}개 산업`;
+
     body =
       groups.length === 0 ? (
-        <Empty label={VIEW_LABELS.industry} />
+        <Empty label="공개된 항목이 아직 없습니다." />
       ) : (
         <div>
           {groups.map((group) => (
@@ -172,14 +184,16 @@ export default async function TechCatalogPage({
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        <section className="-mt-8 pb-12">
-          <DomainPillars counts={summary.domainCounts} selected={selectedDomain} />
-        </section>
-
-        <section className="pb-20">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <ViewSwitcher current={view} params={params} />
-            <p className="numeric text-sm text-ink-500">기술 {page.total}건</p>
+        <section className="pt-12 pb-20">
+          {/* 전환은 GNB 가 맡는다. 여기서는 지금 무엇을 보고 있는지만 밝힌다. */}
+          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-ink-900">
+                {VIEW_TITLES[view]}
+              </h2>
+              <p className="mt-1 text-sm text-ink-500">{VIEW_HINTS[view]}</p>
+            </div>
+            <p className="numeric text-sm text-ink-500">{countLabel}</p>
           </div>
           {body}
         </section>

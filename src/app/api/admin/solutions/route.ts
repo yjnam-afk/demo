@@ -11,7 +11,7 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** 시나리오 등록·수정 */
+/** 새 항목 등록·수정 */
 export async function POST(request: Request) {
   const denied = await requireAdminApi();
   if (denied) return denied;

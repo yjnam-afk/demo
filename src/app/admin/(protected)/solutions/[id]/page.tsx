@@ -34,15 +34,19 @@ export default async function AdminSolutionFormPage({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-ink-900">
-            {existing ? existing.title : '시나리오 등록'}
+            {existing ? existing.title : '제품 · 구성 제안 등록'}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            기술을 묶어 하나의 사업 제안으로 만드는 화면입니다. 제품과 시나리오를 함께 관리합니다.
+            기술을 묶어 하나의 사업 제안으로 만드는 화면입니다. 제품과 구성 제안을 함께 관리합니다.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
           {existing?.status === 'published' ? (
-            <Link href="/solutions" target="_blank" className="text-ink-500 hover:text-ink-900">
+            <Link
+              href={existing.kind === 'product' ? `/products/${existing.id}` : '/solutions'}
+              target="_blank"
+              className="text-ink-500 hover:text-ink-900"
+            >
               공개 화면 보기 ↗
             </Link>
           ) : null}
