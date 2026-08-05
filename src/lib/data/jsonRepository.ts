@@ -34,12 +34,35 @@ async function readJson<T>(file: string, fallback: T): Promise<T> {
   }
 }
 
+/**
+ * 저장소가 읽기 전용일 때 나는 오류.
+ *
+ * 서버리스 환경(Vercel 등)은 배포 산출물이 읽기 전용이라 파일 기반 저장이
+ * 통하지 않는다. 원인 모를 500 대신 무엇이 문제인지 알려 준다.
+ */
+export class ReadOnlyStoreError extends Error {
+  constructor() {
+    super(
+      '이 환경에서는 데이터를 저장할 수 없습니다. 파일 기반 저장소는 쓰기 가능한 디스크가 필요합니다 — 사내 서버 배포에서 사용하거나 DB 저장소로 전환하세요.',
+    );
+    this.name = 'ReadOnlyStoreError';
+  }
+}
+
 /** 임시 파일에 쓰고 rename 으로 교체한다. 쓰기 도중 중단되어도 원본이 깨지지 않는다. */
 async function writeJson(file: string, data: unknown): Promise<void> {
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
-  await fs.writeFile(tmp, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
-  await fs.rename(tmp, file);
+  try {
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    const tmp = `${file}.tmp`;
+    await fs.writeFile(tmp, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+    await fs.rename(tmp, file);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'EROFS' || code === 'EACCES' || code === 'EPERM') {
+      throw new ReadOnlyStoreError();
+    }
+    throw err;
+  }
 }
 
 function normalize(s: string): string {

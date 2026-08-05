@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
+import { ReadOnlyStoreError } from '@/lib/data/jsonRepository';
 import { requireAdminApi } from '@/lib/auth/guard';
 import { InvalidInputError, parseTechInput } from '@/lib/domain/parse';
 import { validateForPublish } from '@/lib/domain/validate';
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
   } catch (err) {
     if (err instanceof InvalidInputError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+    if (err instanceof ReadOnlyStoreError) {
+      return NextResponse.json({ error: err.message }, { status: 503 });
     }
     console.error('[admin] 기술 저장 실패', err);
     return NextResponse.json({ error: '저장하지 못했습니다.' }, { status: 500 });

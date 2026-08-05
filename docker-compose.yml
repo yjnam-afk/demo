@@ -1,0 +1,20 @@
+services:
+  portal:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      # 운영 배포 전 반드시 교체할 것: openssl rand -base64 32
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET 을 설정해야 합니다}
+      ADMIN_USER: ${ADMIN_USER:?ADMIN_USER 를 설정해야 합니다}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD 를 설정해야 합니다}
+    volumes:
+      # 관리자가 등록·수정한 내용이 컨테이너 재생성 후에도 남도록 밖으로 뺀다.
+      # 이 두 줄이 없으면 이미지를 다시 올릴 때마다 등록한 기술이 사라진다.
+      - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
+    restart: unless-stopped
+    # 내부망의 모델 서버에 닿아야 하므로 호스트의 네트워크 경로를 그대로 쓴다.
+    # 사내 대역이 분리되어 있으면 network_mode: host 로 바꾼다.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
