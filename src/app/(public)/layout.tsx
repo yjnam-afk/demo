@@ -19,10 +19,12 @@ function Header() {
           <span className="hidden text-sm text-ink-400 sm:inline">{BRAND.productName}</span>
         </Link>
 
-        {/* 솔루션(5단계) 링크는 해당 화면이 붙을 때 이 자리에 추가한다. */}
-        <nav className="flex items-center gap-6 text-sm">
+        <nav className="flex items-center gap-4 text-sm sm:gap-6">
           <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
             기술 카탈로그
+          </Link>
+          <Link href="/solutions" className="text-ink-300 transition-colors hover:text-white">
+            솔루션
           </Link>
           <Link
             href="/#contact"

@@ -29,6 +29,9 @@ export default async function ProtectedAdminLayout({
             <Link href="/admin/tech/new" className="text-ink-600 hover:text-ink-900">
               기술 등록
             </Link>
+            <Link href="/admin/solutions" className="text-ink-600 hover:text-ink-900">
+              솔루션 시나리오
+            </Link>
             <Link href="/" className="text-ink-400 hover:text-ink-900">
               공개 사이트 보기 ↗
             </Link>

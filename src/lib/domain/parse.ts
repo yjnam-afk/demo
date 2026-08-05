@@ -9,7 +9,7 @@ import {
   VERIFICATION_LEVELS,
   isOneOf,
 } from './enums';
-import type { Demo, DemoSample, Metric, Resource, Tech } from './types';
+import type { Demo, DemoSample, Metric, Resource, Solution, SolutionStep, Tech } from './types';
 
 export class InvalidInputError extends Error {
   constructor(message: string) {
@@ -212,4 +212,61 @@ export function parseTechInput(input: unknown, existing?: Tech | null): Tech {
     created_at: existing?.created_at ?? now,
     updated_at: now,
   };
+}
+
+function parseSteps(value: unknown): SolutionStep[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      const raw = asRecord(item, '구성 기술');
+      return { tech_id: str(raw.tech_id), role: str(raw.role) };
+    })
+    .filter((step) => step.tech_id);
+}
+
+/**
+ * 관리자 입력 → Solution.
+ *
+ * 구성 기술은 id 로만 참조한다. 기술 정보를 복사해 두면 기술을 수정했을 때
+ * 시나리오에는 옛 값이 남아 두 화면이 서로 다른 말을 하게 된다.
+ */
+export function parseSolutionInput(input: unknown, existing?: Solution | null): Solution {
+  const raw = asRecord(input, '솔루션 정보');
+
+  const title = str(raw.title);
+  if (!title) throw new InvalidInputError('시나리오 제목은 필수입니다.');
+
+  const now = new Date().toISOString();
+
+  return {
+    id: parseId(raw.id),
+    title,
+    summary: str(raw.summary),
+    problem: str(raw.problem),
+    industries: strList(raw.industries),
+    steps: parseSteps(raw.steps),
+    status: pick(STATUSES, raw.status, '상태'),
+    order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
+    created_at: existing?.created_at ?? now,
+    updated_at: now,
+  };
+}
+
+export interface SolutionIssue {
+  label: string;
+}
+
+/**
+ * 시나리오 발행 조건.
+ * 문제 서술과 구성 기술이 없으면 "기술 나열"과 다를 바 없어 영업에 쓸 수 없다.
+ */
+export function validateSolutionForPublish(solution: Solution): SolutionIssue[] {
+  const issues: SolutionIssue[] = [];
+  if (!solution.problem.trim()) issues.push({ label: '해결하는 문제' });
+  if (solution.industries.length === 0) issues.push({ label: '대상 산업' });
+  if (solution.steps.length < 2) issues.push({ label: '구성 기술 2개 이상' });
+  if (solution.steps.some((step) => !step.role.trim())) {
+    issues.push({ label: '구성 기술의 역할 설명' });
+  }
+  return issues;
 }
