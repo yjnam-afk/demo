@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 export interface SolutionRow {
   id: string;
+  kind: 'product' | 'scenario';
   title: string;
   status: 'draft' | 'published';
   stepCount: number;
@@ -21,7 +22,7 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
   const [error, setError] = useState<string | null>(null);
 
   async function remove(row: SolutionRow) {
-    if (!confirm(`"${row.title}" 시나리오를 삭제할까요?`)) return;
+    if (!confirm(`"${row.title}" 항목을 삭제할까요?`)) return;
 
     setBusy(true);
     setError(null);
@@ -41,7 +42,7 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
-        등록된 시나리오가 없습니다.
+        등록된 제품·시나리오가 없습니다.
       </div>
     );
   }
@@ -58,7 +59,7 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-ink-200 text-left text-xs tracking-wide text-ink-500 uppercase">
-              <th className="px-3 py-2 font-medium">시나리오</th>
+              <th className="px-3 py-2 font-medium">항목</th>
               <th className="px-3 py-2 font-medium">구성 기술</th>
               <th className="px-3 py-2 font-medium">상태</th>
               <th className="px-3 py-2 font-medium">점검</th>
@@ -75,7 +76,18 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
                   >
                     {row.title}
                   </Link>
-                  <div className="mt-0.5 text-xs text-ink-500">{row.industries.join(', ')}</div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
+                    <span
+                      className={
+                        row.kind === 'product'
+                          ? 'rounded bg-[var(--color-domain-ai-soft)] px-1.5 py-0.5 font-medium text-[var(--color-domain-ai)]'
+                          : 'rounded bg-ink-100 px-1.5 py-0.5 text-ink-600'
+                      }
+                    >
+                      {row.kind === 'product' ? '제품' : '시나리오'}
+                    </span>
+                    <span className="text-ink-500">{row.industries.join(', ')}</span>
+                  </div>
                   <div className="numeric mt-0.5 text-xs text-ink-400">{row.id}</div>
                 </td>
 

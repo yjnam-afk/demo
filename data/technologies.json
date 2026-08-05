@@ -6,8 +6,8 @@
     "domain": "ai",
     "category": "이상행동인지",
     "industries": [
-      "보안",
-      "공공"
+      "public",
+      "safety_security"
     ],
     "summary": "통제선을 넘어 출입 불가 지역에 진입하는 인원을 실시간 탐지",
     "team": "요소기술연구팀",
@@ -111,8 +111,8 @@
     "domain": "ai",
     "category": "영상인식",
     "industries": [
-      "공공",
-      "교통"
+      "public",
+      "smart_city"
     ],
     "summary": "밀집 구역의 인원 수와 밀도를 추정해 압사 위험 수준을 사전 경보",
     "team": "요소기술연구팀",
@@ -191,8 +191,7 @@
     "domain": "digital_twin",
     "category": "3D 시각화",
     "industries": [
-      "제조",
-      "에너지"
+      "energy_plant"
     ],
     "summary": "설비 3D 모델에 실시간 센서 값을 결합해 현장 상태를 원격에서 확인",
     "team": "공간정보연구팀",
@@ -262,8 +261,8 @@
     "domain": "spatial",
     "category": "재해 분석",
     "industries": [
-      "공공",
-      "건설"
+      "public",
+      "smart_city"
     ],
     "summary": "강우 시나리오별 도심 침수 범위와 깊이를 지형·배수 데이터 기반으로 예측",
     "team": "공간정보연구팀",
@@ -341,7 +340,7 @@
     "domain": "ai",
     "category": "생성모델",
     "industries": [
-      "국방"
+      "defense"
     ],
     "summary": "저품질 3D 모델을 실사 수준 렌더링으로 변환 (내부 과제 — 외부 비공개)",
     "team": "요소기술연구팀",

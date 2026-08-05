@@ -52,10 +52,13 @@ function DefinitionRow({ label, children }: { label: string; children: React.Rea
 export function TechDetail({
   tech,
   related,
+  usedIn = [],
 }: {
   tech: PublicTech;
   /** 함께 쓰는 기술 — 외부 공개 대상만 넘어온다. */
   related: PublicTech[];
+  /** 이 기술을 구성으로 쓰는 제품 — 제품 데이터에서 역으로 조회한 결과다. */
+  usedIn?: { id: string; title: string; name_en?: string }[];
 }) {
   const style = DOMAIN_STYLES[tech.domain];
   const business = tech.business;
@@ -134,6 +137,31 @@ export function TechDetail({
             </div>
           ) : null}
         </section>
+
+        {/* 이 기술이 들어간 제품 — 기술을 보러 온 방문자를 구매 단위로 안내한다 */}
+        {usedIn.length > 0 ? (
+          <section className="rounded-lg border border-ink-200 bg-white p-5">
+            <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+              이 기술이 들어간 제품
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {usedIn.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="rounded border border-ink-300 px-3 py-2 text-sm font-medium text-ink-800 hover:border-ink-500"
+                >
+                  {product.title}
+                  {product.name_en && product.name_en !== product.title ? (
+                    <span className="ml-1.5 text-xs font-normal text-ink-400">
+                      {product.name_en}
+                    </span>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {/* 3. 데모 슬롯 */}
         <Section title="데모">

@@ -19,12 +19,16 @@ function Header() {
           <span className="hidden text-sm text-ink-400 sm:inline">{BRAND.productName}</span>
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm sm:gap-6">
-          <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
-            기술 카탈로그
+        {/* 제품을 먼저 둔다 — 방문자는 기술이 아니라 살 수 있는 단위를 찾는다 */}
+        <nav className="flex items-center gap-3 text-sm sm:gap-5">
+          <Link href="/products" className="text-ink-300 transition-colors hover:text-white">
+            제품
           </Link>
-          <Link href="/solutions" className="text-ink-300 transition-colors hover:text-white">
-            솔루션
+          <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
+            기술
+          </Link>
+          <Link href="/solutions" className="hidden text-ink-300 transition-colors hover:text-white sm:inline">
+            시나리오
           </Link>
           <Link
             href="/#contact"

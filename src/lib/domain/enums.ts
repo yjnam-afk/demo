@@ -87,3 +87,36 @@ export const STATUS_LABELS: Record<Status, string> = {
 export function isOneOf<T extends string>(list: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (list as readonly string[]).includes(value);
 }
+
+/**
+ * 묶음(Offering)의 종류.
+ *
+ * product 는 실제로 파는 단위이고 scenario 는 아직 제품화되지 않은 제안형 조합이다.
+ * 둘은 화면에서 다르게 읽혀야 하지만 구조가 같아(구성 기술 + 역할) 한 타입으로 둔다.
+ */
+export const OFFERING_KINDS = ['product', 'scenario'] as const;
+export type OfferingKind = (typeof OFFERING_KINDS)[number];
+
+export const OFFERING_KIND_LABELS: Record<OfferingKind, string> = {
+  product: '제품',
+  scenario: '솔루션 시나리오',
+};
+
+/** 제품 배포 형태 */
+export const DEPLOYMENTS = ['on_premise', 'saas'] as const;
+export type Deployment = (typeof DEPLOYMENTS)[number];
+
+export const DEPLOYMENT_LABELS: Record<Deployment, string> = {
+  on_premise: '온프레미스',
+  saas: 'SaaS',
+};
+
+/** 제품 출시 단계 */
+export const RELEASE_STAGES = ['ga', 'beta', 'planned'] as const;
+export type ReleaseStage = (typeof RELEASE_STAGES)[number];
+
+export const RELEASE_STAGE_LABELS: Record<ReleaseStage, string> = {
+  ga: '정식 출시',
+  beta: '베타',
+  planned: '개발 중',
+};

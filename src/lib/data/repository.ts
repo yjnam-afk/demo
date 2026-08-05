@@ -1,5 +1,5 @@
-import type { CategoryStore, Health, Solution, Tech } from '@/lib/domain/types';
-import type { Domain, VerificationLevel } from '@/lib/domain/enums';
+import type { CategoryStore, Health, Industry, Solution, Tech } from '@/lib/domain/types';
+import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
 
 export interface TechQuery {
   domain?: Domain;
@@ -69,13 +69,17 @@ export interface TechRepository {
     domains: { value: Domain; count: number }[];
     categories: { value: string; domain: Domain; count: number }[];
     verification: { value: VerificationLevel; count: number }[];
-    industries: { value: string; count: number }[];
+    industries: { value: string; label: string; count: number }[];
   }>;
 
   listCategories(): Promise<CategoryStore>;
   addCategory(domain: Domain, name: string): Promise<CategoryStore>;
 
-  listSolutions(opts?: { publishedOnly?: boolean }): Promise<Solution[]>;
+  /** 산업군 마스터. 관리자 입력을 이 목록으로 제한한다. */
+  listIndustries(): Promise<Industry[]>;
+  addIndustry(label: string, description?: string): Promise<Industry[]>;
+
+  listSolutions(opts?: { publishedOnly?: boolean; kind?: OfferingKind }): Promise<Solution[]>;
   getSolution(id: string): Promise<Solution | null>;
   upsertSolution(solution: Solution): Promise<Solution>;
   removeSolution(id: string): Promise<void>;

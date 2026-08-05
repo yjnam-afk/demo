@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Field, Row, Section, Select, TagList, TextArea, TextInput } from './fields';
 import { MediaUpload } from './MediaUpload';
+import { IndustryPicker } from './IndustryPicker';
 import {
   DEMO_TYPES,
   DEMO_TYPE_LABELS,
@@ -23,7 +24,7 @@ import {
   type MetricDirection,
 } from '@/lib/domain/enums';
 import { validateForPublish } from '@/lib/domain/validate';
-import type { CategoryStore, Tech } from '@/lib/domain/types';
+import type { CategoryStore, Industry, Tech } from '@/lib/domain/types';
 
 /** 방향은 기본값을 두지 않는다 — 관리자가 반드시 고르게 하려면 빈 값에서 출발해야 한다. */
 type MetricDraft = {
@@ -112,15 +113,18 @@ function toTech(draft: Draft): Tech {
 export function TechForm({
   existing,
   categories: initialCategories,
+  industries: initialIndustries,
   otherTechs,
 }: {
   existing: Tech | null;
   categories: CategoryStore;
+  industries: Industry[];
   otherTechs: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(existing ? toDraft(existing) : blank());
   const [categories, setCategories] = useState(initialCategories);
+  const [industries, setIndustries] = useState(initialIndustries);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -626,11 +630,15 @@ export function TechForm({
           )}
         </Field>
 
-        <Field label="산업 태그" hint="카탈로그 필터에 쓰입니다.">
-          <TagList
-            values={draft.industries}
-            placeholder="보안"
-            onChange={(industries) => set({ industries })}
+        <Field
+          label="산업군"
+          hint="카탈로그 필터와 산업별 화면에 쓰입니다. 목록에서만 고를 수 있습니다."
+        >
+          <IndustryPicker
+            industries={industries}
+            selected={draft.industries}
+            onChange={(next) => set({ industries: next })}
+            onAdded={setIndustries}
           />
         </Field>
       </Section>

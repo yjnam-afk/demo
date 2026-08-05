@@ -8,7 +8,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminSolutionListPage() {
   const repo = getRepo();
-  const [solutions, techs] = await Promise.all([repo.listSolutions(), repo.listAll()]);
+  const [solutions, techs, industries] = await Promise.all([
+    repo.listSolutions(),
+    repo.listAll(),
+    repo.listIndustries(),
+  ]);
+  const industryLabels = new Map(industries.map((i) => [i.id, i.label]));
 
   const externalIds = new Set(techs.items.filter(isExternallyVisible).map((tech) => tech.id));
 
@@ -18,7 +23,8 @@ export default async function AdminSolutionListPage() {
     status: solution.status,
     stepCount: solution.steps.length,
     visibleStepCount: solution.steps.filter((step) => externalIds.has(step.tech_id)).length,
-    industries: solution.industries,
+    kind: solution.kind,
+    industries: solution.industries.map((id) => industryLabels.get(id) ?? id),
     publishIssues: validateSolutionForPublish(solution).map((issue) => issue.label),
   }));
 
@@ -26,16 +32,18 @@ export default async function AdminSolutionListPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">솔루션 시나리오</h1>
+          <h1 className="text-xl font-semibold text-ink-900">제품 · 솔루션 시나리오</h1>
           <p className="mt-1 text-sm text-ink-500">
-            전체 {rows.length}건 · 발행 {rows.filter((row) => row.status === 'published').length}건
+            제품 {rows.filter((row) => row.kind === 'product').length}건 · 시나리오{' '}
+            {rows.filter((row) => row.kind === 'scenario').length}건 · 발행{' '}
+            {rows.filter((row) => row.status === 'published').length}건
           </p>
         </div>
         <Link
           href="/admin/solutions/new"
           className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900"
         >
-          시나리오 등록
+          새로 등록
         </Link>
       </div>
 

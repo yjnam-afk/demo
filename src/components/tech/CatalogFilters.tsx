@@ -14,7 +14,7 @@ export interface Facets {
   domains: { value: Domain; count: number }[];
   categories: { value: string; domain: Domain; count: number }[];
   verification: { value: VerificationLevel; count: number }[];
-  industries: { value: string; count: number }[];
+  industries: { value: string; label: string; count: number }[];
 }
 
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
@@ -59,9 +59,10 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
     active: isActive(params, 'verification', value),
   }));
 
-  const industryChips: ChipItem[] = facets.industries.map(({ value, count }) => ({
+  // 값은 산업군 id, 표시는 라벨. 둘을 섞으면 칩에 raw id 가 그대로 보인다.
+  const industryChips: ChipItem[] = facets.industries.map(({ value, label, count }) => ({
     key: value,
-    label: value,
+    label,
     count,
     href: toggledHref(params, 'industry', value),
     active: isActive(params, 'industry', value),
@@ -122,7 +123,7 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
         ) : null}
 
         {industryChips.length > 0 ? (
-          <Group label="적용 산업">
+          <Group label="산업군">
             <ExpandableChips items={industryChips} />
           </Group>
         ) : null}

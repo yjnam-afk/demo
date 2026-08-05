@@ -6,7 +6,8 @@ import { TrustBar } from '@/components/site/TrustBar';
 import { TechCard } from '@/components/tech/TechCard';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
-import { toPublicTech } from '@/lib/domain/publicView';
+import { listPublicOfferings } from '@/lib/data/offerings';
+import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
 
 /**
  * 저장소를 매 요청 읽는다.
@@ -21,12 +22,15 @@ const FEATURED_COUNT = 4;
 
 export default async function HomePage() {
   const repo = getRepo();
-  const [page, summary] = await Promise.all([
+  const [page, summary, industries, products] = await Promise.all([
     repo.listPublic({ limit: LANDING_POOL }),
     repo.publicSummary(),
+    repo.listIndustries(),
+    listPublicOfferings('product'),
   ]);
 
-  const techs = page.items.map(toPublicTech);
+  const labels = industryLabelMap(industries);
+  const techs = page.items.map((tech) => toPublicTech(tech, labels));
 
   // 대표 데모는 순서가 가장 앞선 기술 중 재생할 영상이 있는 것으로 고른다.
   // 특정 기술 id 를 박아 두면 관리자가 순서를 바꿔도 히어로가 따라오지 않는다.
@@ -48,7 +52,63 @@ export default async function HomePage() {
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        <section className="py-16">
+        {/*
+          제품이 기술보다 먼저 온다.
+          방문자는 사업 의사결정자이므로 "무엇을 살 수 있나"를 먼저 보고,
+          그 근거로 "어떤 기술로 만들었나"를 확인한다.
+        */}
+        {products.length > 0 ? (
+          <section className="py-16">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-ink-900">제품</h2>
+                <p className="mt-2 text-sm text-ink-500">현장에 바로 적용할 수 있는 단위입니다.</p>
+              </div>
+              <Link href="/products" className="text-sm text-ink-600 hover:text-ink-900">
+                제품 전체 보기 →
+              </Link>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {products.slice(0, 4).map(({ offering, steps }) => (
+                <Link
+                  key={offering.id}
+                  href={`/products/${offering.id}`}
+                  className="flex flex-col rounded-lg border border-ink-200 bg-white p-5 transition-colors hover:border-ink-400"
+                >
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <h3 className="text-lg font-semibold text-ink-900">{offering.title}</h3>
+                    {offering.name_en && offering.name_en !== offering.title ? (
+                      <span className="text-xs text-ink-400">{offering.name_en}</span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
+                    {offering.problem}
+                  </p>
+                  <p className="mt-4 text-xs text-ink-500">구성 기술 {steps.length}개</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* 산업별 입구 — 새 데이터가 아니라 기존 태그를 뒤집어 보여주는 화면이다 */}
+        <section className="border-t border-ink-200 py-14">
+          <h2 className="text-xl font-semibold tracking-tight text-ink-900">산업별로 찾기</h2>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {industries.map((industry) => (
+              <Link
+                key={industry.id}
+                href={`/industries/${industry.id}`}
+                className="rounded border border-ink-300 bg-white px-4 py-2 text-sm text-ink-700 hover:border-ink-500"
+              >
+                {industry.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t border-ink-200 py-16">
           <h2 className="text-2xl font-semibold tracking-tight text-ink-900">기술 영역</h2>
           <p className="mt-2 text-sm text-ink-500">
             세 축의 기술을 조합해 현장의 문제를 해결합니다.

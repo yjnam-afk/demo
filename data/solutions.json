@@ -1,10 +1,117 @@
 [
   {
+    "id": "heidi-ai-guard",
+    "kind": "product",
+    "title": "HEIDI AI Guard",
+    "name_en": "HEIDI AI Guard",
+    "summary": "군중 밀집도·침입·화재를 실시간 분석해 위험을 사전에 알립니다.",
+    "problem": "관제 인력이 다수 CCTV를 동시에 감시할 수 없어, 위험이 실제 사고로 번진 뒤에야 상황을 인지합니다.",
+    "industries": [
+      "safety_security",
+      "public",
+      "smart_city"
+    ],
+    "steps": [
+      {
+        "tech_id": "crowd-counting",
+        "role": "구역별 인원과 밀도를 실시간 추정해 압사 위험을 사전 경보합니다."
+      },
+      {
+        "tech_id": "intrusion-detection",
+        "role": "통제구역에 진입하는 인원을 즉시 탐지해 알립니다."
+      }
+    ],
+    "deployment": [
+      "on_premise"
+    ],
+    "release": "ga",
+    "media": {
+      "thumbnail": "/thumbnails/intrusion-detection.jpg",
+      "loop": "/videos/intrusion-detection.loop.mp4",
+      "loop_webm": "/videos/intrusion-detection.loop.webm"
+    },
+    "status": "published",
+    "order": 0,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "ai-studio",
+    "kind": "product",
+    "title": "AI-STUDIO",
+    "name_en": "AI-STUDIO",
+    "summary": "AI 개발에 필요한 데이터 수집·가공·학습·배포를 하나의 플랫폼에서 처리합니다.",
+    "problem": "AI 모델 개발 과정이 도구별로 흩어져 있어 데이터 이관과 재작업에 시간이 소모됩니다.",
+    "industries": [
+      "autonomous",
+      "defense"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise",
+      "saas"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "draft",
+    "order": 1,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "heidi-ai-private",
+    "kind": "product",
+    "title": "HEIDI AI Private",
+    "name_en": "HEIDI AI Private",
+    "summary": "영상·이미지의 개인정보를 자동으로 비식별화합니다.",
+    "problem": "영상 데이터를 활용하려면 개인정보 규제를 통과해야 하는데, 수작업 비식별화는 물량을 감당할 수 없습니다.",
+    "industries": [
+      "autonomous",
+      "public"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise",
+      "saas"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "draft",
+    "order": 2,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
+    "id": "heidi-ai-max",
+    "kind": "product",
+    "title": "HEIDI AI MAX",
+    "name_en": "HEIDI AI MAX",
+    "summary": "대용량 영상에서 원하는 장면을 검색하고 이상행동을 모니터링합니다.",
+    "problem": "사건 발생 후 관련 장면을 찾기 위해 녹화 영상을 사람이 되돌려 보는 데 시간이 걸립니다.",
+    "industries": [
+      "safety_security",
+      "defense"
+    ],
+    "steps": [],
+    "deployment": [
+      "on_premise"
+    ],
+    "release": "ga",
+    "media": {},
+    "status": "draft",
+    "order": 3,
+    "created_at": "2026-08-05T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z"
+  },
+  {
     "id": "event-safety",
     "title": "대규모 행사장 안전관리",
     "summary": "인파 밀집과 통제구역 진입을 한 화면에서 감시해 사고 이전에 개입합니다.",
     "problem": "관제 요원이 인파 밀집도와 통제선을 동시에 볼 수 없어, 위험이 누적된 뒤에야 상황을 인지합니다.",
-    "industries": ["지자체", "대규모 행사", "철도·지하철"],
+    "industries": [
+      "public",
+      "smart_city"
+    ],
     "steps": [
       {
         "tech_id": "crowd-counting",
@@ -16,16 +123,19 @@
       }
     ],
     "status": "published",
-    "order": 0,
+    "order": 10,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z"
+    "updated_at": "2026-08-01T00:00:00.000Z",
+    "kind": "scenario"
   },
   {
     "id": "industrial-site-control",
     "title": "산업단지 통합 관제",
     "summary": "설비 상태와 외곽 경계를 하나의 관제 화면으로 묶어 순회 인력을 줄입니다.",
     "problem": "설비 점검과 보안 감시가 분리되어 있어 순회 인력이 이중으로 들고, 야간·주말에는 대응 공백이 생깁니다.",
-    "industries": ["석유화학", "발전소", "제조"],
+    "industries": [
+      "energy_plant"
+    ],
     "steps": [
       {
         "tech_id": "digital-twin-plant",
@@ -37,16 +147,20 @@
       }
     ],
     "status": "published",
-    "order": 1,
+    "order": 11,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z"
+    "updated_at": "2026-08-01T00:00:00.000Z",
+    "kind": "scenario"
   },
   {
     "id": "urban-disaster-response",
     "title": "도시 재해 대응",
     "summary": "침수 위험 구간을 미리 특정하고, 상황 발생 시 대피 동선의 병목을 확인합니다.",
     "problem": "침수 취약 구간과 대피 동선을 따로 관리해, 실제 상황에서 어디부터 통제해야 할지 판단이 늦습니다.",
-    "industries": ["지자체", "건설 엔지니어링", "공공"],
+    "industries": [
+      "public",
+      "smart_city"
+    ],
     "steps": [
       {
         "tech_id": "flood-simulation",
@@ -58,8 +172,9 @@
       }
     ],
     "status": "published",
-    "order": 2,
+    "order": 12,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z"
+    "updated_at": "2026-08-01T00:00:00.000Z",
+    "kind": "scenario"
   }
 ]

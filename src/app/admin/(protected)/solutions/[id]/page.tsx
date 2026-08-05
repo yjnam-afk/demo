@@ -15,9 +15,10 @@ export default async function AdminSolutionFormPage({
   const { id } = await params;
   const repo = getRepo();
 
-  const [existing, techs] = await Promise.all([
+  const [existing, techs, industries] = await Promise.all([
     id === NEW ? Promise.resolve(null) : repo.getSolution(id),
     repo.listAll(),
+    repo.listIndustries(),
   ]);
 
   if (id !== NEW && !existing) notFound();
@@ -36,7 +37,7 @@ export default async function AdminSolutionFormPage({
             {existing ? existing.title : '시나리오 등록'}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            기술 2개 이상을 묶어 하나의 사업 제안으로 보여주는 화면입니다.
+            기술을 묶어 하나의 사업 제안으로 만드는 화면입니다. 제품과 시나리오를 함께 관리합니다.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -51,7 +52,7 @@ export default async function AdminSolutionFormPage({
         </div>
       </div>
 
-      <SolutionForm existing={existing} techs={options} />
+      <SolutionForm existing={existing} techs={options} industries={industries} />
     </div>
   );
 }

@@ -2,14 +2,25 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { Field, Section, Select, TagList, TextArea, TextInput } from './fields';
+import { Field, Row, Section, Select, TextArea, TextInput } from './fields';
+import { IndustryPicker } from './IndustryPicker';
 import { validateSolutionForPublish } from '@/lib/domain/parse';
-import type { Solution } from '@/lib/domain/types';
+import {
+  DEPLOYMENTS,
+  DEPLOYMENT_LABELS,
+  OFFERING_KINDS,
+  OFFERING_KIND_LABELS,
+  RELEASE_STAGES,
+  RELEASE_STAGE_LABELS,
+  type Deployment,
+} from '@/lib/domain/enums';
+import type { Industry, Solution } from '@/lib/domain/types';
 
 function blank(): Solution {
   const now = new Date().toISOString();
   return {
     id: '',
+    kind: 'product',
     title: '',
     summary: '',
     problem: '',
@@ -25,13 +36,17 @@ function blank(): Solution {
 export function SolutionForm({
   existing,
   techs,
+  industries: initialIndustries,
 }: {
   existing: Solution | null;
   /** 구성 기술 후보. 비공개 기술도 고를 수 있지만 공개 화면에서는 그 항목만 빠진다. */
   techs: { id: string; name: string; external: boolean }[];
+  industries: Industry[];
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Solution>(existing ?? blank());
+  const [industries, setIndustries] = useState(initialIndustries);
+  const isProduct = draft.kind === 'product';
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -95,19 +110,34 @@ export function SolutionForm({
   return (
     <div className="flex flex-col gap-5 pb-32">
       <Section title="기본 정보">
-        <Field label="시나리오 id" required hint={existing ? '등록 후에는 바꿀 수 없습니다.' : '영문 소문자·숫자·하이픈'}>
+        <Field
+          label="종류"
+          required
+          hint="제품은 실제로 파는 단위, 시나리오는 아직 제품화되지 않은 제안형 조합입니다."
+        >
+          <Select
+            value={draft.kind}
+            options={OFFERING_KINDS.map((value) => ({
+              value,
+              label: OFFERING_KIND_LABELS[value],
+            }))}
+            onChange={(kind) => set({ kind })}
+          />
+        </Field>
+
+        <Field label={isProduct ? '제품 id' : '시나리오 id'} required hint={existing ? '등록 후에는 바꿀 수 없습니다.' : '영문 소문자·숫자·하이픈'}>
           <TextInput
             value={draft.id}
             disabled={Boolean(existing)}
-            placeholder="event-safety"
+            placeholder={isProduct ? 'heidi-ai-guard' : 'event-safety'}
             onChange={(event) => set({ id: event.target.value })}
           />
         </Field>
 
-        <Field label="시나리오 제목" required>
+        <Field label={isProduct ? '제품명' : '시나리오 제목'} required>
           <TextInput
             value={draft.title}
-            placeholder="대규모 행사장 안전관리"
+            placeholder={isProduct ? 'HEIDI AI Guard' : '대규모 행사장 안전관리'}
             onChange={(event) => set({ title: event.target.value })}
           />
         </Field>
@@ -131,13 +161,57 @@ export function SolutionForm({
           />
         </Field>
 
-        <Field label="대상 산업" required hint="최소 1개">
-          <TagList
-            values={draft.industries}
-            placeholder="지자체"
-            onChange={(industries) => set({ industries })}
+        <Field label="산업군" required hint="최소 1개. 목록에 없으면 아래에서 먼저 만드세요.">
+          <IndustryPicker
+            industries={industries}
+            selected={draft.industries}
+            onChange={(next) => set({ industries: next })}
+            onAdded={setIndustries}
           />
         </Field>
+
+        {isProduct ? (
+          <Row>
+            <Field label="출시 단계">
+              <Select
+                value={draft.release ?? ''}
+                placeholder="선택하세요"
+                options={RELEASE_STAGES.map((value) => ({
+                  value,
+                  label: RELEASE_STAGE_LABELS[value],
+                }))}
+                onChange={(release) => set({ release })}
+              />
+            </Field>
+            <Field label="배포 형태">
+              <div className="flex flex-wrap gap-2 pt-1.5">
+                {DEPLOYMENTS.map((value) => {
+                  const active = draft.deployment?.includes(value) ?? false;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          deployment: active
+                            ? (draft.deployment ?? []).filter((d) => d !== value)
+                            : [...(draft.deployment ?? []), value as Deployment],
+                        })
+                      }
+                      className={
+                        active
+                          ? 'rounded border border-ink-700 bg-ink-700 px-3 py-1.5 text-sm text-white'
+                          : 'rounded border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-600 hover:border-ink-500'
+                      }
+                    >
+                      {DEPLOYMENT_LABELS[value]}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+          </Row>
+        ) : null}
       </Section>
 
       <Section

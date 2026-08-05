@@ -1,5 +1,8 @@
 import {
   DEMO_TYPES,
+  DEPLOYMENTS,
+  OFFERING_KINDS,
+  RELEASE_STAGES,
   DEV_TYPES,
   DOMAINS,
   INPUT_KINDS,
@@ -231,20 +234,40 @@ function parseSteps(value: unknown): SolutionStep[] {
  * 시나리오에는 옛 값이 남아 두 화면이 서로 다른 말을 하게 된다.
  */
 export function parseSolutionInput(input: unknown, existing?: Solution | null): Solution {
-  const raw = asRecord(input, '솔루션 정보');
+  const raw = asRecord(input, '묶음 정보');
 
   const title = str(raw.title);
-  if (!title) throw new InvalidInputError('시나리오 제목은 필수입니다.');
+  if (!title) throw new InvalidInputError('제목은 필수입니다.');
+
+  const kind = pick(OFFERING_KINDS, raw.kind, '종류');
+  const release = str(raw.release);
+  const deployment = Array.isArray(raw.deployment)
+    ? raw.deployment.map((d) => pick(DEPLOYMENTS, d, '배포 형태'))
+    : [];
+  const media = asRecord(raw.media ?? {}, 'media');
 
   const now = new Date().toISOString();
 
   return {
     id: parseId(raw.id),
+    kind,
     title,
+    name_en: str(raw.name_en) || undefined,
     summary: str(raw.summary),
     problem: str(raw.problem),
     industries: strList(raw.industries),
     steps: parseSteps(raw.steps),
+    // 제품 전용 항목은 시나리오에 남기지 않는다. 남으면 종류를 바꿨을 때
+    // 화면에 이전 종류의 정보가 따라다닌다.
+    deployment: kind === 'product' && deployment.length > 0 ? deployment : undefined,
+    release: kind === 'product' && release ? pick(RELEASE_STAGES, release, '출시 단계') : undefined,
+    media: {
+      thumbnail: str(media.thumbnail) || undefined,
+      loop: str(media.loop) || undefined,
+      video: str(media.video) || undefined,
+      loop_webm: str(media.loop_webm) || undefined,
+      video_webm: str(media.video_webm) || undefined,
+    },
     status: pick(STATUSES, raw.status, '상태'),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
     created_at: existing?.created_at ?? now,
@@ -262,11 +285,22 @@ export interface SolutionIssue {
  */
 export function validateSolutionForPublish(solution: Solution): SolutionIssue[] {
   const issues: SolutionIssue[] = [];
+
   if (!solution.problem.trim()) issues.push({ label: '해결하는 문제' });
-  if (solution.industries.length === 0) issues.push({ label: '대상 산업' });
-  if (solution.steps.length < 2) issues.push({ label: '구성 기술 2개 이상' });
+  if (solution.industries.length === 0) issues.push({ label: '산업군' });
+
+  /**
+   * 구성 기술 최소 개수는 종류마다 다르다.
+   * 시나리오는 "기술을 묶으면 이렇게 된다"를 보여주는 것이라 최소 2개가 필요하지만,
+   * 제품은 핵심 기술 하나로도 성립한다.
+   */
+  const minimum = solution.kind === 'scenario' ? 2 : 1;
+  if (solution.steps.length < minimum) {
+    issues.push({ label: `구성 기술 ${minimum}개 이상` });
+  }
   if (solution.steps.some((step) => !step.role.trim())) {
     issues.push({ label: '구성 기술의 역할 설명' });
   }
+
   return issues;
 }

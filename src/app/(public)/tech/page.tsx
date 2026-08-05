@@ -5,7 +5,7 @@ import { DomainPillars } from '@/components/site/DomainPillars';
 import { TrustBar } from '@/components/site/TrustBar';
 import { BRAND, DOMAIN_NARRATIVE } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
-import { toPublicTech } from '@/lib/domain/publicView';
+import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
 import type { Domain } from '@/lib/domain/enums';
 import { PAGE_SIZE, parseTechQuery, toSearchParams } from '@/lib/ui/query';
 
@@ -25,11 +25,13 @@ export default async function TechCatalogPage({
   const selectedDomain = (query.domain ?? null) as Domain | null;
 
   const repo = getRepo();
-  const [page, facets, summary] = await Promise.all([
+  const [page, facets, summary, industries] = await Promise.all([
     repo.listPublic(query),
     repo.publicFacets(),
     repo.publicSummary(),
+    repo.listIndustries(),
   ]);
+  const labels = industryLabelMap(industries);
 
   // "더보기"가 이어받을 필터 상태. offset 은 클라이언트가 다시 채운다.
   const carriedQuery = new URLSearchParams(params);
@@ -87,7 +89,7 @@ export default async function TechCatalogPage({
 
           <div className="mt-6">
             <TechGrid
-              initialItems={page.items.map(toPublicTech)}
+              initialItems={page.items.map((tech) => toPublicTech(tech, labels))}
               total={page.total}
               hasMore={page.hasMore}
               query={carriedQuery.toString()}

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "autonomous",
+    "label": "자율주행",
+    "description": "차량 센서 데이터의 수집·가공·검증과 인식 모델 고도화를 지원합니다."
+  },
+  {
+    "id": "defense",
+    "label": "국방",
+    "description": "감시·정찰 영상 분석과 지능형 결심 지원으로 판단 속도를 높입니다."
+  },
+  {
+    "id": "smart_city",
+    "label": "스마트시티",
+    "description": "도시 공간 데이터와 CCTV를 결합해 재해와 혼잡을 사전에 관리합니다."
+  },
+  {
+    "id": "safety_security",
+    "label": "안전·보안",
+    "description": "관제 인력이 동시에 볼 수 없는 범위를 영상 분석으로 대신 지켜봅니다."
+  },
+  {
+    "id": "public",
+    "label": "공공·행정",
+    "description": "공공 시설과 행사 운영의 위험 요소를 정량적 근거로 관리합니다."
+  },
+  {
+    "id": "energy_plant",
+    "label": "제조·에너지",
+    "description": "설비 상태를 원격에서 확인하고 이상을 조기에 특정합니다."
+  }
+]

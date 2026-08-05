@@ -1,10 +1,13 @@
 import type {
   DemoType,
+  Deployment,
   DevType,
   Domain,
   InputKind,
   Maturity,
   MetricDirection,
+  OfferingKind,
+  ReleaseStage,
   Status,
   VerificationLevel,
 } from './enums';
@@ -159,18 +162,47 @@ export type PublicTech = Omit<Tech, 'demo' | 'metrics' | 'resources' | 'health' 
 export interface SolutionStep {
   /** 구성 기술의 id. 존재하지 않거나 비공개인 기술은 렌더 단계에서 걸러진다. */
   tech_id: string;
-  /** 이 시나리오에서 해당 기술이 맡는 역할 */
+  /** 이 묶음에서 해당 기술이 맡는 역할 */
   role: string;
 }
 
+/**
+ * 산업군 마스터.
+ *
+ * 자유 입력으로 두면 "자율주행"과 "자율 주행"이 따로 쌓여 산업별 화면이 무너진다.
+ * 목록에서 고르게 하고 id 로 참조해, 라벨을 고쳐도 연결이 끊기지 않게 한다.
+ */
+export interface Industry {
+  id: string;
+  label: string;
+  /** 산업별 화면 상단에 쓰는 한 줄 설명 */
+  description?: string;
+}
+
+/**
+ * 제품과 솔루션 시나리오를 함께 담는 타입.
+ *
+ * 둘 다 "기술 여러 개를 묶어 하나의 제안으로 만든 것"이라 구조가 같다.
+ * 다른 것은 파는 실체가 있느냐뿐이므로 kind 로 가르고 제품 전용 항목만
+ * 선택 필드로 둔다. 타입을 둘로 나누면 검증·관리자 폼·저장소가 그대로 복제된다.
+ */
 export interface Solution {
   id: string;
+  kind: OfferingKind;
   title: string;
+  /** 제품의 영문 표기 (AI-STUDIO 등) */
+  name_en?: string;
   summary: string;
-  /** 이 솔루션이 대상으로 하는 고객의 문제 */
+  /** 이 묶음이 해결하는 고객의 문제 */
   problem: string;
+  /** 산업군 마스터의 id 목록 */
   industries: string[];
   steps: SolutionStep[];
+  /** 제품 전용 — 배포 형태 */
+  deployment?: Deployment[];
+  /** 제품 전용 — 출시 단계 */
+  release?: ReleaseStage;
+  media?: Media;
   status: Status;
   order: number;
   created_at: string;

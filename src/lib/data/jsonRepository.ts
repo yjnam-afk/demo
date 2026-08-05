@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { CategoryStore, Health, Solution, Tech } from '@/lib/domain/types';
-import type { Domain, VerificationLevel } from '@/lib/domain/enums';
+import type { CategoryStore, Health, Industry, Solution, Tech } from '@/lib/domain/types';
+import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
 import { isExternallyVisible } from '@/lib/domain/publicView';
 import { summarizeAchievement } from '@/lib/domain/metric';
 import type { PublicSummary, TechPage, TechQuery, TechRepository } from './repository';
@@ -10,6 +10,7 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const TECH_FILE = path.join(DATA_DIR, 'technologies.json');
 const SOLUTION_FILE = path.join(DATA_DIR, 'solutions.json');
 const CATEGORY_FILE = path.join(DATA_DIR, 'categories.json');
+const INDUSTRY_FILE = path.join(DATA_DIR, 'industries.json');
 
 const DEFAULT_LIMIT = 12;
 
@@ -79,8 +80,7 @@ function matches(tech: Tech, query: TechQuery): boolean {
   }
 
   if (query.industries?.length) {
-    const pool = new Set([...tech.industries, ...(tech.business.target_industries ?? [])]);
-    if (!query.industries.some((i) => pool.has(i))) return false;
+    if (!query.industries.some((id) => tech.industries.includes(id))) return false;
   }
 
   if (query.q) {
@@ -216,6 +216,7 @@ export class JsonTechRepository implements TechRepository {
 
   async publicFacets() {
     const all = (await this.allTech()).filter(isExternallyVisible);
+    const industryLabels = new Map((await this.listIndustries()).map((i) => [i.id, i.label]));
 
     const domains = new Map<Domain, number>();
     const categories = new Map<string, { domain: Domain; count: number }>();
@@ -233,10 +234,10 @@ export class JsonTechRepository implements TechRepository {
 
       verification.set(tech.verification.level, (verification.get(tech.verification.level) ?? 0) + 1);
 
-      for (const industry of new Set([
-        ...tech.industries,
-        ...(tech.business.target_industries ?? []),
-      ])) {
+      // 산업군 집계는 마스터 id 를 쓰는 tech.industries 만 센다.
+      // target_industries 는 "공항·항만" 같은 자유 서술이라 필터 값으로 섞으면
+      // 선택지가 무한히 늘어난다.
+      for (const industry of new Set(tech.industries)) {
         industries.set(industry, (industries.get(industry) ?? 0) + 1);
       }
     }
@@ -246,8 +247,8 @@ export class JsonTechRepository implements TechRepository {
       categories: [...categories].map(([value, meta]) => ({ value, ...meta })),
       verification: [...verification].map(([value, count]) => ({ value, count })),
       industries: [...industries]
-        .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)),
+        .map(([value, count]) => ({ value, label: industryLabels.get(value) ?? value, count }))
+        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
     };
   }
 
@@ -267,10 +268,39 @@ export class JsonTechRepository implements TechRepository {
     });
   }
 
-  async listSolutions(opts: { publishedOnly?: boolean } = {}): Promise<Solution[]> {
+  async listIndustries(): Promise<Industry[]> {
+    return readJson<Industry[]>(INDUSTRY_FILE, []);
+  }
+
+  async addIndustry(label: string, description?: string): Promise<Industry[]> {
+    return serialized(async () => {
+      const all = await this.listIndustries();
+      const trimmed = label.trim();
+      if (!trimmed) return all;
+
+      // 라벨에서 id 를 만든다. 한글은 슬러그로 못 바꾸므로 순번을 붙인다.
+      const base = trimmed
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      const id = base || `industry-${all.length + 1}`;
+
+      if (all.some((item) => item.id === id || item.label === trimmed)) return all;
+
+      const next = [...all, { id, label: trimmed, description: description?.trim() || undefined }];
+      await writeJson(INDUSTRY_FILE, next);
+      return next;
+    });
+  }
+
+  async listSolutions(
+    opts: { publishedOnly?: boolean; kind?: OfferingKind } = {},
+  ): Promise<Solution[]> {
     const all = await readJson<Solution[]>(SOLUTION_FILE, []);
-    const filtered = opts.publishedOnly ? all.filter((s) => s.status === 'published') : all;
-    return filtered.sort((a, b) => a.order - b.order);
+    return all
+      .filter((s) => (opts.publishedOnly ? s.status === 'published' : true))
+      .filter((s) => (opts.kind ? s.kind === opts.kind : true))
+      .sort((a, b) => a.order - b.order);
   }
 
   async getSolution(id: string): Promise<Solution | null> {

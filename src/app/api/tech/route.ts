@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
-import { toPublicTech } from '@/lib/domain/publicView';
+import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
 import { parseTechQuery } from '@/lib/ui/query';
 
 export const runtime = 'nodejs';
@@ -15,10 +15,12 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const query = parseTechQuery(params);
 
-  const page = await getRepo().listPublic(query);
+  const repo = getRepo();
+  const [page, industries] = await Promise.all([repo.listPublic(query), repo.listIndustries()]);
+  const labels = industryLabelMap(industries);
 
   return NextResponse.json({
-    items: page.items.map(toPublicTech),
+    items: page.items.map((tech) => toPublicTech(tech, labels)),
     total: page.total,
     hasMore: page.hasMore,
   });

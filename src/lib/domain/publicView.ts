@@ -1,4 +1,4 @@
-import type { Demo, PublicDemo, PublicTech, Solution, Tech } from './types';
+import type { Demo, Industry, PublicDemo, PublicTech, Solution, Tech } from './types';
 
 /**
  * 내부망 엔드포인트를 공개 데모 정보로 변환한다.
@@ -31,13 +31,18 @@ function toPublicDemo(demo: Demo): PublicDemo {
  * 이 함수는 서버 컴포넌트에서 클라이언트로 데이터를 넘기기 직전에 호출한다.
  * 공개 라우트가 Tech 를 그대로 직렬화하면 내부 주소가 RSC 페이로드에 실린다.
  */
-export function toPublicTech(tech: Tech): PublicTech {
+export function toPublicTech(tech: Tech, industryLabels?: Map<string, string>): PublicTech {
   const { demo, metrics, resources, health, visibility, ...rest } = tech;
   void health;
   void visibility;
 
   return {
     ...rest,
+    // 산업군은 id 로 저장하고 화면에는 라벨로 내보낸다. 컴포넌트마다 마스터를
+    // 다시 조회하면 같은 변환이 흩어지므로 이 경계에서 한 번만 바꾼다.
+    industries: industryLabels
+      ? rest.industries.map((id) => industryLabels.get(id) ?? id)
+      : rest.industries,
     demo: toPublicDemo(demo),
     metrics: metrics.map(({ dataset_url, ...metric }) => {
       void dataset_url;
@@ -54,4 +59,9 @@ export function isExternallyVisible(tech: Tech): boolean {
 
 export function isSolutionVisible(solution: Solution): boolean {
   return solution.status === 'published';
+}
+
+/** 산업군 id → 라벨 조회표. 공개 화면으로 넘기기 전에 한 번 만들어 재사용한다. */
+export function industryLabelMap(industries: Industry[]): Map<string, string> {
+  return new Map(industries.map((industry) => [industry.id, industry.label]));
 }
