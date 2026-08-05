@@ -72,6 +72,24 @@ docker compose up -d --build
 **Production Branch 설정을 확인하세요.** 기본값인 `main` 으로 두면 그 브랜치가
 없을 때 프로덕션 URL 이 404 를 돌려줍니다.
 
+#### 프로덕션 URL 이 `404: NOT_FOUND` 를 돌려줄 때
+
+빌드는 성공했는데 `/` 가 404 라면 대부분 프레임워크 감지 문제입니다. 비어 있는
+저장소를 Import 하면 Vercel 이 Next.js 를 감지하지 못해 Framework Preset 이
+"Other" 로 굳고, 이후 코드가 들어와도 정적 사이트로 배포됩니다. 그러면
+`public/` 만 서빙되어 루트에 `index.html` 이 없으니 404 가 납니다.
+
+저장소의 `vercel.json` 이 `framework: nextjs` 를 강제하므로 재배포하면
+해결됩니다. 그래도 404 라면 다음을 순서대로 확인하세요.
+
+1. `/thumbnails/intrusion-detection.jpg` 가 열리는지 — **열리는데 `/` 가 404 면
+   정적 배포가 맞습니다.** Settings → Build & Deployment 에서 Framework Preset
+   을 Next.js 로 바꾸고 Output Directory 재정의를 지웁니다.
+2. Settings → Git → Production Branch 가 실제 존재하는 브랜치인지
+3. Settings → General → Root Directory 가 비어 있는지 (하위 폴더로 잘못 지정하면
+   빌드 산출물이 없습니다)
+4. Deployments 탭에 Ready 상태의 프로덕션 배포가 실제로 있는지
+
 ### 관리자를 실제로 쓰려면
 
 파일 기반 저장소는 쓰기 가능한 디스크가 필요합니다. 클라우드에서 관리자까지
