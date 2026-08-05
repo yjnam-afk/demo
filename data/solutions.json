@@ -4,7 +4,7 @@
     "kind": "product",
     "title": "오론 인더스트리",
     "name_en": "AURON-i Industry",
-    "summary": "현장 영상에서 위험 상황을 찾아 관제 화면에 띄웁니다. GS 1등급 인증을 받았습니다.",
+    "summary": "위험한 장면을 사람보다 먼저 찾아냅니다. GS 1등급 인증, 지자체 대규모 행사 관제에서 검증했습니다.",
     "problem": "카메라는 늘어나는데 지켜보는 사람은 그대로입니다.",
     "industries": [
       "safety_security",
@@ -46,7 +46,7 @@
     "kind": "product",
     "title": "오론 오토 스위치",
     "name_en": "AURON-i Auto Switch",
-    "summary": "비가 오거나 밤이 되면 그 조건에 맞는 모델로 자동 전환합니다.",
+    "summary": "비가 오든 밤이든 정확도가 떨어지지 않습니다. 환경이 바뀌면 모델이 알아서 바뀝니다.",
     "problem": "맑은 날 잘 되던 인식이 비 오는 날 흔들립니다.",
     "industries": [
       "safety_security",
@@ -74,7 +74,7 @@
     "kind": "product",
     "title": "오론 스마트 서머리",
     "name_en": "AURON-i Smart Summary",
-    "summary": "며칠치 녹화에서 사람과 차량이 나온 구간만 뽑아 보여줍니다.",
+    "summary": "며칠치 녹화를 몇 분으로 줄입니다. 1시간 분량을 4분 만에 훑습니다.",
     "problem": "사건이 나면 되감기부터 시작합니다.",
     "industries": [
       "safety_security",
@@ -106,7 +106,7 @@
     "kind": "product",
     "title": "오론 국방 플랫폼",
     "name_en": "AURON for Defense",
-    "summary": "흩어진 군수 문서를 검색 가능한 데이터로 바꿔 현황판에 올립니다.",
+    "summary": "문서에 묻혀 있던 정비 이력을 즉시 찾아냅니다.",
     "problem": "정비 이력이 문서로만 남아 있어 물어봐야 압니다.",
     "industries": [
       "defense"
@@ -132,7 +132,7 @@
     "kind": "product",
     "title": "AI-STUDIO",
     "name_en": "AI-STUDIO",
-    "summary": "데이터 가공부터 학습, 배포까지 한 곳에서 이어집니다. 온프레미스와 SaaS 모두 제공합니다.",
+    "summary": "가공부터 학습, 배포까지 한 곳에서 끝냅니다. 데이터를 옮겨 담을 일이 없습니다. 온프레미스와 SaaS 모두 됩니다.",
     "problem": "도구가 나뉘어 있어 데이터를 옮기는 데 시간이 갑니다.",
     "industries": [
       "autonomous",
@@ -164,7 +164,7 @@
     "kind": "product",
     "title": "HEIDI AI Private",
     "name_en": "HEIDI AI Private",
-    "summary": "영상 속 얼굴과 번호판을 자동으로 가립니다.",
+    "summary": "얼굴도 번호판도 놓치지 않고 가립니다. 미검출 0.8%.",
     "problem": "영상을 쓰려면 개인정보부터 지워야 합니다.",
     "industries": [
       "autonomous",
@@ -192,7 +192,7 @@
     "kind": "product",
     "title": "HEIDI-ai MAX",
     "name_en": "HEIDI-ai MAX",
-    "summary": "찾는 사람의 인상착의를 문장으로 넣거나 사진을 올리면 해당 구간을 찾아줍니다.",
+    "summary": "\"빨간 옷 입은 사람\" 이라고 치면 찾아냅니다. 사진 한 장으로도 됩니다.",
     "problem": "누굴 찾는지는 아는데 검색어로 바꿀 방법이 없습니다.",
     "industries": [
       "safety_security",
@@ -222,7 +222,7 @@
   {
     "id": "event-safety",
     "title": "대규모 행사장 안전관리",
-    "summary": "인파 밀집과 통제구역 진입을 한 화면에서 봅니다.",
+    "summary": "인파 밀집과 통제구역 진입을 한 화면에서 잡습니다.",
     "problem": "밀집도와 통제선을 각각 다른 화면으로 보고 있습니다.",
     "industries": [
       "public",
@@ -247,7 +247,7 @@
   {
     "id": "industrial-site-control",
     "title": "산업단지 통합 관제",
-    "summary": "설비 상태와 외곽 경계를 하나의 관제 화면으로 묶습니다.",
+    "summary": "설비 상태와 외곽 경계를 한 화면으로 묶어 순회 인력을 줄입니다.",
     "problem": "설비 점검과 보안 감시가 나뉘어 있어 순회 인력이 두 배로 듭니다.",
     "industries": [
       "energy_plant"
@@ -271,7 +271,7 @@
   {
     "id": "urban-disaster-response",
     "title": "도시 재해 대응",
-    "summary": "침수 위험 구간을 미리 잡고, 상황이 나면 대피 동선의 병목을 봅니다.",
+    "summary": "침수될 곳을 미리 짚고, 터지면 대피 동선의 병목까지 봅니다.",
     "problem": "어디부터 통제해야 할지 정할 근거가 없습니다.",
     "industries": [
       "public",
