@@ -12,7 +12,8 @@ import type { ResolvedStep } from '@/components/site/OfferingSection';
  * 그 항목만 빠진다. 묶음 쪽에 기술 정보를 복사해 두지 않아서 가능한 처리이고,
  * 이렇게 해야 기술 하나를 비공개로 돌렸을 때 제품·시나리오를 통해 새어 나가지 않는다.
  *
- * 구성 기술이 하나도 남지 않은 묶음은 보여줄 내용이 없어 제외한다.
+ * 구성 기술이 남지 않았을 때의 처리는 종류마다 다르다. 시나리오는 조합이 곧
+ * 내용이라 제외하지만, 제품은 구성이 비어도 그 자체로 소개할 값이 있다.
  */
 export async function listPublicOfferings(kind: OfferingKind): Promise<ResolvedOffering[]> {
   const repo = getRepo();
@@ -42,5 +43,5 @@ export async function listPublicOfferings(kind: OfferingKind): Promise<ResolvedO
     }),
   );
 
-  return resolved.filter((item) => item.steps.length > 0);
+  return resolved.filter((item) => item.offering.kind === 'product' || item.steps.length > 0);
 }

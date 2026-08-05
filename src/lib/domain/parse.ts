@@ -290,13 +290,14 @@ export function validateSolutionForPublish(solution: Solution): SolutionIssue[] 
   if (solution.industries.length === 0) issues.push({ label: '산업군' });
 
   /**
-   * 구성 기술 최소 개수는 종류마다 다르다.
-   * 시나리오는 "기술을 묶으면 이렇게 된다"를 보여주는 것이라 최소 2개가 필요하지만,
-   * 제품은 핵심 기술 하나로도 성립한다.
+   * 구성 기술 요구는 종류마다 다르다.
+   *
+   * 시나리오는 조합 자체가 내용이라 최소 2개가 없으면 보여줄 것이 없다.
+   * 제품은 구성 기술을 아직 정리하지 못했어도 실제로 존재하는 판매 단위이므로
+   * 요구하지 않는다 — 요구하면 라인업이 화면에서 통째로 사라진다.
    */
-  const minimum = solution.kind === 'scenario' ? 2 : 1;
-  if (solution.steps.length < minimum) {
-    issues.push({ label: `구성 기술 ${minimum}개 이상` });
+  if (solution.kind === 'scenario' && solution.steps.length < 2) {
+    issues.push({ label: '구성 기술 2개 이상' });
   }
   if (solution.steps.some((step) => !step.role.trim())) {
     issues.push({ label: '구성 기술의 역할 설명' });

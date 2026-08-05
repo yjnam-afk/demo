@@ -1,18 +1,36 @@
 import type { Metadata } from 'next';
 import { CatalogFilters } from '@/components/tech/CatalogFilters';
+import { IndustryGroup, OfferingGroup } from '@/components/tech/CatalogGroups';
 import { TechGrid } from '@/components/tech/TechGrid';
+import {
+  VIEW_LABELS,
+  ViewSwitcher,
+  isCatalogView,
+  type CatalogView,
+} from '@/components/tech/ViewSwitcher';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { TrustBar } from '@/components/site/TrustBar';
 import { BRAND, DOMAIN_NARRATIVE } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
+import { listPublicOfferings } from '@/lib/data/offerings';
 import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
 import type { Domain } from '@/lib/domain/enums';
 import { PAGE_SIZE, parseTechQuery, toSearchParams } from '@/lib/ui/query';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: '기술 카탈로그',
   description: BRAND.tagline,
 };
+
+function Empty({ label }: { label: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
+      {label} 보기에 표시할 항목이 없습니다.
+    </div>
+  );
+}
 
 export default async function TechCatalogPage({
   searchParams,
@@ -21,6 +39,12 @@ export default async function TechCatalogPage({
 }) {
   const raw = await searchParams;
   const params = toSearchParams(raw);
+
+  // 기본은 제품별이다 — 방문자는 사업 의사결정자이고, 먼저 알고 싶은 것은
+  // "무엇을 도입할 수 있는가"이지 "어떤 기술이 있는가"가 아니다.
+  const viewParam = params.get('view');
+  const view: CatalogView = isCatalogView(viewParam) ? viewParam : 'product';
+
   const query = { ...parseTechQuery(params), offset: 0, limit: PAGE_SIZE };
   const selectedDomain = (query.domain ?? null) as Domain | null;
 
@@ -33,19 +57,94 @@ export default async function TechCatalogPage({
   ]);
   const labels = industryLabelMap(industries);
 
-  // "더보기"가 이어받을 필터 상태. offset 은 클라이언트가 다시 채운다.
   const carriedQuery = new URLSearchParams(params);
   carriedQuery.delete('offset');
 
   const narrative = selectedDomain ? DOMAIN_NARRATIVE[selectedDomain] : null;
 
+  /**
+   * 보기 기준별 본문.
+   *
+   * 세 기준은 같은 자료를 다르게 묶어 보여줄 뿐이라 한 화면 안에서 갈린다.
+   * 화면을 따로 두면 방문자가 "제품 화면에는 없고 기술 화면에는 있는 것"을
+   * 의심하게 된다.
+   */
+  let body: React.ReactNode;
+
+  if (view === 'tech') {
+    body = (
+      <>
+        <CatalogFilters facets={facets} params={params} />
+        <div className="mt-6">
+          <TechGrid
+            initialItems={page.items.map((tech) => toPublicTech(tech, labels))}
+            total={page.total}
+            hasMore={page.hasMore}
+            query={carriedQuery.toString()}
+          />
+        </div>
+      </>
+    );
+  } else if (view === 'product') {
+    const [products, scenarios] = await Promise.all([
+      listPublicOfferings('product'),
+      listPublicOfferings('scenario'),
+    ]);
+
+    body =
+      products.length === 0 && scenarios.length === 0 ? (
+        <Empty label={VIEW_LABELS.product} />
+      ) : (
+        <div>
+          {products.map((item) => (
+            <OfferingGroup key={item.offering.id} item={item} />
+          ))}
+
+          {scenarios.length > 0 ? (
+            <div className="mt-12 border-t border-ink-300 pt-10">
+              <h2 className="text-lg font-semibold text-ink-900">솔루션 시나리오</h2>
+              <p className="mt-1 mb-2 text-sm text-ink-500">
+                아직 제품으로 묶이지 않았지만 현장 조건에 맞춰 구성할 수 있는 조합입니다.
+              </p>
+              {scenarios.map((item) => (
+                <OfferingGroup key={item.offering.id} item={item} />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      );
+  } else {
+    const [products, all] = await Promise.all([
+      listPublicOfferings('product'),
+      repo.listPublic({ limit: 200 }),
+    ]);
+
+    const groups = industries
+      .map((industry) => ({
+        industry,
+        products: products.filter((item) => item.offering.industries.includes(industry.id)),
+        // 산업 판정은 id 를 들고 있는 원본으로 하고, 카드에는 라벨이 붙은 형태를 넘긴다.
+        techs: all.items
+          .filter((tech) => tech.industries.includes(industry.id))
+          .map((tech) => toPublicTech(tech, labels)),
+      }))
+      // 항목이 하나도 없는 산업군은 감춘다 — 빈 칸이 늘어나면 목록이 못 미덥게 읽힌다.
+      .filter((group) => group.products.length > 0 || group.techs.length > 0);
+
+    body =
+      groups.length === 0 ? (
+        <Empty label={VIEW_LABELS.industry} />
+      ) : (
+        <div>
+          {groups.map((group) => (
+            <IndustryGroup key={group.industry.id} {...group} />
+          ))}
+        </div>
+      );
+  }
+
   return (
     <>
-      {/*
-        도입부 — 카드 그리드보다 먼저 온다.
-        방문자는 기술 담당자가 아니라 사업 의사결정자이므로, 목록을 훑기 전에
-        "무엇을 하는 조직이고 믿을 만한 규모인가"를 먼저 읽어야 한다.
-      */}
       <section className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
           <p
@@ -72,29 +171,16 @@ export default async function TechCatalogPage({
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        {/* 3축 소개 — 필터이자 회사 서사. 축이 선택되면 그 축만 강조된다. */}
         <section className="-mt-8 pb-12">
           <DomainPillars counts={summary.domainCounts} selected={selectedDomain} />
         </section>
 
-        <section className="pb-16">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold tracking-tight text-ink-900">
-              {narrative ? `${narrative.title} 기술` : '전체 기술'}
-            </h2>
-            <p className="numeric text-sm text-ink-500">{page.total}건</p>
+        <section className="pb-20">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <ViewSwitcher current={view} params={params} />
+            <p className="numeric text-sm text-ink-500">기술 {page.total}건</p>
           </div>
-
-          <CatalogFilters facets={facets} params={params} />
-
-          <div className="mt-6">
-            <TechGrid
-              initialItems={page.items.map((tech) => toPublicTech(tech, labels))}
-              total={page.total}
-              hasMore={page.hasMore}
-              query={carriedQuery.toString()}
-            />
-          </div>
+          {body}
         </section>
       </div>
     </>

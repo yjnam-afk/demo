@@ -64,7 +64,7 @@ export default async function HomePage() {
                 <h2 className="text-2xl font-semibold tracking-tight text-ink-900">제품</h2>
                 <p className="mt-2 text-sm text-ink-500">현장에 바로 적용할 수 있는 단위입니다.</p>
               </div>
-              <Link href="/products" className="text-sm text-ink-600 hover:text-ink-900">
+              <Link href="/tech?view=product" className="text-sm text-ink-600 hover:text-ink-900">
                 제품 전체 보기 →
               </Link>
             </div>

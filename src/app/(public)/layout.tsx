@@ -19,16 +19,13 @@ function Header() {
           <span className="hidden text-sm text-ink-400 sm:inline">{BRAND.productName}</span>
         </Link>
 
-        {/* 제품을 먼저 둔다 — 방문자는 기술이 아니라 살 수 있는 단위를 찾는다 */}
-        <nav className="flex items-center gap-3 text-sm sm:gap-5">
-          <Link href="/products" className="text-ink-300 transition-colors hover:text-white">
-            제품
-          </Link>
+        {/*
+          제품·기술·산업은 별도 메뉴가 아니라 카탈로그 안의 보기 기준이다.
+          메뉴를 나누면 방문자가 서로 다른 목록으로 오해한다.
+        */}
+        <nav className="flex items-center gap-4 text-sm sm:gap-6">
           <Link href="/tech" className="text-ink-300 transition-colors hover:text-white">
-            기술
-          </Link>
-          <Link href="/solutions" className="hidden text-ink-300 transition-colors hover:text-white sm:inline">
-            시나리오
+            기술 카탈로그
           </Link>
           <Link
             href="/#contact"

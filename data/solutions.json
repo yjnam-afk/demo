@@ -53,7 +53,7 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "draft",
+    "status": "published",
     "order": 1,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"
@@ -76,7 +76,7 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "draft",
+    "status": "published",
     "order": 2,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"
@@ -98,7 +98,7 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "draft",
+    "status": "published",
     "order": 3,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z"

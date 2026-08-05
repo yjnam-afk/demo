@@ -96,6 +96,11 @@ export function OfferingSection({
         </div>
       ) : null}
 
+      {steps.length === 0 ? (
+        <p className="mt-8 text-sm text-ink-400">
+          구성 기술은 정리되는 대로 공개합니다. 상세 자료는 문의 주시면 안내해 드립니다.
+        </p>
+      ) : (
       <div className="mt-8">
         <h3 className="text-sm font-medium text-ink-700">구성 기술 {steps.length}개</h3>
         <div className="mt-4 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -110,6 +115,7 @@ export function OfferingSection({
           ))}
         </div>
       </div>
+      )}
     </section>
   );
 }
