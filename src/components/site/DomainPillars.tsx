@@ -52,7 +52,8 @@ export function DomainPillars({
             </p>
 
             <span className="mt-4 text-sm text-ink-600 group-hover:text-ink-900">
-              {isSelected ? '전체 기술 보기' : `${narrative.title} 기술 보기 →`}
+              {/* 축 이름에 이미 "기술"이 들어가 "AI 요소기술 기술 보기"가 된다 */}
+              {isSelected ? '← 전체 기술로 돌아가기' : `${count}건 보기 →`}
             </span>
           </Link>
         );

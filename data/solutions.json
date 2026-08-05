@@ -4,8 +4,8 @@
     "kind": "product",
     "title": "오론 인더스트리",
     "name_en": "AURON-i Industry",
-    "summary": "실시간 영상으로 산업 현장의 위험 요소를 자동 탐지하는 AI 영상분석 소프트웨어입니다. KTR로부터 GS 1등급 인증을 받았고, 지자체 대규모 행사 관제에 실제 운영됐습니다.",
-    "problem": "제조·물류·건설 현장과 공공 시설에서 위험 상황을 사람이 계속 지켜볼 수 없어, 사고가 난 뒤에야 인지합니다.",
+    "summary": "현장 영상에서 위험 상황을 찾아 관제 화면에 띄웁니다. GS 1등급 인증을 받았습니다.",
+    "problem": "카메라는 늘어나는데 지켜보는 사람은 그대로입니다.",
     "industries": [
       "safety_security",
       "energy_plant",
@@ -15,11 +15,15 @@
     "steps": [
       {
         "tech_id": "intrusion-detection",
-        "role": "통제구역에 진입하는 인원을 즉시 탐지해 알립니다."
+        "role": "통제구역에 들어온 인원을 탐지합니다."
       },
       {
         "tech_id": "crowd-counting",
-        "role": "구역별 인원과 밀도를 실시간 추정해 밀집 위험을 사전 경보합니다."
+        "role": "구역별 인원과 밀도를 셉니다."
+      },
+      {
+        "tech_id": "adaptive-model-switch",
+        "role": "날씨와 조도가 바뀌면 모델을 바꿔 끼웁니다."
       }
     ],
     "deployment": [
@@ -42,14 +46,19 @@
     "kind": "product",
     "title": "오론 오토 스위치",
     "name_en": "AURON-i Auto Switch",
-    "summary": "비·폭설·야간 같은 환경 변화를 실시간으로 감지해, 그 상황에 가장 잘 맞는 AI 모델을 자동으로 선택하고 적용합니다.",
-    "problem": "날씨와 조도가 바뀌면 인식 정확도가 떨어집니다. 그렇다고 관제 요원이 상황마다 모델을 바꿔 끼울 수는 없습니다.",
+    "summary": "비가 오거나 밤이 되면 그 조건에 맞는 모델로 자동 전환합니다.",
+    "problem": "맑은 날 잘 되던 인식이 비 오는 날 흔들립니다.",
     "industries": [
       "safety_security",
       "smart_city",
       "autonomous"
     ],
-    "steps": [],
+    "steps": [
+      {
+        "tech_id": "adaptive-model-switch",
+        "role": "화면 상태를 판정하고 모델을 교체합니다."
+      }
+    ],
     "deployment": [
       "on_premise"
     ],
@@ -65,14 +74,23 @@
     "kind": "product",
     "title": "오론 스마트 서머리",
     "name_en": "AURON-i Smart Summary",
-    "summary": "AI 객체 식별로 방대한 영상에서 필요한 장면만 추려 보여줍니다. 검색·분석 시간을 줄이고, 장시간 관제로 쌓이는 피로와 집중력 저하를 덜어냅니다.",
-    "problem": "사건이 나면 관련 장면을 찾으려고 며칠치 녹화를 사람이 되돌려 봐야 합니다. 그 사이 집중력은 떨어지고 놓치는 구간이 생깁니다.",
+    "summary": "며칠치 녹화에서 사람과 차량이 나온 구간만 뽑아 보여줍니다.",
+    "problem": "사건이 나면 되감기부터 시작합니다.",
     "industries": [
       "safety_security",
       "public",
       "defense"
     ],
-    "steps": [],
+    "steps": [
+      {
+        "tech_id": "video-summary",
+        "role": "이벤트가 있는 구간만 추려 순서대로 붙입니다."
+      },
+      {
+        "tech_id": "intrusion-detection",
+        "role": "구간을 나눌 기준이 되는 이벤트를 만듭니다."
+      }
+    ],
     "deployment": [
       "on_premise"
     ],
@@ -88,12 +106,17 @@
     "kind": "product",
     "title": "오론 국방 플랫폼",
     "name_en": "AURON for Defense",
-    "summary": "군수 문서를 데이터화해 정비 이력과 물자 현황을 검색·분석하고 대시보드로 보여줍니다.",
-    "problem": "군수 자료가 비정형 문서로 흩어져 있어 정비 이력과 물자 현황을 즉시 확인할 수 없습니다.",
+    "summary": "흩어진 군수 문서를 검색 가능한 데이터로 바꿔 현황판에 올립니다.",
+    "problem": "정비 이력이 문서로만 남아 있어 물어봐야 압니다.",
     "industries": [
       "defense"
     ],
-    "steps": [],
+    "steps": [
+      {
+        "tech_id": "doc-structuring",
+        "role": "스캔 문서와 표를 항목 데이터로 바꿉니다."
+      }
+    ],
     "deployment": [
       "on_premise"
     ],
@@ -109,13 +132,22 @@
     "kind": "product",
     "title": "AI-STUDIO",
     "name_en": "AI-STUDIO",
-    "summary": "AI 응용 개발에 필요한 데이터 가공·학습·배포 전 과정을 하나의 플랫폼에서 이어서 처리합니다. 수집이 어려운 데이터는 합성 데이터로 만들어 채웁니다. 온프레미스와 SaaS 모두 제공합니다.",
-    "problem": "AI 개발이 도구별로 끊겨 있어 데이터를 옮기고 다시 맞추는 데 시간이 다 갑니다. 정작 모델을 개선할 시간은 남지 않습니다.",
+    "summary": "데이터 가공부터 학습, 배포까지 한 곳에서 이어집니다. 온프레미스와 SaaS 모두 제공합니다.",
+    "problem": "도구가 나뉘어 있어 데이터를 옮기는 데 시간이 갑니다.",
     "industries": [
       "autonomous",
       "defense"
     ],
-    "steps": [],
+    "steps": [
+      {
+        "tech_id": "synthetic-data",
+        "role": "모으기 어려운 상황의 데이터를 만들어 채웁니다."
+      },
+      {
+        "tech_id": "privacy-masking",
+        "role": "학습 전에 개인정보를 지웁니다."
+      }
+    ],
     "deployment": [
       "on_premise",
       "saas"
@@ -132,13 +164,18 @@
     "kind": "product",
     "title": "HEIDI AI Private",
     "name_en": "HEIDI AI Private",
-    "summary": "영상·이미지 속 얼굴과 차량 번호판 같은 개인정보 영역을 자동으로 블러 처리하거나 대체합니다. 비식별화와 이벤트 검색을 한 솔루션에서 처리합니다.",
-    "problem": "영상 데이터를 쓰려면 먼저 개인정보 규제를 통과해야 합니다. 수작업 비식별화로는 쌓이는 물량을 따라갈 수 없습니다.",
+    "summary": "영상 속 얼굴과 번호판을 자동으로 가립니다.",
+    "problem": "영상을 쓰려면 개인정보부터 지워야 합니다.",
     "industries": [
       "autonomous",
       "public"
     ],
-    "steps": [],
+    "steps": [
+      {
+        "tech_id": "privacy-masking",
+        "role": "얼굴과 번호판을 찾아 가립니다."
+      }
+    ],
     "deployment": [
       "on_premise",
       "saas"
@@ -155,8 +192,8 @@
     "kind": "product",
     "title": "HEIDI-ai MAX",
     "name_en": "HEIDI-ai MAX",
-    "summary": "말로 찾습니다. \"빨간 옷 입은 사람\" 같은 자연어나 사진 한 장으로 대용량 영상에서 특정 인물을 찾아내고, 지정한 구역의 이상행동과 이벤트를 감시합니다.",
-    "problem": "찾는 사람의 인상착의는 아는데, 그걸 검색어로 바꿀 방법이 없습니다. 결국 며칠치 영상을 눈으로 훑게 됩니다.",
+    "summary": "찾는 사람의 인상착의를 문장으로 넣거나 사진을 올리면 해당 구간을 찾아줍니다.",
+    "problem": "누굴 찾는지는 아는데 검색어로 바꿀 방법이 없습니다.",
     "industries": [
       "safety_security",
       "public",
@@ -164,8 +201,12 @@
     ],
     "steps": [
       {
+        "tech_id": "video-summary",
+        "role": "영상을 검색 가능한 구간으로 나눕니다."
+      },
+      {
         "tech_id": "intrusion-detection",
-        "role": "지정 구역에 들어온 인원을 이벤트로 기록해 검색 대상으로 만듭니다."
+        "role": "지정 구역의 출입을 이벤트로 남깁니다."
       }
     ],
     "deployment": [
@@ -181,8 +222,8 @@
   {
     "id": "event-safety",
     "title": "대규모 행사장 안전관리",
-    "summary": "인파 밀집과 통제구역 진입을 한 화면에서 감시해 사고 이전에 개입합니다.",
-    "problem": "관제 요원이 인파 밀집도와 통제선을 동시에 볼 수 없어, 위험이 누적된 뒤에야 상황을 인지합니다.",
+    "summary": "인파 밀집과 통제구역 진입을 한 화면에서 봅니다.",
+    "problem": "밀집도와 통제선을 각각 다른 화면으로 보고 있습니다.",
     "industries": [
       "public",
       "smart_city"
@@ -190,48 +231,48 @@
     "steps": [
       {
         "tech_id": "crowd-counting",
-        "role": "구역별 인원과 밀도를 실시간 추정해 압사 위험 수준을 사전 경보합니다."
+        "role": "구역별 인원과 밀도를 세어 위험 수준을 미리 알립니다."
       },
       {
         "tech_id": "intrusion-detection",
-        "role": "무대 뒤·설비 구역 등 통제선을 넘는 인원을 즉시 탐지해 알립니다."
+        "role": "통제선을 넘는 인원을 탐지합니다."
       }
     ],
     "status": "published",
     "order": 10,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z",
     "kind": "scenario"
   },
   {
     "id": "industrial-site-control",
     "title": "산업단지 통합 관제",
-    "summary": "설비 상태와 외곽 경계를 하나의 관제 화면으로 묶어 순회 인력을 줄입니다.",
-    "problem": "설비 점검과 보안 감시가 분리되어 있어 순회 인력이 이중으로 들고, 야간·주말에는 대응 공백이 생깁니다.",
+    "summary": "설비 상태와 외곽 경계를 하나의 관제 화면으로 묶습니다.",
+    "problem": "설비 점검과 보안 감시가 나뉘어 있어 순회 인력이 두 배로 듭니다.",
     "industries": [
       "energy_plant"
     ],
     "steps": [
       {
         "tech_id": "digital-twin-plant",
-        "role": "설비 3D 모델에 센서를 결합해 현장에 가지 않고 이상 설비를 특정합니다."
+        "role": "3D 모델에 센서를 붙여 현장에 가지 않고 이상 설비를 찾습니다."
       },
       {
         "tech_id": "intrusion-detection",
-        "role": "단지 외곽과 위험 설비 구역의 무단 진입을 감시합니다."
+        "role": "단지 외곽과 위험 구역의 무단 진입을 봅니다."
       }
     ],
     "status": "published",
     "order": 11,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z",
     "kind": "scenario"
   },
   {
     "id": "urban-disaster-response",
     "title": "도시 재해 대응",
-    "summary": "침수 위험 구간을 미리 특정하고, 상황 발생 시 대피 동선의 병목을 확인합니다.",
-    "problem": "침수 취약 구간과 대피 동선을 따로 관리해, 실제 상황에서 어디부터 통제해야 할지 판단이 늦습니다.",
+    "summary": "침수 위험 구간을 미리 잡고, 상황이 나면 대피 동선의 병목을 봅니다.",
+    "problem": "어디부터 통제해야 할지 정할 근거가 없습니다.",
     "industries": [
       "public",
       "smart_city"
@@ -239,17 +280,17 @@
     "steps": [
       {
         "tech_id": "flood-simulation",
-        "role": "강우 시나리오별 침수 범위를 예측해 통제 우선순위와 배수 투자 순서를 정합니다."
+        "role": "강우량별 침수 범위를 예측해 통제 순서를 정합니다."
       },
       {
         "tech_id": "crowd-counting",
-        "role": "대피 경로의 인원 집중도를 확인해 병목 구간을 조기에 분산합니다."
+        "role": "대피 경로에 사람이 몰리는 지점을 찾습니다."
       }
     ],
     "status": "published",
     "order": 12,
     "created_at": "2026-08-01T00:00:00.000Z",
-    "updated_at": "2026-08-01T00:00:00.000Z",
+    "updated_at": "2026-08-05T00:00:00.000Z",
     "kind": "scenario"
   }
 ]
