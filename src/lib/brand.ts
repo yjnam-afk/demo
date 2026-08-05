@@ -19,6 +19,17 @@ export const BRAND = {
   /** 워드마크 옆에 붙는 이 사이트의 이름 */
   productName: '기술 데모 포털',
 
+  /**
+   * 본사 사이트.
+   *
+   * 이 포털은 infiniq.co.kr 의 하위 사이트다. 돌아갈 길이 없으면 방문자는
+   * 여기가 별개 회사인지 인피닉의 일부인지 판단할 근거가 없다.
+   */
+  site: {
+    url: 'https://www.infiniq.co.kr',
+    label: '인피닉 홈',
+  },
+
   /** 회사 슬로건. 국문 병기 없이 영문 그대로 쓰는 표기를 따른다. */
   slogan: 'Accelerating AI Creation',
 

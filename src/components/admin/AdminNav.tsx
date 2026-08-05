@@ -38,11 +38,20 @@ export function AdminNav() {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'rounded px-3 py-1.5 transition-colors',
-                  active ? 'bg-ink-800 font-medium text-white' : 'text-ink-600 hover:bg-ink-100',
+                  // 공개 사이트와 같은 방식으로 활성 표시를 준다 — 배경 블록이
+                  // 아니라 밑줄. 두 화면의 GNB 가 서로 다른 규칙을 쓰면
+                  // 같은 서비스의 앞뒤로 읽히지 않는다.
+                  'relative px-3 py-2 transition-colors',
+                  active ? 'font-medium text-ink-900' : 'text-ink-600 hover:text-ink-900',
                 )}
               >
                 {item.label}
+                {active ? (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-ink-900"
+                  />
+                ) : null}
               </Link>
             );
           })}

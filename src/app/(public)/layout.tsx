@@ -7,8 +7,17 @@ function Header() {
   return (
     // 헤더는 히어로와 같은 색이다. 스크롤 전에는 경계가 보이지 않다가
     // 본문 구간으로 넘어가면 자연스럽게 분리된다.
-    <header className="sticky top-0 z-20 bg-ink-950/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+    <header className="sticky top-0 z-20 border-b border-white/5 bg-ink-950/95 backdrop-blur">
+      {/*
+        높이는 본사 사이트의 GNB 에 맞춰 잡는다. 하위 사이트만 헤더가 얕으면
+        본사에서 넘어온 방문자에게 다른 사이트로 읽힌다.
+      */}
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-20">
+        {/*
+          워드마크와 포털 이름은 구분선으로 나눈다. 나란히만 두면 "INFINIQ
+          기술 데모 포털" 이라는 하나의 제품명으로 읽혀, 본사와 하위 사이트의
+          관계가 드러나지 않는다.
+        */}
         <Link href="/" className="flex items-center gap-2.5">
           {/* 로고 슬롯 — 실제 심볼 이미지가 오면 이 마크를 <img> 로 교체한다 */}
           <span
@@ -18,7 +27,8 @@ function Header() {
           <span className="text-base font-semibold tracking-tight text-white">
             {BRAND.shortName}
           </span>
-          <span className="hidden text-sm text-ink-400 sm:inline">{BRAND.productName}</span>
+          <span aria-hidden className="hidden h-4 w-px bg-white/20 sm:inline-block" />
+          <span className="hidden text-sm text-ink-300 sm:inline">{BRAND.productName}</span>
         </Link>
 
         {/*
@@ -59,12 +69,23 @@ function Footer() {
               ))}
             </div>
           </div>
-          <a
-            href={`mailto:${BRAND.contact.email}`}
-            className="text-sm text-ink-300 underline underline-offset-4 hover:text-white"
-          >
-            {BRAND.contact.email}
-          </a>
+          {/* 헤더의 본사 링크는 좁은 화면에서 숨으므로 푸터에서 항상 노출한다. */}
+          <div className="flex flex-col items-start gap-2 text-sm sm:items-end">
+            <a
+              href={BRAND.site.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-ink-300 hover:text-white"
+            >
+              {BRAND.site.label} ↗
+            </a>
+            <a
+              href={`mailto:${BRAND.contact.email}`}
+              className="text-ink-300 underline underline-offset-4 hover:text-white"
+            >
+              {BRAND.contact.email}
+            </a>
+          </div>
         </div>
 
         <p className="border-t border-white/10 pt-6 text-xs leading-relaxed text-ink-500">
