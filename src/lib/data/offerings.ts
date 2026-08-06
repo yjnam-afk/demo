@@ -1,6 +1,7 @@
 import 'server-only';
 import { getRepo } from '@/lib/data';
-import { industryLabelMap, toPublicTech } from '@/lib/domain/publicView';
+import { toPublicTech } from '@/lib/domain/publicView';
+import { loadPublicMaps } from '@/lib/domain/publicMaps';
 import type { ResolvedOffering } from '@/components/site/OfferingSection';
 import type { OfferingKind } from '@/lib/domain/enums';
 import type { ResolvedStep } from '@/components/site/OfferingSection';
@@ -17,19 +18,21 @@ import type { ResolvedStep } from '@/components/site/OfferingSection';
  */
 export async function listPublicOfferings(kind: OfferingKind): Promise<ResolvedOffering[]> {
   const repo = getRepo();
-  const [offerings, industries] = await Promise.all([
+  const [offerings, maps] = await Promise.all([
     repo.listSolutions({ publishedOnly: true, kind }),
-    repo.listIndustries(),
+    // 산업군만 읽으면 카드의 대분류 라벨이 비어 원본 id 가 그대로 노출된다.
+    // 두 마스터를 함께 넘긴다.
+    loadPublicMaps(repo),
   ]);
 
-  const labels = industryLabelMap(industries);
+  const labels = maps.labels;
 
   const resolved = await Promise.all(
     offerings.map(async (offering) => {
       const steps = await Promise.all(
         offering.steps.map(async (step) => {
           const tech = await repo.getPublic(step.tech_id);
-          return tech ? { role: step.role, tech: toPublicTech(tech, labels) } : null;
+          return tech ? { role: step.role, tech: toPublicTech(tech, maps.labels, maps.domains) } : null;
         }),
       );
 

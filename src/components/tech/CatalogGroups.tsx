@@ -20,7 +20,11 @@ export function OfferingGroup({ item }: { item: ResolvedOffering }) {
   const isProduct = offering.kind === 'product';
 
   return (
-    <section className="border-t border-ink-200 py-10 first:border-t-0 first:pt-0">
+    // 바로가기가 고정 헤더와 바로가기 막대에 가리지 않도록 여백을 둔다.
+    <section
+      id={offering.id}
+      className="scroll-mt-36 border-t border-ink-200 py-10 first:border-t-0 first:pt-0"
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h3 className="text-xl font-semibold tracking-tight text-ink-900">
@@ -85,7 +89,10 @@ export function IndustryGroup({
   techs: PublicTech[];
 }) {
   return (
-    <section className="border-t border-ink-200 py-10 first:border-t-0 first:pt-0">
+    <section
+      id={industry.id}
+      className="scroll-mt-36 border-t border-ink-200 py-10 first:border-t-0 first:pt-0"
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-xl font-semibold tracking-tight text-ink-900">
           <Link href={`/industries/${industry.id}`} className="hover:underline">

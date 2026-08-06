@@ -34,8 +34,15 @@ function toPublicDemo(demo: Demo): PublicDemo {
  */
 export function toPublicTech(
   tech: Tech,
-  industryLabels?: Map<string, string>,
-  domains?: Map<string, DomainDef>,
+  /**
+   * 두 조회표는 선택 인자가 아니다.
+   *
+   * 선택으로 두었더니 호출부 한 곳이 대분류를 빠뜨려도 컴파일이 통과했고,
+   * 그 화면에서만 카드에 "ai" 같은 원본 id 가 노출됐다. 필수로 두면 같은
+   * 누락이 타입 오류로 잡힌다. 두 조회표는 loadPublicMaps 로 함께 얻는다.
+   */
+  industryLabels: Map<string, string>,
+  domains: Map<string, DomainDef>,
 ): PublicTech {
   const { demo, metrics, resources, health, visibility, ...rest } = tech;
   void health;
@@ -43,7 +50,7 @@ export function toPublicTech(
 
   // 축이 삭제된 뒤 남은 기술도 화면에서 사라지면 안 된다. 라벨은 id 로
   // 대신하고 색만 기본값으로 떨어뜨려 목록에는 그대로 남긴다.
-  const def = domains?.get(tech.domain);
+  const def = domains.get(tech.domain);
 
   return {
     ...rest,
@@ -52,9 +59,7 @@ export function toPublicTech(
     domain_accent: def?.accent ?? FALLBACK_ACCENT,
     // 산업군은 id 로 저장하고 화면에는 라벨로 내보낸다. 컴포넌트마다 마스터를
     // 다시 조회하면 같은 변환이 흩어지므로 이 경계에서 한 번만 바꾼다.
-    industries: industryLabels
-      ? rest.industries.map((id) => industryLabels.get(id) ?? id)
-      : rest.industries,
+    industries: rest.industries.map((id) => industryLabels.get(id) ?? id),
     demo: toPublicDemo(demo),
     metrics: metrics.map(({ dataset_url, ...metric }) => {
       void dataset_url;

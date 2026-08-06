@@ -17,16 +17,57 @@ import { loadPublicMaps } from '@/lib/domain/publicMaps';
  */
 export const dynamic = 'force-dynamic';
 
-/** 히어로와 피처드에 쓸 만큼만 앞에서 가져온다. 전체 목록을 훑지 않는다. */
+/** 히어로와 대표 데모에 쓸 만큼만 앞에서 가져온다. 전체 목록을 훑지 않는다. */
 const LANDING_POOL = 8;
 const FEATURED_COUNT = 4;
 
+/**
+ * 구간 머리.
+ *
+ * 구간마다 제목 크기와 여백이 조금씩 다르면 페이지가 여러 사람이 붙인
+ * 조각처럼 보인다. 하나로 묶어 리듬을 고정한다.
+ */
+function SectionHead({
+  eyebrow,
+  title,
+  lead,
+  action,
+}: {
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="max-w-2xl">
+        <p className="text-xs font-medium tracking-widest text-ink-400 uppercase">{eyebrow}</p>
+        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
+          {title}
+        </h2>
+        {lead ? <p className="mt-3 text-sm leading-relaxed text-ink-500">{lead}</p> : null}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function MoreLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="shrink-0 border-b border-ink-300 pb-1 text-sm text-ink-600 transition-colors hover:border-ink-900 hover:text-ink-900"
+    >
+      {children} →
+    </Link>
+  );
+}
+
 export default async function HomePage() {
   const repo = getRepo();
-  const [page, summary, industries, products] = await Promise.all([
+  const [page, summary, products] = await Promise.all([
     repo.listPublic({ limit: LANDING_POOL }),
     repo.publicSummary(),
-    repo.listIndustries(),
     listPublicOfferings('product'),
   ]);
 
@@ -36,15 +77,13 @@ export default async function HomePage() {
   // 대표 데모는 순서가 가장 앞선 기술 중 재생할 영상이 있는 것으로 고른다.
   // 특정 기술 id 를 박아 두면 관리자가 순서를 바꿔도 히어로가 따라오지 않는다.
   const hero = techs.find((tech) => tech.media.video) ?? null;
-
-  // 피처드도 순서가 정한다 — 관리자의 순서 변경이 곧 노출 우선순위다.
   const featured = techs.slice(0, FEATURED_COUNT);
 
   return (
     <>
       <Hero tech={hero} />
 
-      {/* 성과 요약 — 3축을 보기 전에 규모와 검증 수준을 먼저 읽게 한다 */}
+      {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
       <section className="border-b border-ink-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <TrustBar summary={summary} tone="light" />
@@ -54,97 +93,116 @@ export default async function HomePage() {
 
       <div className="mx-auto max-w-6xl px-4">
         {/*
-          제품이 기술보다 먼저 온다.
-          방문자는 사업 의사결정자이므로 "무엇을 살 수 있나"를 먼저 보고,
-          그 근거로 "어떤 기술로 만들었나"를 확인한다.
+          데모가 가장 먼저 온다.
+          이 사이트의 목적은 기술을 직접 돌려보게 하는 것이다. 제품 소개나
+          영역 설명을 앞에 세우면 회사 소개 페이지가 되고, 정작 방문자가
+          보러 온 것은 스크롤 아래로 밀린다.
         */}
-        {products.length > 0 ? (
-          <section className="py-16">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-ink-900">제품</h2>
-                <p className="mt-2 text-sm text-ink-500">현장에 바로 적용할 수 있는 단위입니다.</p>
-              </div>
-              <Link href="/tech?view=product" className="text-sm text-ink-600 hover:text-ink-900">
-                제품 전체 보기 →
-              </Link>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {products.slice(0, 4).map(({ offering, steps }) => (
-                <Link
-                  key={offering.id}
-                  href={`/products/${offering.id}`}
-                  className="flex flex-col rounded-lg border border-ink-200 bg-white p-5 transition-colors hover:border-ink-400"
-                >
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <h3 className="text-lg font-semibold text-ink-900">{offering.title}</h3>
-                    {offering.name_en && offering.name_en !== offering.title ? (
-                      <span className="text-xs text-ink-400">{offering.name_en}</span>
-                    ) : null}
-                  </div>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
-                    {offering.problem}
-                  </p>
-                  <p className="mt-4 text-xs text-ink-500">구성 기술 {steps.length}개</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {/* 산업별 입구 — 새 데이터가 아니라 기존 태그를 뒤집어 보여주는 화면이다 */}
-        <section className="border-t border-ink-200 py-14">
-          <h2 className="text-xl font-semibold tracking-tight text-ink-900">산업별로 찾기</h2>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {industries.map((industry) => (
-              <Link
-                key={industry.id}
-                href={`/industries/${industry.id}`}
-                className="rounded border border-ink-300 bg-white px-4 py-2 text-sm text-ink-700 hover:border-ink-500"
-              >
-                {industry.label}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-t border-ink-200 py-16">
-          <h2 className="text-2xl font-semibold tracking-tight text-ink-900">기술 영역</h2>
-          {/* 축 개수를 문장에 쓰지 않는다 — 관리자가 축을 늘리면 문구가 거짓이 된다 */}
-          <p className="mt-2 text-sm text-ink-500">
-            여러 영역의 기술을 조합해 현장의 문제를 해결합니다.
-          </p>
-          <div className="mt-8">
-            <DomainPillars domains={maps.domainList} counts={summary.domainCounts} />
-          </div>
-        </section>
-
         {featured.length > 0 ? (
-          <section className="pb-20">
-            <div className="mb-8 flex flex-wrap items-baseline justify-between gap-2">
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-ink-900">대표 기술</h2>
-                <p className="mt-2 text-sm text-ink-500">
-                  각 기술의 성능은 평가 데이터셋과 측정 조건을 함께 공개합니다.
-                </p>
-              </div>
-              {/* 피처드가 전체를 이미 덮으면 "전체 보기"는 같은 화면을 가리킨다 */}
-              {summary.techCount > featured.length ? (
-                <Link href="/tech" className="text-sm text-ink-600 hover:text-ink-900">
-                  전체 {summary.techCount}건 보기 →
-                </Link>
-              ) : null}
-            </div>
-
-            {/* 열 수는 화면 폭으로만 정한다. 피처드 수가 3개든 4개든 무너지지 않는다. */}
-            <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <section className="py-16 sm:py-20">
+            <SectionHead
+              eyebrow="Demo"
+              title="바로 실행해 보실 수 있습니다"
+              lead="샘플이 준비돼 있어 별도 자료 없이 그 자리에서 동작을 확인하실 수 있습니다. 성능 수치는 측정 조건과 함께 표시됩니다."
+              action={
+                summary.techCount > featured.length ? (
+                  <MoreLink href="/tech?view=tech">전체 {summary.techCount}건 보기</MoreLink>
+                ) : null
+              }
+            />
+            {/* 열 수는 화면 폭으로만 정한다. 대표 수가 3개든 4개든 무너지지 않는다. */}
+            <div className="mt-10 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               {featured.map((tech) => (
                 <TechCard key={tech.id} tech={tech} />
               ))}
             </div>
           </section>
         ) : null}
+
+        {/* 무엇을 하는 조직인지 — 데모를 본 다음에 온다 */}
+        <section className="border-t border-ink-200 py-16 sm:py-20">
+          <SectionHead
+            eyebrow="Domains"
+            title="기술 영역"
+            lead="여러 영역의 기술을 조합해 현장의 문제를 해결합니다."
+          />
+          <div className="mt-10">
+            <DomainPillars domains={maps.domainList} counts={summary.domainCounts} />
+          </div>
+        </section>
+
+        {/*
+          찾는 방법.
+          제품과 산업은 각각 별도의 소개 구간이 아니라 같은 기술 목록을 묶는
+          두 가지 기준이다. 따로 떼어 두면 서로 다른 것을 파는 구간으로 읽히므로
+          한 구간에 나란히 놓아 "고르는 기준" 임을 드러낸다.
+        */}
+        <section className="border-t border-ink-200 py-16 sm:py-20">
+          <SectionHead
+            eyebrow="Browse"
+            title="다른 기준으로도 찾아보실 수 있습니다"
+            lead="같은 기술 목록을 제품 단위 또는 산업 현장 단위로 묶어 보여드립니다."
+          />
+
+          <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {products.length > 0 ? (
+              <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="text-lg font-semibold text-ink-900">제품별</h3>
+                  <span className="numeric text-sm text-ink-400">{products.length}개</span>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                  각 제품에 실제로 들어가 있는 기술을 확인하실 수 있습니다.
+                </p>
+                <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
+                  {products.map(({ offering }) => (
+                    <Link
+                      key={offering.id}
+                      // 제품별 보기의 해당 위치로 직접 보낸다. 목록 상단에
+                      // 떨어뜨리면 방문자가 찾던 제품을 다시 찾아야 한다.
+                      href={`/tech?view=product#${offering.id}`}
+                      className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
+                    >
+                      {offering.title}
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-6">
+                  <MoreLink href="/tech?view=product">제품별로 보기</MoreLink>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-lg font-semibold text-ink-900">산업별</h3>
+                <span className="numeric text-sm text-ink-400">
+                  {maps.industryList.length}개 산업
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                산업 현장에 적용된 기술을 확인하실 수 있습니다.
+              </p>
+              <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
+                {maps.industryList.map((industry) => (
+                  <Link
+                    key={industry.id}
+                    href={`/industries/${industry.id}`}
+                    className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
+                  >
+                    {industry.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-6">
+                <MoreLink href="/tech?view=industry">산업별로 보기</MoreLink>
+              </div>
+            </div>
+          </div>
+
+          {/* 목록에 보이는 건수가 연구소가 가진 전부로 읽히지 않게 한다 */}
+          <p className="mt-8 text-sm text-ink-500">{BRAND.scopeNote}</p>
+        </section>
       </div>
 
       <ContactCta />

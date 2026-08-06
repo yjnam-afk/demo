@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { CatalogFilters } from '@/components/tech/CatalogFilters';
 import { IndustryGroup, OfferingGroup } from '@/components/tech/CatalogGroups';
+import { GroupJumpBar } from '@/components/tech/GroupJumpBar';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
   VIEW_HINTS,
@@ -121,6 +122,14 @@ export default async function TechCatalogPage({
         <Empty label="공개된 항목이 아직 없습니다." />
       ) : (
         <div>
+          <GroupJumpBar
+            items={[...products, ...scenarios].map((item) => ({
+              id: item.offering.id,
+              label: item.offering.title,
+              count: item.steps.length,
+            }))}
+          />
+
           {products.map((item) => (
             <OfferingGroup key={item.offering.id} item={item} />
           ))}
@@ -164,6 +173,14 @@ export default async function TechCatalogPage({
         <Empty label="공개된 항목이 아직 없습니다." />
       ) : (
         <div>
+          <GroupJumpBar
+            items={groups.map((group) => ({
+              id: group.industry.id,
+              label: group.industry.label,
+              count: group.techs.length,
+            }))}
+          />
+
           {groups.map((group) => (
             <IndustryGroup key={group.industry.id} {...group} />
           ))}
