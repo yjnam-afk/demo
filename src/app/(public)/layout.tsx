@@ -56,12 +56,7 @@ function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <div className="flex items-baseline gap-2.5">
-              <p className="text-base font-semibold text-white">{BRAND.name}</p>
-              <p className="text-sm tracking-wide text-[var(--color-brand-bright)]">
-                {BRAND.slogan}
-              </p>
-            </div>
+            <p className="text-base font-semibold text-white">{BRAND.name}</p>
             <p className="mt-1.5 text-sm text-ink-400">{BRAND.tagline}</p>
             <p className="mt-1 max-w-xl text-sm text-ink-500">{BRAND.positioning}</p>
           </div>

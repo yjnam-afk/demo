@@ -42,7 +42,13 @@ export const BRAND = {
    */
   heroMedia: null as { video?: string; video_webm?: string; poster?: string } | null,
 
-  /** 회사 슬로건. 국문 병기 없이 영문 그대로 쓰는 표기를 따른다. */
+  /**
+   * 회사 슬로건.
+   *
+   * AI 이야기라 AI 축 화면에서만 쓴다. 이 포털은 디지털 트윈과 공간 분석도
+   * 다루므로, 첫 화면이나 푸터처럼 사이트 전체를 대표하는 자리에 세우면
+   * 나머지 축이 곁다리로 읽힌다.
+   */
   slogan: 'Accelerating AI Creation',
 
   /** 우리가 무엇을 하는 조직인지 한 줄로. */

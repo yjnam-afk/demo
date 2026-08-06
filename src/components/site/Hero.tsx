@@ -49,16 +49,14 @@ export function Hero() {
       <div className="grid-backdrop absolute inset-0 -z-10 opacity-60" />
 
       <div className="mx-auto max-w-6xl px-4 py-24 sm:py-32">
-        <p className="text-sm font-medium tracking-wide text-[var(--color-brand-bright)]">
-          {BRAND.slogan}
-        </p>
-        <h1 className="headline mt-5 max-w-3xl text-4xl font-semibold text-white sm:text-5xl">
+        {/*
+          회사 슬로건(Accelerating AI Creation)을 여기 두지 않는다. 이 포털은
+          AI 외에 디지털 트윈과 공간 분석도 다루는데, 첫 화면에 AI 슬로건이
+          서면 나머지 두 축이 곁다리로 읽힌다. 슬로건은 AI 축 화면에서만 쓴다.
+        */}
+        <h1 className="headline max-w-3xl text-4xl font-semibold text-white sm:text-5xl">
           {BRAND.headline}
         </h1>
-        {/*
-          태그라인 대신 본문을 쓴다. 히어로 배경이 영상 데모 하나라 그대로 두면
-          영상 분석 회사로만 읽히므로, 다루는 데이터 종류를 여기서 밝힌다.
-        */}
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">{BRAND.intro}</p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">

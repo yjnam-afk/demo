@@ -154,8 +154,12 @@ export default async function TechCatalogPage({
       */}
       <section className="grid-backdrop border-b border-white/5 bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-14">
+          {/*
+            회사 슬로건은 AI 축을 고른 화면에서만 쓴다 — 'Accelerating AI
+            Creation' 은 AI 이야기라, 트윈이나 공간 분석 위에 얹으면 맞지 않는다.
+          */}
           <p className="text-sm font-medium tracking-wide text-ink-400 uppercase">
-            {narrative ? narrative.label : VIEW_EYEBROWS[view]}
+            {narrative?.id === 'ai' ? BRAND.slogan : (narrative?.label ?? VIEW_EYEBROWS[view])}
           </p>
           <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <h1 className="max-w-2xl text-2xl font-semibold tracking-tight text-white sm:text-3xl">
