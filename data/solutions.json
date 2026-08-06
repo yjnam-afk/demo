@@ -260,6 +260,14 @@
       {
         "tech_id": "intrusion-detection",
         "role": "단지 외곽과 위험 구역의 무단 진입을 감시합니다."
+      },
+      {
+        "tech_id": "predictive-maintenance-twin",
+        "role": "진동·온도 이력으로 설비 교체 시점을 사전에 산출합니다."
+      },
+      {
+        "tech_id": "process-simulation",
+        "role": "공정 변경안의 결과를 적용 전에 시뮬레이션합니다."
       }
     ],
     "status": "published",
@@ -285,6 +293,10 @@
       {
         "tech_id": "crowd-counting",
         "role": "대피 경로의 인원 집중 구간을 확인합니다."
+      },
+      {
+        "tech_id": "landslide-risk",
+        "role": "강우 이력과 지형을 결합해 붕괴 위험 사면을 순위화합니다."
       }
     ],
     "status": "published",
@@ -292,5 +304,31 @@
     "created_at": "2026-08-01T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
     "kind": "scenario"
+  },
+  {
+    "id": "road-asset-management",
+    "kind": "scenario",
+    "title": "도로 시설물 관리",
+    "summary": "주행 영상에서 도로 시설물을 자동 추출해 시설물 대장을 최신 상태로 유지합니다.",
+    "problem": "도로 시설물 대장을 현장 조사로 갱신하고 있어 지도가 항상 현황보다 뒤처집니다.",
+    "industries": [
+      "public",
+      "smart_city",
+      "autonomous"
+    ],
+    "steps": [
+      {
+        "tech_id": "facility-extraction",
+        "role": "표지판·신호등·차선을 검출해 지도 좌표로 등록합니다."
+      },
+      {
+        "tech_id": "privacy-masking",
+        "role": "수집한 주행 영상의 얼굴과 번호판을 비식별화합니다."
+      }
+    ],
+    "status": "published",
+    "order": 13,
+    "created_at": "2026-08-06T00:00:00.000Z",
+    "updated_at": "2026-08-06T00:00:00.000Z"
   }
 ]

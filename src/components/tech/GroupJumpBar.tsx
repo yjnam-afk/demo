@@ -21,9 +21,9 @@ export function GroupJumpBar({
   return (
     <nav
       aria-label="바로가기"
-      // 헤더(sm 이상 80px) 아래에 붙어 따라온다 — 목록이 길수록 위로 되돌아가는
+      // 헤더(sm 이상 96px) 아래에 붙어 따라온다 — 목록이 길수록 위로 되돌아가는
       // 비용이 커지므로, 이동 수단은 스크롤을 따라와야 한다.
-      className="sticky top-16 z-10 -mx-4 border-b border-ink-200 bg-ink-50/95 px-4 py-3 backdrop-blur sm:top-20"
+      className="sticky top-20 z-10 -mx-4 border-b border-ink-200 bg-ink-50/95 px-4 py-3 backdrop-blur sm:top-24"
     >
       <div className="flex gap-2 overflow-x-auto pb-0.5">
         {items.map((item) => (

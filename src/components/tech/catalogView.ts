@@ -5,13 +5,14 @@
  * 화면 여러 곳이 같은 기준 목록을 쓰므로 정의를 한곳에 모은다.
  */
 /**
- * 순서가 곧 GNB 순서이자 우선순위다.
+ * 순서가 곧 GNB 순서이자 우선순위다: 기술 → 산업 → 제품.
  *
- * 기술이 맨 앞이다. 이 사이트가 소개하는 대상은 기술이고, 제품과 산업은
- * 그 기술을 묶어 보는 보조 기준이다. 제품을 앞에 두면 카탈로그를 여는
- * 순간 제품부터 보여 기술 데모 사이트가 아니라 제품 소개 사이트가 된다.
+ * 기술이 맨 앞이다 — 이 사이트가 소개하는 대상이다.
+ * 제품이 맨 뒤인 것은 덜 중요해서가 아니라, 회사 공식 사이트가 이미 제품
+ * 중심으로 설명하고 있기 때문이다. 여기서까지 제품을 앞세우면 같은 이야기를
+ * 두 번 하게 되고, 이 포털이 따로 있을 이유가 없어진다.
  */
-export const CATALOG_VIEWS = ['tech', 'product', 'industry'] as const;
+export const CATALOG_VIEWS = ['tech', 'industry', 'product'] as const;
 export type CatalogView = (typeof CATALOG_VIEWS)[number];
 
 /** 아무것도 지정하지 않았을 때 열리는 기준 */
@@ -26,15 +27,15 @@ export const DEFAULT_VIEW: CatalogView = 'tech';
  */
 export const VIEW_LABELS: Record<CatalogView, string> = {
   tech: '기술',
-  product: '제품별',
   industry: '산업별',
+  product: '제품별',
 };
 
 /** 본문 머리에 쓰는 제목 */
 export const VIEW_TITLES: Record<CatalogView, string> = {
   tech: '보유 기술',
-  product: '제품에 적용된 기술',
   industry: '산업에 적용된 기술',
+  product: '제품에 적용된 기술',
 };
 
 export function isCatalogView(value: unknown): value is CatalogView {

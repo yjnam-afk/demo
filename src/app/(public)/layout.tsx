@@ -12,23 +12,23 @@ function Header() {
         높이는 본사 사이트의 GNB 에 맞춰 잡는다. 하위 사이트만 헤더가 얕으면
         본사에서 넘어온 방문자에게 다른 사이트로 읽힌다.
       */}
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-20">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:h-24">
         {/*
           워드마크와 포털 이름은 구분선으로 나눈다. 나란히만 두면 "INFINIQ
           기술 데모 포털" 이라는 하나의 제품명으로 읽혀, 본사와 하위 사이트의
           관계가 드러나지 않는다.
         */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-3">
           {/* 로고 슬롯 — 실제 심볼 이미지가 오면 이 마크를 <img> 로 교체한다 */}
           <span
             aria-hidden
-            className="h-4 w-4 shrink-0 rounded-sm bg-[var(--color-brand-bright)]"
+            className="h-7 w-7 shrink-0 rounded bg-[var(--color-brand-bright)]"
           />
-          <span className="text-base font-semibold tracking-tight text-white">
+          <span className="text-2xl font-semibold tracking-tight text-white">
             {BRAND.shortName}
           </span>
-          <span aria-hidden className="hidden h-4 w-px bg-white/20 sm:inline-block" />
-          <span className="hidden text-sm text-ink-300 sm:inline">{BRAND.productName}</span>
+          <span aria-hidden className="hidden h-6 w-px bg-white/20 sm:inline-block" />
+          <span className="hidden text-base text-ink-300 sm:inline">{BRAND.productName}</span>
         </Link>
 
         {/*
