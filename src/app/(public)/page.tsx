@@ -172,9 +172,8 @@ export default async function HomePage() {
                   {products.map(({ offering }) => (
                     <Link
                       key={offering.id}
-                      // 제품별 보기의 해당 위치로 직접 보낸다. 목록 상단에
-                      // 떨어뜨리면 방문자가 찾던 제품을 다시 찾아야 한다.
-                      href={`/tech?view=product#${offering.id}`}
+                      // 카탈로그에 제품별 보기를 두지 않으므로 제품 상세로 바로 보낸다.
+                      href={`/products/${offering.id}`}
                       className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
                     >
                       {offering.title}
@@ -182,7 +181,7 @@ export default async function HomePage() {
                   ))}
                 </div>
                 <div className="mt-6">
-                  <MoreLink href="/tech?view=product">제품별로 보기</MoreLink>
+                  <MoreLink href="/products">제품 전체 보기</MoreLink>
                 </div>
               </div>
             ) : null}

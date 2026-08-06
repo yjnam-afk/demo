@@ -1,71 +1,7 @@
 import Link from 'next/link';
 import { TechCard } from './TechCard';
-import { CompositionFlow } from './CompositionFlow';
 import type { ResolvedOffering } from '@/components/site/OfferingSection';
 import type { Industry, PublicTech } from '@/lib/domain/types';
-
-/**
- * 묶음(제품·시나리오) 단위 그룹.
- *
- * 이 화면이 소개하는 대상은 제품이 아니라 기술이다. 제품은 기술을 묶어 보는
- * 기준일 뿐이므로, 그룹 머리는 "무엇을 파는가"가 아니라 "이 제품에 어떤
- * 기술이 들어가 있는가"를 알리는 데까지만 쓴다. 출시 단계·배포 형태 같은
- * 도입 조건은 제품 상세로 미룬다 — 여기 두면 기술 목록이 판매 카탈로그로
- * 읽힌다.
- *
- * 카드 자체는 기술 영역별 보기와 같은 컴포넌트다 — 기준을 바꿔도 같은 기술이
- * 같은 모습으로 보여야 방문자가 두 화면을 별개로 오해하지 않는다.
- */
-export function OfferingGroup({ item }: { item: ResolvedOffering }) {
-  const { offering, steps, industryLabels } = item;
-  const isProduct = offering.kind === 'product';
-
-  return (
-    // 바로가기가 고정 헤더와 바로가기 막대에 가리지 않도록 여백을 둔다.
-    <section
-      id={offering.id}
-      className="scroll-mt-44 border-t border-ink-200 py-10 first:border-t-0 first:pt-0"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 className="text-xl font-semibold tracking-tight text-ink-900">
-            {isProduct ? (
-              <Link href={`/products/${offering.id}`} className="hover:underline">
-                {offering.title}
-              </Link>
-            ) : (
-              offering.title
-            )}
-          </h3>
-          {offering.name_en && offering.name_en !== offering.title ? (
-            <span className="text-sm text-ink-400">{offering.name_en}</span>
-          ) : null}
-        </div>
-        {steps.length > 0 ? (
-          <span className="numeric text-sm text-ink-400">{steps.length}단계 구성</span>
-        ) : null}
-      </div>
-
-      <p className="mt-3 max-w-3xl leading-relaxed text-ink-700">{offering.problem}</p>
-
-      {industryLabels.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {industryLabels.map((industry) => (
-            <span key={industry.id} className="rounded bg-ink-100 px-2 py-0.5 text-xs text-ink-600">
-              {industry.label}
-            </span>
-          ))}
-        </div>
-      ) : null}
-
-      {steps.length === 0 ? (
-        <p className="mt-6 text-sm text-ink-400">준비 중입니다.</p>
-      ) : (
-        <CompositionFlow steps={steps} />
-      )}
-    </section>
-  );
-}
 
 /**
  * 산업 단위 그룹.

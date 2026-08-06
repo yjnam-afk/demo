@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { TechCard } from '@/components/tech/TechCard';
+import { CompositionFlow } from '@/components/tech/CompositionFlow';
 import { DEPLOYMENT_LABELS, RELEASE_STAGE_LABELS } from '@/lib/domain/enums';
 import type { PublicTech, Solution } from '@/lib/domain/types';
 
@@ -102,18 +102,12 @@ export function OfferingSection({
         </p>
       ) : (
       <div className="mt-8">
-        <h3 className="text-sm font-medium text-ink-700">구성 기술 {steps.length}개</h3>
-        <div className="mt-4 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {steps.map(({ role, tech }) => (
-            <div key={tech.id} className="flex flex-col gap-2">
-              {/* 이 묶음에서 이 기술이 무엇을 맡는지가 카드보다 먼저 읽혀야 한다 */}
-              <p className="text-sm leading-relaxed text-ink-600">{role}</p>
-              <div className="flex-1">
-                <TechCard tech={tech} />
-              </div>
-            </div>
-          ))}
-        </div>
+        <h3 className="text-sm font-medium text-ink-700">{steps.length}단계 구성</h3>
+        {/*
+          격자로 늘어놓으면 기술 목록과 같은 화면이 된다. 제품에서 알고 싶은
+          것은 개별 성능이 아니라 무엇이 어떤 순서로 맞물리는가다.
+        */}
+        <CompositionFlow steps={steps} />
       </div>
       )}
     </section>

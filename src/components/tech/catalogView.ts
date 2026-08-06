@@ -5,14 +5,17 @@
  * 화면 여러 곳이 같은 기준 목록을 쓰므로 정의를 한곳에 모은다.
  */
 /**
- * 순서가 곧 GNB 순서이자 우선순위다: 기술 → 산업 → 제품.
+ * 순서가 곧 GNB 순서다: 기술 → 산업.
  *
- * 기술이 맨 앞이다 — 이 사이트가 소개하는 대상이다.
- * 제품이 맨 뒤인 것은 덜 중요해서가 아니라, 회사 공식 사이트가 이미 제품
- * 중심으로 설명하고 있기 때문이다. 여기서까지 제품을 앞세우면 같은 이야기를
- * 두 번 하게 되고, 이 포털이 따로 있을 이유가 없어진다.
+ * 제품별 보기는 뺐다. 제품은 회사 공식 사이트가 이미 제품 중심으로 설명하고
+ * 있어 여기서 같은 이야기를 반복하게 되고, 카탈로그 안에서는 기술 목록을
+ * 제품 이름으로 묶어 보여주는 것 이상을 하지 못했다.
+ *
+ * 제품이 사라진 것은 아니다 — 기술 상세의 "이 기술이 들어간 제품" 과
+ * 제품 상세 화면(/products/[id])은 그대로 있다. 기술에서 제품으로 가는
+ * 길만 남기고, 제품에서 시작하는 길은 공식 사이트에 맡긴다.
  */
-export const CATALOG_VIEWS = ['tech', 'industry', 'product'] as const;
+export const CATALOG_VIEWS = ['tech', 'industry'] as const;
 export type CatalogView = (typeof CATALOG_VIEWS)[number];
 
 /** 아무것도 지정하지 않았을 때 열리는 기준 */
@@ -28,21 +31,18 @@ export const DEFAULT_VIEW: CatalogView = 'tech';
 export const VIEW_LABELS: Record<CatalogView, string> = {
   tech: '기술',
   industry: '산업별',
-  product: '제품별',
 };
 
 /** 본문 머리에 쓰는 제목 */
 export const VIEW_TITLES: Record<CatalogView, string> = {
   tech: '보유 기술',
   industry: '산업에 적용된 기술',
-  product: '제품에 적용된 기술',
 };
 
 /** 제목 위에 붙는 짧은 분류 표시 */
 export const VIEW_EYEBROWS: Record<CatalogView, string> = {
   tech: '기술',
   industry: '산업',
-  product: '제품',
 };
 
 export function isCatalogView(value: unknown): value is CatalogView {

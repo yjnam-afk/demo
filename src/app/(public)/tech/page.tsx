@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { CatalogFilters } from '@/components/tech/CatalogFilters';
-import { IndustryGroup, OfferingGroup } from '@/components/tech/CatalogGroups';
+import { IndustryGroup } from '@/components/tech/CatalogGroups';
 import { GroupJumpBar } from '@/components/tech/GroupJumpBar';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
@@ -103,49 +103,6 @@ export default async function TechCatalogPage({
         </div>
       </>
     );
-  } else if (view === 'product') {
-    const [products, scenarios] = await Promise.all([
-      listPublicOfferings('product'),
-      listPublicOfferings('scenario'),
-    ]);
-    // 세는 대상은 기술이다. 이 화면이 소개하는 것은 제품이 아니라 기술이고,
-    // 제품 수를 세면 판매 카탈로그로 읽힌다. 여러 제품에 함께 들어가는
-    // 기술은 한 번만 센다.
-    const shown = new Set(
-      [...products, ...scenarios].flatMap((item) => item.steps.map((step) => step.tech.id)),
-    );
-    countLabel = `기술 ${shown.size}건 · 제품 ${products.length}개`;
-
-    body =
-      products.length === 0 && scenarios.length === 0 ? (
-        <Empty label="공개된 항목이 아직 없습니다." />
-      ) : (
-        <div>
-          <GroupJumpBar
-            items={[...products, ...scenarios].map((item) => ({
-              id: item.offering.id,
-              label: item.offering.title,
-              count: item.steps.length,
-            }))}
-          />
-
-          {products.map((item) => (
-            <OfferingGroup key={item.offering.id} item={item} />
-          ))}
-
-          {scenarios.length > 0 ? (
-            <div className="mt-12 border-t border-ink-300 pt-10">
-              <h2 className="text-lg font-semibold text-ink-900">현장 구성</h2>
-              <p className="mt-1 mb-2 text-sm text-ink-500">
-                아직 하나의 제품으로 묶이지 않았지만, 한 현장에서 함께 쓰이는 기술 조합입니다.
-              </p>
-              {scenarios.map((item) => (
-                <OfferingGroup key={item.offering.id} item={item} />
-              ))}
-            </div>
-          ) : null}
-        </div>
-      );
   } else {
     const [products, all] = await Promise.all([
       listPublicOfferings('product'),
