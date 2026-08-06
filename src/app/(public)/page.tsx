@@ -103,10 +103,10 @@ export default async function HomePage() {
             <SectionHead
               eyebrow="Demo"
               title="바로 실행해 보실 수 있습니다"
-              lead="샘플이 준비돼 있어 별도 자료 없이 그 자리에서 동작을 확인하실 수 있습니다. 성능 수치는 측정 조건과 함께 표시됩니다."
+              lead="샘플이 준비돼 있어 별도 자료 없이 그 자리에서 동작을 확인하실 수 있습니다."
               action={
                 summary.techCount > featured.length ? (
-                  <MoreLink href="/tech?view=tech">전체 {summary.techCount}건 보기</MoreLink>
+                  <MoreLink href="/tech">전체 {summary.techCount}건 보기</MoreLink>
                 ) : null
               }
             />
@@ -132,27 +132,52 @@ export default async function HomePage() {
         </section>
 
         {/*
-          찾는 방법.
-          제품과 산업은 각각 별도의 소개 구간이 아니라 같은 기술 목록을 묶는
-          두 가지 기준이다. 따로 떼어 두면 서로 다른 것을 파는 구간으로 읽히므로
-          한 구간에 나란히 놓아 "고르는 기준" 임을 드러낸다.
+          적용 현장.
+          화면을 어떻게 쓰는지가 아니라 기술이 어디에 들어가 있는지를 말한다.
+          "다른 기준으로 찾아보실 수 있습니다" 처럼 조작을 설명하는 문구는
+          방문자에게 아무것도 알려 주지 않는다.
         */}
         <section className="border-t border-ink-200 py-16 sm:py-20">
           <SectionHead
-            eyebrow="Browse"
-            title="다른 기준으로도 찾아보실 수 있습니다"
-            lead="같은 기술 목록을 제품 단위 또는 산업 현장 단위로 묶어 보여드립니다."
+            eyebrow="Applications"
+            title="이미 현장에서 쓰이고 있습니다"
+            lead="연구소의 기술이 실제로 들어가 있는 산업과 제품입니다."
           />
 
           <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-lg font-semibold text-ink-900">산업</h3>
+                <span className="numeric text-sm text-ink-400">
+                  {maps.industryList.length}개 분야
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                다음 산업 현장에 적용돼 있습니다.
+              </p>
+              <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
+                {maps.industryList.map((industry) => (
+                  <Link
+                    key={industry.id}
+                    href={`/industries/${industry.id}`}
+                    className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
+                  >
+                    {industry.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-6">
+                <MoreLink href="/tech?view=industry">산업별로 보기</MoreLink>
+              </div>
+            </div>
             {products.length > 0 ? (
               <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-ink-900">제품별</h3>
+                  <h3 className="text-lg font-semibold text-ink-900">제품</h3>
                   <span className="numeric text-sm text-ink-400">{products.length}개</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                  각 제품에 실제로 들어가 있는 기술을 확인하실 수 있습니다.
+                  다음 제품에 기술이 탑재돼 있습니다.
                 </p>
                 <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
                   {products.map(({ offering }) => (
@@ -172,32 +197,6 @@ export default async function HomePage() {
                 </div>
               </div>
             ) : null}
-
-            <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="text-lg font-semibold text-ink-900">산업별</h3>
-                <span className="numeric text-sm text-ink-400">
-                  {maps.industryList.length}개 산업
-                </span>
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                산업 현장에 적용된 기술을 확인하실 수 있습니다.
-              </p>
-              <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
-                {maps.industryList.map((industry) => (
-                  <Link
-                    key={industry.id}
-                    href={`/industries/${industry.id}`}
-                    className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
-                  >
-                    {industry.label}
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-6">
-                <MoreLink href="/tech?view=industry">산업별로 보기</MoreLink>
-              </div>
-            </div>
           </div>
 
           {/* 목록에 보이는 건수가 연구소가 가진 전부로 읽히지 않게 한다 */}

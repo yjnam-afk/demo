@@ -4,6 +4,7 @@ import { IndustryGroup, OfferingGroup } from '@/components/tech/CatalogGroups';
 import { GroupJumpBar } from '@/components/tech/GroupJumpBar';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
+  DEFAULT_VIEW,
   VIEW_HINTS,
   VIEW_TITLES,
   isCatalogView,
@@ -42,11 +43,10 @@ export default async function TechCatalogPage({
   const raw = await searchParams;
   const params = toSearchParams(raw);
 
-  // 기본은 제품별이다. 세 기준 모두 기술 목록을 묶는 방식일 뿐이지만,
-  // 처음 들어온 방문자에게는 "어느 제품에 들어가는 기술인가" 가 가장
-  // 잡히는 실마리다.
+  // 기본은 기술이다. 세 기준 모두 같은 기술 목록을 묶는 방식이지만,
+  // 이 사이트가 소개하는 대상은 기술이고 제품·산업은 보조 기준이다.
   const viewParam = params.get('view');
-  const view: CatalogView = isCatalogView(viewParam) ? viewParam : 'product';
+  const view: CatalogView = isCatalogView(viewParam) ? viewParam : DEFAULT_VIEW;
 
   const query = { ...parseTechQuery(params), offset: 0, limit: PAGE_SIZE };
   const selectedDomain = (query.domain ?? null) as Domain | null;

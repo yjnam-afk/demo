@@ -2,7 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { CATALOG_VIEWS, VIEW_LABELS, isCatalogView } from '@/components/tech/catalogView';
+import {
+  CATALOG_VIEWS,
+  DEFAULT_VIEW,
+  VIEW_LABELS,
+  isCatalogView,
+} from '@/components/tech/catalogView';
 import { BRAND } from '@/lib/brand';
 import { cn } from '@/lib/ui/domain';
 
@@ -21,7 +26,7 @@ export function MainNav() {
 
   const viewParam = params.get('view');
   const activeView =
-    pathname === '/tech' ? (isCatalogView(viewParam) ? viewParam : 'product') : null;
+    pathname === '/tech' ? (isCatalogView(viewParam) ? viewParam : DEFAULT_VIEW) : null;
 
   return (
     <nav className="flex items-center gap-0.5 text-sm sm:gap-1">
