@@ -5,7 +5,6 @@ import { GroupJumpBar } from '@/components/tech/GroupJumpBar';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
   DEFAULT_VIEW,
-  VIEW_HINTS,
   VIEW_TITLES,
   isCatalogView,
   type CatalogView,
@@ -210,7 +209,6 @@ export default async function TechCatalogPage({
 
           <div className="mt-10 border-t border-white/10 pt-8">
             <TrustBar summary={summary} />
-            <p className="mt-6 text-xs text-ink-500">{BRAND.proofLead}</p>
           </div>
         </div>
       </section>
@@ -223,20 +221,11 @@ export default async function TechCatalogPage({
               <h2 className="text-xl font-semibold tracking-tight text-ink-900">
                 {VIEW_TITLES[view]}
               </h2>
-              <p className="mt-1 text-sm text-ink-500">{VIEW_HINTS[view]}</p>
             </div>
             <p className="numeric text-sm text-ink-500">{countLabel}</p>
           </div>
           {body}
 
-          {/*
-            건수 바로 아래에 둔다. 이 목록에 보이는 수가 연구소가 가진 기술의
-            전부로 읽히면 곤란하다 — 여기 올라오는 것은 대외 공개가 가능한
-            항목뿐이다.
-          */}
-          <p className="mt-10 border-t border-ink-200 pt-6 text-sm text-ink-500">
-            {BRAND.scopeNote}
-          </p>
         </section>
       </div>
     </>

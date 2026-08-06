@@ -56,9 +56,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <p className="text-lg font-medium text-white">
             {found.offering.title} 도입을 검토하고 계신가요?
           </p>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
-            {BRAND.contact.promise}
-          </p>
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent(
               `[도입 문의] ${found.offering.title}`,

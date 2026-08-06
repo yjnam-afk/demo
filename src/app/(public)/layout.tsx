@@ -88,10 +88,6 @@ function Footer() {
           </div>
         </div>
 
-        <p className="border-t border-white/10 pt-6 text-xs leading-relaxed text-ink-500">
-          표기된 성능 지표는 각 항목에 명시된 평가 데이터셋과 측정 조건에서 얻은 결과입니다.
-          도입 환경에 따라 실제 성능은 달라질 수 있습니다.
-        </p>
       </div>
     </footer>
   );

@@ -169,10 +169,7 @@ export function TechDetail({
 
         {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
         {tech.metrics.length > 0 ? (
-          <Section
-            title="성능 지표"
-            description="각 지표는 명시된 평가 데이터셋과 조건에서 측정한 결과입니다."
-          >
+          <Section title="성능 지표">
             <MetricTable metrics={tech.metrics} />
           </Section>
         ) : null}
@@ -267,9 +264,6 @@ export function TechDetail({
         <section className="rounded-lg bg-ink-950 p-6 sm:p-8">
           <p className="text-lg font-medium text-white">
             {tech.name_ko} 적용을 검토하고 계신가요?
-          </p>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
-            {BRAND.contact.promise}
           </p>
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent(

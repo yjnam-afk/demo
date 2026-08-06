@@ -155,9 +155,6 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
           <p className="text-lg font-medium text-white">
             {industry.label} 현장에 맞는 구성을 제안해 드립니다
           </p>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
-            {BRAND.contact.promise}
-          </p>
           <Link
             href="/#contact"
             className="mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"

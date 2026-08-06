@@ -25,12 +25,7 @@ export default async function SolutionsPage() {
 현장은 기술 하나로 풀리지 않습니다
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-300">
-            여러 기술을 하나의 흐름으로 묶어야 현장이 돌아갑니다. 아래는 자주 쓰이는
-            구성이며, 각 기술의 성능은{' '}
-            <Link href="/tech?view=tech" className="text-white underline underline-offset-4">
-              기술 목록
-            </Link>
-            에서 그대로 확인하실 수 있습니다.
+            여러 기술을 하나의 흐름으로 묶어야 현장이 돌아갑니다.
           </p>
         </div>
       </section>
@@ -49,9 +44,6 @@ export default async function SolutionsPage() {
         <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
           <p className="text-lg font-medium text-white">
 현장에 맞는 구성을 설계해 드립니다
-          </p>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
-            {BRAND.contact.promise}
           </p>
           <Link
             href="/#contact"

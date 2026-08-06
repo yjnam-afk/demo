@@ -4,7 +4,6 @@ import { DomainPillars } from '@/components/site/DomainPillars';
 import { Hero } from '@/components/site/Hero';
 import { TrustBar } from '@/components/site/TrustBar';
 import { TechCard } from '@/components/tech/TechCard';
-import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
 import { toPublicTech } from '@/lib/domain/publicView';
@@ -87,7 +86,6 @@ export default async function HomePage() {
       <section className="border-b border-ink-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <TrustBar summary={summary} tone="light" />
-          <p className="mt-6 text-xs text-ink-400">{BRAND.proofLead}</p>
         </div>
       </section>
 
@@ -103,7 +101,6 @@ export default async function HomePage() {
             <SectionHead
               eyebrow="Demo"
               title="바로 실행해 보실 수 있습니다"
-              lead="샘플이 준비돼 있어 별도 자료 없이 그 자리에서 동작을 확인하실 수 있습니다."
               action={
                 summary.techCount > featured.length ? (
                   <MoreLink href="/tech">전체 {summary.techCount}건 보기</MoreLink>
@@ -124,7 +121,6 @@ export default async function HomePage() {
           <SectionHead
             eyebrow="Domains"
             title="기술 영역"
-            lead="여러 영역의 기술을 조합해 현장의 문제를 해결합니다."
           />
           <div className="mt-10">
             <DomainPillars domains={maps.domainList} counts={summary.domainCounts} />
@@ -141,7 +137,6 @@ export default async function HomePage() {
           <SectionHead
             eyebrow="Applications"
             title="이미 현장에서 쓰이고 있습니다"
-            lead="연구소의 기술이 실제로 들어가 있는 산업과 제품입니다."
           />
 
           <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -152,9 +147,6 @@ export default async function HomePage() {
                   {maps.industryList.length}개 분야
                 </span>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                다음 산업 현장에 적용돼 있습니다.
-              </p>
               <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
                 {maps.industryList.map((industry) => (
                   <Link
@@ -176,9 +168,6 @@ export default async function HomePage() {
                   <h3 className="text-lg font-semibold text-ink-900">제품</h3>
                   <span className="numeric text-sm text-ink-400">{products.length}개</span>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                  다음 제품에 기술이 탑재돼 있습니다.
-                </p>
                 <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
                   {products.map(({ offering }) => (
                     <Link
@@ -198,9 +187,6 @@ export default async function HomePage() {
               </div>
             ) : null}
           </div>
-
-          {/* 목록에 보이는 건수가 연구소가 가진 전부로 읽히지 않게 한다 */}
-          <p className="mt-8 text-sm text-ink-500">{BRAND.scopeNote}</p>
         </section>
       </div>
 

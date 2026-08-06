@@ -16,7 +16,6 @@ export function ContactCta() {
           해결하시려는 문제와 현장 조건을 알려주시면, 적용 가능한 기술과 도입 조건을 정리해
           회신드립니다.
         </p>
-        <p className="mt-2 text-sm text-ink-500">{BRAND.contact.promise}</p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <a

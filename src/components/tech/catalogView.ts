@@ -37,17 +37,6 @@ export const VIEW_TITLES: Record<CatalogView, string> = {
   industry: '산업에 적용된 기술',
 };
 
-/**
- * 제목 아래 한 줄.
- * 화면 조작을 설명하지 않는다 — 방문자는 "이 목록이 무엇인가"를 알고 싶지
- * "지금 어떤 보기 모드인가"를 궁금해하지 않는다.
- */
-export const VIEW_HINTS: Record<CatalogView, string> = {
-  tech: '영역별로 나누어 확인하실 수 있습니다. 각 기술은 준비된 샘플로 바로 실행해 보실 수 있습니다.',
-  product: '같은 기술을 제품 단위로 묶어 보여드립니다.',
-  industry: '같은 기술을 산업 현장 단위로 묶어 보여드립니다.',
-};
-
 export function isCatalogView(value: unknown): value is CatalogView {
   return typeof value === 'string' && (CATALOG_VIEWS as readonly string[]).includes(value);
 }
