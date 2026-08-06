@@ -58,11 +58,11 @@ export async function POST(request: Request) {
     const allowedDomains = (await repo.listDomains()).map((d) => d.id);
     const tech = parseTechInput(body.tech, existing, allowedDomains);
 
-    if (tech.status === 'published') {
+    if (tech.visibility === 'public') {
       const issues = validateForPublish(tech);
       if (issues.length > 0) {
         return NextResponse.json(
-          { error: '발행에 필요한 항목이 비어 있습니다.', issues },
+          { error: '외부 공개에 필요한 항목이 비어 있습니다.', issues },
           { status: 422 },
         );
       }

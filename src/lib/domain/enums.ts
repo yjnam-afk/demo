@@ -91,12 +91,28 @@ export const METRIC_DIRECTION_LABELS: Record<MetricDirection, string> = {
   lower: '낮을수록 좋음',
 };
 
-export const STATUSES = ['draft', 'published'] as const;
-export type Status = (typeof STATUSES)[number];
+/**
+ * 공개 범위. 하나의 축이다.
+ *
+ * 전에는 상태(임시저장·발행)와 노출(내부·외부)을 따로 두었는데, 곱하면
+ * "발행 / 내부 공개" 같은 조합이 나온다. 발행은 이미 "살아 있다" 는 뜻이라
+ * 노출 범위와 겹치고, 관리자는 두 값을 매번 맞춰야 했다.
+ *
+ * 순서가 곧 범위의 크기다 — 뒤로 갈수록 더 넓게 보인다.
+ */
+export const VISIBILITIES = ['draft', 'internal', 'public'] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
 
-export const STATUS_LABELS: Record<Status, string> = {
+export const VISIBILITY_LABELS: Record<Visibility, string> = {
   draft: '임시저장',
-  published: '발행',
+  internal: '내부 공개',
+  public: '외부 공개',
+};
+
+export const VISIBILITY_HINTS: Record<Visibility, string> = {
+  draft: '작성 중입니다. 어디에도 보이지 않습니다.',
+  internal: '사내에서만 봅니다. 공개 사이트에는 나오지 않습니다.',
+  public: '공개 사이트에 나옵니다.',
 };
 
 /** 문자열이 해당 선택지 목록에 속하는지 확인한다. 관리자 입력 검증에 쓴다. */

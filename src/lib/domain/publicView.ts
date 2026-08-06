@@ -44,9 +44,10 @@ export function toPublicTech(
   industryLabels: Map<string, string>,
   domains: Map<string, DomainDef>,
 ): PublicTech {
-  const { demo, metrics, resources, health, visibility, ...rest } = tech;
+  const { demo, metrics, resources, health, visibility, previous_ids, ...rest } = tech;
   void health;
   void visibility;
+  void previous_ids;
 
   // 축이 삭제된 뒤 남은 기술도 화면에서 사라지면 안 된다. 라벨은 id 로
   // 대신하고 색만 기본값으로 떨어뜨려 목록에는 그대로 남긴다.
@@ -69,13 +70,13 @@ export function toPublicTech(
   };
 }
 
-/** 외부 공개 대상인지 판정한다. 발행 상태와 외부 노출 설정을 모두 만족해야 한다. */
+/** 외부 공개 대상인지 판정한다. */
 export function isExternallyVisible(tech: Tech): boolean {
-  return tech.status === 'published' && tech.visibility.external;
+  return tech.visibility === 'public';
 }
 
 export function isSolutionVisible(solution: Solution): boolean {
-  return solution.status === 'published';
+  return solution.visibility === 'public';
 }
 
 /** 산업군 id → 라벨 조회표. 공개 화면으로 넘기기 전에 한 번 만들어 재사용한다. */

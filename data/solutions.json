@@ -36,10 +36,10 @@
       "loop_webm": "/videos/intrusion-detection.loop.webm",
       "loop_poster": "/thumbnails/intrusion-detection.loop.jpg"
     },
-    "status": "published",
     "order": 0,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "auron-i-auto-switch",
@@ -64,10 +64,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 1,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "auron-i-smart-summary",
@@ -96,10 +96,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 2,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "auron-defense",
@@ -122,10 +122,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 3,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "ai-studio",
@@ -154,10 +154,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 4,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "heidi-ai-private",
@@ -182,10 +182,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 5,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "heidi-ai-max",
@@ -214,10 +214,10 @@
     ],
     "release": "ga",
     "media": {},
-    "status": "published",
     "order": 6,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "visibility": "public"
   },
   {
     "id": "event-safety",
@@ -238,11 +238,11 @@
         "role": "통제선을 넘는 인원을 탐지합니다."
       }
     ],
-    "status": "published",
     "order": 10,
     "created_at": "2026-08-01T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
-    "kind": "scenario"
+    "kind": "scenario",
+    "visibility": "public"
   },
   {
     "id": "industrial-site-control",
@@ -270,11 +270,11 @@
         "role": "공정 변경안의 결과를 적용 전에 시뮬레이션합니다."
       }
     ],
-    "status": "published",
     "order": 11,
     "created_at": "2026-08-01T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
-    "kind": "scenario"
+    "kind": "scenario",
+    "visibility": "public"
   },
   {
     "id": "urban-disaster-response",
@@ -299,11 +299,11 @@
         "role": "강우 이력과 지형을 결합해 붕괴 위험 사면을 순위화합니다."
       }
     ],
-    "status": "published",
     "order": 12,
     "created_at": "2026-08-01T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
-    "kind": "scenario"
+    "kind": "scenario",
+    "visibility": "public"
   },
   {
     "id": "road-asset-management",
@@ -326,9 +326,9 @@
         "role": "수집한 주행 영상의 얼굴과 번호판을 비식별화합니다."
       }
     ],
-    "status": "published",
     "order": 13,
     "created_at": "2026-08-06T00:00:00.000Z",
-    "updated_at": "2026-08-06T00:00:00.000Z"
+    "updated_at": "2026-08-06T00:00:00.000Z",
+    "visibility": "public"
   }
 ]

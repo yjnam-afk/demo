@@ -39,11 +39,11 @@ export default async function AdminTechFormPage({
             {existing ? existing.name_ko : '기술 등록'}
           </h1>
           <p className="mt-1 text-sm text-ink-500">
-            {existing ? '수정 후 임시저장 또는 발행하세요.' : '필수 항목을 채우면 발행할 수 있습니다.'}
+            {existing ? '수정 후 공개 범위를 골라 저장하세요.' : '필수 항목을 채우면 외부 공개할 수 있습니다.'}
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          {existing?.status === 'published' && existing.visibility.external ? (
+          {existing?.visibility === 'public' ? (
             <Link
               href={`/tech/${existing.id}`}
               target="_blank"

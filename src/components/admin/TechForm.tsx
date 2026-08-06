@@ -14,6 +14,8 @@ import {
   INPUT_KIND_LABELS,
   MATURITY_LABELS,
   MATURITY_LEVELS,
+  VISIBILITY_HINTS,
+  type Visibility,
   METRIC_DIRECTIONS,
   METRIC_DIRECTION_LABELS,
   VERIFICATION_LABELS,
@@ -62,8 +64,7 @@ function blank(): Draft {
     media: {},
     resources: [],
     related_tech: [],
-    visibility: { internal: true, external: false },
-    status: 'draft',
+    visibility: 'draft',
     order: 0,
     created_at: now,
     updated_at: now,
@@ -87,10 +88,10 @@ function toDraft(tech: Tech): Draft {
 }
 
 /**
- * 발행 검증은 숫자 형태의 Tech 를 기대하므로 화면 상태를 변환해 넘긴다.
+ * 외부 공개 검증은 숫자 형태의 Tech 를 기대하므로 화면 상태를 변환해 넘긴다.
  *
  * 빈 값을 0 이나 기본 방향으로 메우지 않는다. 메우면 검증이 통과해 버려서
- * 화면은 "발행 가능"이라고 하는데 서버가 거부하는 어긋남이 생긴다.
+ * 화면은 "공개 가능"이라고 하는데 서버가 거부하는 어긋남이 생긴다.
  */
 function toTech(draft: Draft): Tech {
   return {
@@ -134,7 +135,7 @@ export function TechForm({
     setDraft((prev) => ({ ...prev, business: { ...prev.business, ...patch } }));
 
   /**
-   * 발행을 막는 사유를 입력하는 동안 실시간으로 보여준다.
+   * 외부 공개를 막는 사유를 입력하는 동안 실시간으로 보여준다.
    * 같은 검증을 서버가 다시 수행하므로 화면을 우회해도 통과하지 못한다.
    */
   const publishIssues = useMemo(() => validateForPublish(toTech(draft)), [draft]);
@@ -144,9 +145,9 @@ export function TechForm({
   const missingDirection = draft.metrics.some((metric) => !metric.direction);
   const blockedFromPublish = publishIssues.length > 0;
 
-  async function save(status: 'draft' | 'published') {
+  async function save(visibility: Visibility) {
     if (missingDirection) return;
-    if (status === 'published' && blockedFromPublish) return;
+    if (visibility === 'public' && blockedFromPublish) return;
 
     setPending(true);
     setError(null);
@@ -156,7 +157,7 @@ export function TechForm({
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          tech: { ...toTech(draft), status },
+          tech: { ...toTech(draft), visibility },
           mode: existing ? 'update' : 'create',
           // id 를 바꾼 경우 서버가 어느 기술을 옮기는지 알아야 한다.
           originalId: existing?.id,
@@ -303,7 +304,7 @@ export function TechForm({
 
       <Section
         title="해결하는 문제 / 도입 정보"
-        description="발행하려면 이 구간이 모두 채워져야 합니다. 방문자가 가장 먼저 읽는 내용입니다."
+        description="외부 공개하려면 이 구간이 모두 채워져야 합니다. 방문자가 가장 먼저 읽는 내용입니다."
       >
         <Field label="해결하는 문제" required hint="고객이 겪는 문제를 한 문장으로.">
           <TextArea
@@ -656,19 +657,6 @@ export function TechForm({
         </Field>
       </Section>
 
-      <Section title="노출 설정">
-        <label className="flex items-center gap-2 text-sm text-ink-700">
-          <input
-            type="checkbox"
-            checked={draft.visibility.external}
-            onChange={(event) =>
-              set({ visibility: { ...draft.visibility, external: event.target.checked } })
-            }
-          />
-          외부 공개 — 끄면 공개 사이트에서 완전히 제외됩니다(상세 주소로도 접근 불가).
-        </label>
-      </Section>
-
       {/* 저장 막대는 화면에 고정한다. 폼이 길어 하단까지 내려가야 저장할 수 있으면 불편하다. */}
       <div className="fixed inset-x-0 bottom-0 border-t border-ink-300 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -681,14 +669,18 @@ export function TechForm({
               </p>
             ) : blockedFromPublish ? (
               <p className="text-[var(--color-signal-warn)]">
-                발행하려면 다음 항목이 필요합니다 ·{' '}
+                외부 공개하려면 다음 항목이 필요합니다 ·{' '}
                 {publishIssues.map((issue) => issue.label).join(', ')}
               </p>
             ) : (
-              <p className="text-[var(--color-signal-ok)]">발행 가능한 상태입니다.</p>
+              <p className="text-ink-500">{VISIBILITY_HINTS[draft.visibility]}</p>
             )}
           </div>
 
+          {/*
+            공개 범위가 곧 저장 버튼이다. 상태를 따로 고르고 저장을 또 누르면
+            둘이 어긋난 채로 저장되는 경우가 생긴다.
+          */}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -700,12 +692,20 @@ export function TechForm({
             </button>
             <button
               type="button"
+              disabled={pending || missingDirection}
+              onClick={() => void save('internal')}
+              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60"
+            >
+              내부 공개
+            </button>
+            <button
+              type="button"
               disabled={pending || blockedFromPublish || missingDirection}
-              title={blockedFromPublish ? '필수 항목이 비어 있어 발행할 수 없습니다.' : undefined}
-              onClick={() => void save('published')}
+              title={blockedFromPublish ? '필수 항목이 비어 있어 외부 공개할 수 없습니다.' : undefined}
+              onClick={() => void save('public')}
               className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              발행
+              외부 공개
             </button>
           </div>
         </div>

@@ -30,11 +30,11 @@ export async function POST(request: Request) {
     const solution = parseSolutionInput(body.solution, existing);
 
     // 기술과 마찬가지로 발행 조건을 서버에서 다시 검사한다.
-    if (solution.status === 'published') {
+    if (solution.visibility === 'public') {
       const issues = validateSolutionForPublish(solution);
       if (issues.length > 0) {
         return NextResponse.json(
-          { error: '발행에 필요한 항목이 비어 있습니다.', issues },
+          { error: '외부 공개에 필요한 항목이 비어 있습니다.', issues },
           { status: 422 },
         );
       }

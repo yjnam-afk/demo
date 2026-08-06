@@ -12,7 +12,9 @@ import {
   OFFERING_KIND_LABELS,
   RELEASE_STAGES,
   RELEASE_STAGE_LABELS,
+  VISIBILITY_HINTS,
   type Deployment,
+  type Visibility,
 } from '@/lib/domain/enums';
 import type { Industry, Solution } from '@/lib/domain/types';
 
@@ -26,7 +28,7 @@ function blank(): Solution {
     problem: '',
     industries: [],
     steps: [],
-    status: 'draft',
+    visibility: 'draft',
     order: 0,
     created_at: now,
     updated_at: now,
@@ -60,8 +62,8 @@ export function SolutionForm({
   );
   const hiddenWarning = draft.steps.length > 0 && visibleSteps.length === 0;
 
-  async function save(status: 'draft' | 'published') {
-    if (status === 'published' && blocked) return;
+  async function save(visibility: Visibility) {
+    if (visibility === 'public' && blocked) return;
 
     setPending(true);
     setError(null);
@@ -70,7 +72,7 @@ export function SolutionForm({
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          solution: { ...draft, status },
+          solution: { ...draft, visibility },
           mode: existing ? 'update' : 'create',
         }),
       });
@@ -220,7 +222,7 @@ export function SolutionForm({
       >
         {hiddenWarning ? (
           <p className="rounded border border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)] px-3 py-2 text-sm text-[var(--color-signal-warn)]">
-            구성 기술이 모두 비공개입니다. 이대로 발행하면 공개 화면에서 이 항목이 공개 화면에서 보이지 않습니다.
+            구성 기술이 모두 비공개입니다. 이대로 외부 공개하면 공개 화면에서 보이지 않습니다.
           </p>
         ) : null}
 
@@ -305,10 +307,11 @@ export function SolutionForm({
               <p className="text-[var(--color-signal-fail)]">{error}</p>
             ) : blocked ? (
               <p className="text-[var(--color-signal-warn)]">
-                발행하려면 다음 항목이 필요합니다 · {issues.map((issue) => issue.label).join(', ')}
+                외부 공개하려면 다음 항목이 필요합니다 ·{' '}
+                {issues.map((issue) => issue.label).join(', ')}
               </p>
             ) : (
-              <p className="text-[var(--color-signal-ok)]">발행 가능한 상태입니다.</p>
+              <p className="text-ink-500">{VISIBILITY_HINTS[draft.visibility]}</p>
             )}
           </div>
 
@@ -323,11 +326,19 @@ export function SolutionForm({
             </button>
             <button
               type="button"
+              disabled={pending}
+              onClick={() => void save('internal')}
+              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60"
+            >
+              내부 공개
+            </button>
+            <button
+              type="button"
               disabled={pending || blocked}
-              onClick={() => void save('published')}
+              onClick={() => void save('public')}
               className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              발행
+              외부 공개
             </button>
           </div>
         </div>

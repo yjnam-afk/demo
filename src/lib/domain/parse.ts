@@ -8,7 +8,7 @@ import {
   INPUT_KINDS,
   MATURITY_LEVELS,
   METRIC_DIRECTIONS,
-  STATUSES,
+  VISIBILITIES,
   VERIFICATION_LEVELS,
   isOneOf,
 } from './enums';
@@ -199,7 +199,6 @@ export function parseTechInput(
   const io = asRecord(business.io ?? {}, 'business.io');
   const media = asRecord(raw.media ?? {}, 'media');
   const verification = asRecord(raw.verification ?? {}, 'verification');
-  const visibility = asRecord(raw.visibility ?? {}, 'visibility');
 
   const name_ko = str(raw.name_ko);
   if (!name_ko) throw new InvalidInputError('기술명(한글)은 필수입니다.');
@@ -243,11 +242,7 @@ export function parseTechInput(
     },
     resources: parseResources(raw.resources),
     related_tech: strList(raw.related_tech),
-    visibility: {
-      internal: visibility.internal !== false,
-      external: visibility.external === true,
-    },
-    status: pick(STATUSES, raw.status, '상태'),
+    visibility: pick(VISIBILITIES, raw.visibility, '공개 범위'),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
     health: existing?.health,
     // 옛 id 목록은 관리자 입력이 아니라 저장소가 rename 시점에 쌓는다.
@@ -308,7 +303,7 @@ export function parseSolutionInput(input: unknown, existing?: Solution | null): 
       loop_webm: str(media.loop_webm) || undefined,
       video_webm: str(media.video_webm) || undefined,
     },
-    status: pick(STATUSES, raw.status, '상태'),
+    visibility: pick(VISIBILITIES, raw.visibility, '공개 범위'),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
     created_at: existing?.created_at ?? now,
     updated_at: now,

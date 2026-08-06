@@ -20,7 +20,7 @@ export default async function AdminSolutionListPage() {
   const rows: SolutionRow[] = solutions.map((solution) => ({
     id: solution.id,
     title: solution.title,
-    status: solution.status,
+    visibility: solution.visibility,
     stepCount: solution.steps.length,
     visibleStepCount: solution.steps.filter((step) => externalIds.has(step.tech_id)).length,
     kind: solution.kind,
@@ -35,8 +35,8 @@ export default async function AdminSolutionListPage() {
           <h1 className="text-xl font-semibold text-ink-900">제품 · 구성 제안</h1>
           <p className="mt-1 text-sm text-ink-500">
             제품 {rows.filter((row) => row.kind === 'product').length}건 · 시나리오{' '}
-            {rows.filter((row) => row.kind === 'scenario').length}건 · 발행{' '}
-            {rows.filter((row) => row.status === 'published').length}건
+            {rows.filter((row) => row.kind === 'scenario').length}건 · 외부 공개{' '}
+            {rows.filter((row) => row.visibility === 'public').length}건
           </p>
         </div>
         <Link

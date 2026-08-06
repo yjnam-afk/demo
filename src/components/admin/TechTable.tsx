@@ -4,6 +4,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Health } from '@/lib/domain/types';
+import { VISIBILITY_LABELS, type Visibility } from '@/lib/domain/enums';
+
+/** 범위가 넓어질수록 눈에 띄게 한다 — 외부 공개만 색을 준다. */
+const VISIBILITY_BADGE: Record<Visibility, string> = {
+  draft: 'w-fit rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-500',
+  internal: 'w-fit rounded bg-ink-200 px-1.5 py-0.5 text-xs font-medium text-ink-700',
+  public:
+    'w-fit rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]',
+};
 
 export interface AdminRow {
   id: string;
@@ -11,8 +20,7 @@ export interface AdminRow {
   domain: string;
   category: string;
   demoType: string;
-  status: 'draft' | 'published';
-  external: boolean;
+  visibility: Visibility;
   metricCount: number;
   health: Health | null;
   hasEndpoint: boolean;
@@ -169,20 +177,10 @@ export function TechTable({ rows }: { rows: AdminRow[] }) {
                 </td>
 
                 <td className="px-3 py-3">
-                  <div className="flex flex-col gap-1">
-                    <span
-                      className={
-                        row.status === 'published'
-                          ? 'w-fit rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]'
-                          : 'w-fit rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-600'
-                      }
-                    >
-                      {row.status === 'published' ? '발행' : '임시저장'}
-                    </span>
-                    <span className="text-xs text-ink-500">
-                      {row.external ? '외부 공개' : '내부 전용'}
-                    </span>
-                  </div>
+                  {/* 범위는 하나의 값이다. 두 줄로 나누면 다시 두 축처럼 읽힌다. */}
+                  <span className={VISIBILITY_BADGE[row.visibility]}>
+                    {VISIBILITY_LABELS[row.visibility]}
+                  </span>
                 </td>
 
                 <td className="px-3 py-3">
@@ -198,10 +196,10 @@ export function TechTable({ rows }: { rows: AdminRow[] }) {
 
                 <td className="px-3 py-3">
                   <div className="flex flex-col gap-1">
-                    {/* 발행을 막는 항목과 단순 경고를 색으로 구분한다 */}
+                    {/* 외부 공개를 막는 항목과 단순 경고를 색으로 구분한다 */}
                     {row.publishIssues.length > 0 ? (
                       <span className="w-fit rounded bg-[var(--color-signal-fail-soft)] px-1.5 py-0.5 text-xs text-[var(--color-signal-fail)]">
-                        발행 불가 · {row.publishIssues.join(', ')}
+                        외부 공개 불가 · {row.publishIssues.join(', ')}
                       </span>
                     ) : null}
                     {row.warnings.map((warning) => (

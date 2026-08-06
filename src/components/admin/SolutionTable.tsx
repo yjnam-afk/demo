@@ -3,12 +3,20 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { VISIBILITY_LABELS, type Visibility } from '@/lib/domain/enums';
+
+const VISIBILITY_BADGE: Record<Visibility, string> = {
+  draft: 'rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-500',
+  internal: 'rounded bg-ink-200 px-1.5 py-0.5 text-xs font-medium text-ink-700',
+  public:
+    'rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]',
+};
 
 export interface SolutionRow {
   id: string;
   kind: 'product' | 'scenario';
   title: string;
-  status: 'draft' | 'published';
+  visibility: Visibility;
   stepCount: number;
   /** 공개 화면에 실제로 그려질 구성 기술 수 */
   visibleStepCount: number;
@@ -101,21 +109,15 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
                 </td>
 
                 <td className="px-3 py-3">
-                  <span
-                    className={
-                      row.status === 'published'
-                        ? 'rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]'
-                        : 'rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-600'
-                    }
-                  >
-                    {row.status === 'published' ? '발행' : '임시저장'}
+                  <span className={VISIBILITY_BADGE[row.visibility]}>
+                    {VISIBILITY_LABELS[row.visibility]}
                   </span>
                 </td>
 
                 <td className="px-3 py-3">
                   {row.publishIssues.length > 0 ? (
                     <span className="rounded bg-[var(--color-signal-fail-soft)] px-1.5 py-0.5 text-xs text-[var(--color-signal-fail)]">
-                      발행 불가 · {row.publishIssues.join(', ')}
+                      외부 공개 불가 · {row.publishIssues.join(', ')}
                     </span>
                   ) : row.visibleStepCount === 0 ? (
                     <span className="rounded bg-[var(--color-signal-warn-soft)] px-1.5 py-0.5 text-xs text-[var(--color-signal-warn)]">

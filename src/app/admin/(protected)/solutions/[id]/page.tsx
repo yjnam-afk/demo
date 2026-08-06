@@ -26,7 +26,7 @@ export default async function AdminSolutionFormPage({
   const options = techs.items.map((tech) => ({
     id: tech.id,
     name: tech.name_ko,
-    external: tech.status === 'published' && tech.visibility.external,
+    external: tech.visibility === 'public',
   }));
 
   return (
@@ -41,7 +41,7 @@ export default async function AdminSolutionFormPage({
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          {existing?.status === 'published' ? (
+          {existing?.visibility === 'public' ? (
             <Link
               href={existing.kind === 'product' ? `/products/${existing.id}` : '/solutions'}
               target="_blank"

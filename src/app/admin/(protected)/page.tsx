@@ -24,8 +24,7 @@ export default async function AdminTechListPage() {
     domain: domainShort.get(tech.domain) ?? tech.domain,
     category: tech.category,
     demoType: DEMO_TYPE_LABELS[tech.demo.type],
-    status: tech.status,
-    external: tech.visibility.external,
+    visibility: tech.visibility,
     metricCount: tech.metrics.length,
     health: tech.health ?? null,
     // 데모 서버가 없는 타입은 헬스체크 대상이 아니다.
@@ -34,7 +33,7 @@ export default async function AdminTechListPage() {
     publishIssues: validateForPublish(tech).map((issue) => issue.label),
   }));
 
-  const publishedCount = rows.filter((row) => row.status === 'published').length;
+  const publishedCount = rows.filter((row) => row.visibility === 'public').length;
   const blockedCount = rows.filter((row) => row.publishIssues.length > 0).length;
 
   return (
@@ -43,8 +42,8 @@ export default async function AdminTechListPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink-900">기술</h1>
           <p className="mt-1 text-sm text-ink-500">
-            전체 {rows.length}건 · 발행 {publishedCount}건
-            {blockedCount > 0 ? ` · 발행 불가 ${blockedCount}건` : ''}
+            전체 {rows.length}건 · 외부 공개 {publishedCount}건
+            {blockedCount > 0 ? ` · 외부 공개 불가 ${blockedCount}건` : ''}
           </p>
         </div>
         <Link

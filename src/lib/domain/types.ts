@@ -9,7 +9,7 @@ import type {
   MetricDirection,
   OfferingKind,
   ReleaseStage,
-  Status,
+  Visibility,
   VerificationLevel,
 } from './enums';
 
@@ -139,8 +139,8 @@ export interface Tech {
   media: Media;
   resources: Resource[];
   related_tech: string[];
-  visibility: { internal: boolean; external: boolean };
-  status: Status;
+  /** 임시저장 → 내부 공개 → 외부 공개. 상태와 노출을 나누지 않는다. */
+  visibility: Visibility;
   order: number;
   health?: Health;
   /**
@@ -168,7 +168,10 @@ export type PublicDemo =
 
 export type PublicMetric = Omit<Metric, 'dataset_url'>;
 
-export type PublicTech = Omit<Tech, 'demo' | 'metrics' | 'resources' | 'health' | 'visibility'> & {
+export type PublicTech = Omit<
+  Tech,
+  'demo' | 'metrics' | 'resources' | 'health' | 'visibility' | 'previous_ids'
+> & {
   demo: PublicDemo;
   metrics: PublicMetric[];
   resources: Resource[];
@@ -228,7 +231,7 @@ export interface Solution {
   /** 제품 전용 — 출시 단계 */
   release?: ReleaseStage;
   media?: Media;
-  status: Status;
+  visibility: Visibility;
   order: number;
   created_at: string;
   updated_at: string;

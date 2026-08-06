@@ -416,7 +416,7 @@ export class JsonTechRepository implements TechRepository {
   ): Promise<Solution[]> {
     const all = await readJson<Solution[]>(SOLUTION_FILE, []);
     return all
-      .filter((s) => (opts.publishedOnly ? s.status === 'published' : true))
+      .filter((s) => (opts.publishedOnly ? s.visibility === 'public' : true))
       .filter((s) => (opts.kind ? s.kind === opts.kind : true))
       .sort((a, b) => a.order - b.order);
   }
