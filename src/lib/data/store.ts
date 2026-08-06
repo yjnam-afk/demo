@@ -202,9 +202,14 @@ export function createStore(): DocumentStore {
  */
 let writableCache: boolean | null = null;
 
-export async function storeStatus(): Promise<{ kind: DocumentStore['kind']; writable: boolean }> {
+export async function storeStatus(): Promise<{
+  kind: DocumentStore['kind'];
+  writable: boolean;
+  /** 화면에 그대로 보여 줄 저장 위치 설명 */
+  label: string;
+}> {
   const kind = process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'file';
-  if (kind === 'blob') return { kind, writable: true };
+  if (kind === 'blob') return { kind, writable: true, label: 'Vercel Blob' };
 
   if (writableCache === null) {
     /*
@@ -221,5 +226,5 @@ export async function storeStatus(): Promise<{ kind: DocumentStore['kind']; writ
       writableCache = false;
     }
   }
-  return { kind, writable: writableCache };
+  return { kind, writable: writableCache, label: `파일 (${DATA_DIR})` };
 }
