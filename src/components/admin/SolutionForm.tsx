@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Field, Row, Section, Select, TextArea, TextInput } from './fields';
 import { IndustryPicker } from './IndustryPicker';
+import { TechPicker } from './TechPicker';
 import { validateSolutionForPublish } from '@/lib/domain/parse';
 import {
   DEPLOYMENTS,
@@ -96,26 +97,13 @@ export function SolutionForm({
     }
   }
 
-  function moveStep(index: number, direction: -1 | 1) {
-    const next = index + direction;
-    if (next < 0 || next >= draft.steps.length) return;
-    const steps = [...draft.steps];
-    [steps[index], steps[next]] = [steps[next], steps[index]];
-    set({ steps });
-  }
-
-  const techOptions = techs.map((tech) => ({
-    value: tech.id,
-    label: tech.external ? tech.name : `${tech.name} (비공개)`,
-  }));
-
   return (
     <div className="flex flex-col gap-5 pb-32">
       <Section title="기본 정보">
         <Field
           label="종류"
           required
-          hint="제품은 실제로 파는 단위, 시나리오는 아직 제품화되지 않은 제안형 조합입니다."
+          hint="제품은 실제로 파는 단위, 현장 구성은 아직 제품이 아닌 기술 조합입니다."
         >
           <Select
             value={draft.kind}
@@ -217,8 +205,8 @@ export function SolutionForm({
       </Section>
 
       <Section
-        title="구성 기술"
-        description="기술은 id 로만 참조합니다. 기술 정보를 수정하면 이 화면에도 그대로 반영됩니다."
+        title="구성 기술 연결"
+        description="등록된 기술을 골라 연결합니다. 새 기술은 기술 화면에서 등록하세요. 기술 정보를 고치면 여기에도 그대로 반영됩니다."
       >
         {hiddenWarning ? (
           <p className="rounded border border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)] px-3 py-2 text-sm text-[var(--color-signal-warn)]">
@@ -226,78 +214,11 @@ export function SolutionForm({
           </p>
         ) : null}
 
-        {draft.steps.map((step, index) => {
-          const update = (patch: Partial<typeof step>) => {
-            const steps = [...draft.steps];
-            steps[index] = { ...steps[index], ...patch };
-            set({ steps });
-          };
-
-          return (
-            <div key={index} className="rounded border border-ink-200 bg-ink-50 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium text-ink-700">구성 {index + 1}</span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => moveStep(index, -1)}
-                    disabled={index === 0}
-                    className="rounded border border-ink-300 px-1.5 text-xs text-ink-600 hover:border-ink-500 disabled:opacity-30"
-                    aria-label="위로"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveStep(index, 1)}
-                    disabled={index === draft.steps.length - 1}
-                    className="rounded border border-ink-300 px-1.5 text-xs text-ink-600 hover:border-ink-500 disabled:opacity-30"
-                    aria-label="아래로"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => set({ steps: draft.steps.filter((_, i) => i !== index) })}
-                    className="ml-2 text-xs text-[var(--color-signal-fail)] hover:underline"
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Field label="기술" required>
-                  <Select
-                    value={step.tech_id}
-                    placeholder="선택하세요"
-                    options={techOptions}
-                    onChange={(tech_id) => update({ tech_id })}
-                  />
-                </Field>
-                <Field
-                  label="이 시나리오에서의 역할"
-                  required
-                  hint="카드보다 먼저 읽히는 문장입니다. 이 구성에서 무엇을 맡는지 한 문장으로."
-                >
-                  <TextArea
-                    rows={2}
-                    value={step.role}
-                    onChange={(event) => update({ role: event.target.value })}
-                  />
-                </Field>
-              </div>
-            </div>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => set({ steps: [...draft.steps, { tech_id: '', role: '' }] })}
-          className="w-fit rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-600 hover:border-ink-500"
-        >
-          + 구성 기술 추가
-        </button>
+        <TechPicker
+          techs={techs}
+          steps={draft.steps}
+          onChange={(steps) => set({ steps })}
+        />
       </Section>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-ink-300 bg-white/95 backdrop-blur">

@@ -148,7 +148,7 @@ export type OfferingKind = (typeof OFFERING_KINDS)[number];
 
 export const OFFERING_KIND_LABELS: Record<OfferingKind, string> = {
   product: '제품',
-  scenario: '솔루션 시나리오',
+  scenario: '현장 구성',
 };
 
 /** 제품 배포 형태 */

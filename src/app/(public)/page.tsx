@@ -73,14 +73,11 @@ export default async function HomePage() {
   const maps = await loadPublicMaps(repo);
   const techs = page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains));
 
-  // 대표 데모는 순서가 가장 앞선 기술 중 재생할 영상이 있는 것으로 고른다.
-  // 특정 기술 id 를 박아 두면 관리자가 순서를 바꿔도 히어로가 따라오지 않는다.
-  const hero = techs.find((tech) => tech.media.video) ?? null;
   const featured = techs.slice(0, FEATURED_COUNT);
 
   return (
     <>
-      <Hero tech={hero} />
+      <Hero />
 
       {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
       <section className="border-b border-ink-200 bg-white">
@@ -159,7 +156,7 @@ export default async function HomePage() {
                 ))}
               </div>
               <div className="mt-6">
-                <MoreLink href="/tech?view=industry">산업별로 보기</MoreLink>
+                <MoreLink href="/tech?view=industry">산업별 보기</MoreLink>
               </div>
             </div>
             {products.length > 0 ? (
@@ -172,7 +169,6 @@ export default async function HomePage() {
                   {products.map(({ offering }) => (
                     <Link
                       key={offering.id}
-                      // 카탈로그에 제품별 보기를 두지 않으므로 제품 상세로 바로 보낸다.
                       href={`/products/${offering.id}`}
                       className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
                     >
@@ -181,7 +177,7 @@ export default async function HomePage() {
                   ))}
                 </div>
                 <div className="mt-6">
-                  <MoreLink href="/products">제품 전체 보기</MoreLink>
+                  <MoreLink href="/products">제품 보기</MoreLink>
                 </div>
               </div>
             ) : null}

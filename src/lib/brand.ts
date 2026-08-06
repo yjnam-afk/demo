@@ -30,6 +30,20 @@ export const BRAND = {
     label: '인피닉 홈',
   },
 
+  /**
+   * 히어로 배경.
+   *
+   * 브랜드 자산 자리다. 기술 데모 영상을 끌어다 쓰지 않는다 — 첫 화면에
+   * 특정 기술의 탐지 화면이 깔리면 그 회사가 그것만 하는 것처럼 읽히고,
+   * 자리표시자라도 걸리면 시험 화면으로 보인다.
+   *
+   * 준비되면 아래에 경로를 넣는다. 비워 두면 격자 배경만 남는다.
+   *   video      루프 재생할 mp4 (10초 내외, 소리 없음)
+   *   video_webm 같은 영상의 webm 판본 (선택)
+   *   poster     영상이 없거나 재생 전에 쓸 정지 이미지
+   */
+  heroMedia: null as { video?: string; video_webm?: string; poster?: string } | null,
+
   /** 회사 슬로건. 국문 병기 없이 영문 그대로 쓰는 표기를 따른다. */
   slogan: 'Accelerating AI Creation',
 

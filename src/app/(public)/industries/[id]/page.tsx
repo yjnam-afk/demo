@@ -72,7 +72,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
               제품 <span className="numeric font-semibold text-white">{relatedProducts.length}</span>
             </span>
             <span className="text-ink-400">
-              솔루션 구성{' '}
+              현장 구성{' '}
               <span className="numeric font-semibold text-white">{relatedScenarios.length}</span>
             </span>
             <span className="text-ink-400">
@@ -125,7 +125,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
 
         {relatedScenarios.length > 0 ? (
           <section className="border-t border-ink-200 py-14">
-            <h2 className="text-xl font-semibold tracking-tight text-ink-900">솔루션 구성</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink-900">현장 구성</h2>
             <div className="mt-6 flex flex-wrap gap-2">
               {relatedScenarios.map(({ offering }) => (
                 <Link

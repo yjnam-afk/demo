@@ -7,8 +7,8 @@ import { listPublicOfferings } from '@/lib/data/offerings';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '솔루션 구성',
-  description: '현장에서 함께 쓰이는 기술 조합을 소개합니다.',
+  title: '현장 구성',
+  description: '한 현장에서 함께 쓰이는 기술 조합',
 };
 
 export default async function SolutionsPage() {
@@ -17,15 +17,13 @@ export default async function SolutionsPage() {
   return (
     <>
       <section className="grid-backdrop bg-ink-950">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <p className="text-sm font-medium tracking-wide text-[var(--color-brand-bright)]">
-            솔루션 구성
-          </p>
-          <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-현장은 기술 하나로 풀리지 않습니다
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-14">
+          <p className="text-sm font-medium tracking-wide text-ink-400 uppercase">구성</p>
+          <h1 className="mt-3 max-w-2xl text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            현장 구성
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-300">
-            여러 기술을 하나의 흐름으로 묶어야 현장이 돌아갑니다.
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
+            아직 하나의 제품은 아니지만, 한 현장에서 함께 쓰이는 기술 조합입니다.
           </p>
         </div>
       </section>

@@ -35,7 +35,9 @@ export function MainNav() {
         return (
           <Link
             key={view}
-            href={`/tech?view=${view}`}
+            // 기본 보기는 쿼리를 붙이지 않는다. 붙이면 /tech 와
+            // /tech?view=tech 가 같은 화면을 가리키는 서로 다른 주소가 된다.
+            href={view === DEFAULT_VIEW ? '/tech' : `/tech?view=${view}`}
             aria-current={active ? 'page' : undefined}
             className={cn(
               // 활성 표시는 배경이 아니라 아래 밑줄로 준다. 기업 사이트 GNB 는
@@ -54,6 +56,30 @@ export function MainNav() {
           </Link>
         );
       })}
+
+      {/*
+        제품은 카탈로그의 보기 기준이 아니라 독립된 화면이다. 기술을 묶는
+        기준(?view=)으로 두었더니 기술 목록을 제품 이름으로 나눈 것 이상이
+        되지 못했다. 제품에는 구성 흐름과 도입 조건이라는 제 내용이 있다.
+      */}
+      <Link
+        href="/products"
+        aria-current={pathname.startsWith('/products') ? 'page' : undefined}
+        className={cn(
+          'relative px-2.5 py-2 transition-colors sm:px-3.5',
+          pathname.startsWith('/products')
+            ? 'font-medium text-white'
+            : 'text-ink-300 hover:text-white',
+        )}
+      >
+        제품
+        {pathname.startsWith('/products') ? (
+          <span
+            aria-hidden
+            className="absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-[var(--color-brand-bright)] sm:inset-x-3.5"
+          />
+        ) : null}
+      </Link>
 
       {/*
         본사 사이트로 돌아가는 길. 하위 사이트에 이것이 없으면 방문자는

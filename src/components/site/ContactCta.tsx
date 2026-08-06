@@ -13,8 +13,7 @@ export function ContactCta() {
           적용 가능성을 함께 검토해 드립니다
         </h2>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-300">
-          해결하시려는 문제와 현장 조건을 알려주시면, 적용 가능한 기술과 도입 조건을 정리해
-          회신드립니다.
+          현장 조건을 알려주시면 적용 가능한 기술과 도입 조건을 정리해 회신드립니다.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">

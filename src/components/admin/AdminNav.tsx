@@ -18,7 +18,7 @@ const ITEMS = [
   { href: '/admin', label: '기술', match: (p: string) => p === '/admin' || p.startsWith('/admin/tech') },
   {
     href: '/admin/solutions',
-    label: '제품 · 구성 제안',
+    label: '제품 · 현장 구성',
     match: (p: string) => p.startsWith('/admin/solutions'),
   },
   {

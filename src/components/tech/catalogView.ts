@@ -34,9 +34,14 @@ export const VIEW_LABELS: Record<CatalogView, string> = {
 };
 
 /** 본문 머리에 쓰는 제목 */
+/**
+ * 본문 머리에 쓰는 제목.
+ * 브라우저 탭 제목·히어로 버튼과 같은 이름을 쓴다 — 한 화면을 여러 이름으로
+ * 부르면 방문자는 다른 곳에 왔다고 생각한다.
+ */
 export const VIEW_TITLES: Record<CatalogView, string> = {
-  tech: '보유 기술',
-  industry: '산업에 적용된 기술',
+  tech: '기술 카탈로그',
+  industry: '산업별 기술',
 };
 
 /** 제목 위에 붙는 짧은 분류 표시 */
