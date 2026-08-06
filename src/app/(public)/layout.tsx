@@ -14,20 +14,21 @@ function Header() {
       */}
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:h-24">
         {/*
-          워드마크와 포털 이름은 구분선으로 나눈다. 나란히만 두면 "INFINIQ
-          기술 데모 포털" 이라는 하나의 제품명으로 읽혀, 본사와 하위 사이트의
-          관계가 드러나지 않는다.
+          워드마크는 회사 자산 이미지를 쓴다. 글꼴로 흉내 내면 자간과 Q 의
+          꼬리가 달라 다른 회사 로고처럼 보인다.
+          원본 SVG 를 받으면 public/brand 의 파일만 교체하면 된다.
+
+          포털 이름은 구분선으로 나눈다. 나란히만 두면 "INFINIQ 기술 데모
+          포털" 이라는 하나의 제품명으로 읽혀 본사와의 관계가 드러나지 않는다.
         */}
-        {/*
-          임시 도형을 두지 않는다. 실제 심볼이 없는 상태에서 색 사각형을 세워
-          두면 로고가 아니라 자리표시자로 읽혀 화면 전체가 미완성으로 보인다.
-          워드마크만으로 세우고, 실제 심볼 파일이 오면 여기에 <img> 를 넣는다.
-        */}
-        <Link href="/" className="flex items-baseline gap-3">
-          <span className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            {BRAND.shortName}
-          </span>
-          <span aria-hidden className="hidden h-5 w-px self-center bg-white/20 sm:inline-block" />
+        <Link href="/" className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/infiniq-wordmark.png"
+            alt={BRAND.nameEn}
+            className="h-5 w-auto sm:h-6"
+          />
+          <span aria-hidden className="hidden h-5 w-px bg-white/20 sm:inline-block" />
           {/* 부제는 국문 문장이 아니라 표기로 둔다 — 워드마크 옆에서 문장이 되면 무겁다 */}
           <span className="hidden text-xs tracking-[0.18em] text-ink-400 uppercase sm:inline">
             {BRAND.productNameEn}
