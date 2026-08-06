@@ -265,9 +265,9 @@ export interface DomainDef {
   label: string;
   /** 카드처럼 폭이 좁은 자리에 쓰는 짧은 이름 (예: "AI") */
   short_label: string;
-  /** 축 카드의 한 줄 주장 */
+  /** 이 영역이 고객에게 무엇을 해주는지. 카드 제목 아래 한 줄. */
   lead: string;
-  /** 축 카드의 설명 문단 */
+  /** 이 영역에 어떤 기술이 들어 있는지. lead 를 다시 풀어 쓰지 않는다. */
   description: string;
   /** ACCENTS 중 하나. 임의 hex 를 허용하지 않는다. */
   accent: Accent;

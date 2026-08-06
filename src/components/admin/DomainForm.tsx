@@ -207,15 +207,21 @@ export function DomainForm({
               </Field>
             </Row>
 
-            <Field label="한 줄 주장" hint="랜딩의 축 카드 제목 아래에 굵게 들어갑니다.">
+            <Field
+              label="한 줄 소개"
+              hint="이 영역이 고객에게 무엇을 해주는지. 카드 제목 아래 굵게 들어갑니다."
+            >
               <TextInput
                 value={item.lead}
-                placeholder="현장에 가지 않아도 설비 상태를 파악합니다"
+                placeholder="현장에 가지 않고 설비를 확인합니다"
                 onChange={(event) => patch(index, { lead: event.target.value })}
               />
             </Field>
 
-            <Field label="설명" hint="축 카드의 본문입니다. 두 문장을 넘기지 않는 편이 좋습니다.">
+            <Field
+              label="구성 설명"
+              hint="이 영역에 어떤 기술이 들어 있는지. 위 한 줄과 같은 말을 반복하지 않습니다."
+            >
               <TextArea
                 rows={2}
                 value={item.description}
