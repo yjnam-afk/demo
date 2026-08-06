@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { TechDetail } from '@/components/tech/TechDetail';
 import { getRepo } from '@/lib/data';
 import { toPublicTech } from '@/lib/domain/publicView';
@@ -27,7 +27,16 @@ export default async function TechDetailPage({ params }: { params: Promise<{ id:
   // getPublic 은 비공개·임시저장 기술에 null 을 돌려준다 —
   // 외부 방문자에게는 존재 자체가 드러나지 않는다.
   const tech = await repo.getPublic(id);
-  if (!tech) notFound();
+  if (!tech) {
+    /**
+     * id 가 바뀐 기술일 수 있다. 영업 담당이 메일로 보낸 링크나 전시회
+     * 자료의 QR 이 옛 주소를 가리키고 있으므로, 404 로 끝내지 않고 현재
+     * 주소로 넘긴다. 비공개로 돌린 기술은 여기서도 걸리지 않는다.
+     */
+    const moved = await repo.findByPreviousId(id);
+    if (moved && (await repo.getPublic(moved.id))) permanentRedirect(`/tech/${moved.id}`);
+    notFound();
+  }
 
   // 함께 쓰는 기술도 같은 경로로 조회해, 비공개 기술이 링크로 새어 나가지 않게 한다.
   const maps = await loadPublicMaps(repo);

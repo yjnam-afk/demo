@@ -53,6 +53,10 @@ export interface TechRepository {
   create(tech: Tech): Promise<Tech>;
   update(id: string, patch: Partial<Tech>): Promise<Tech>;
   remove(id: string): Promise<void>;
+  /** id 변경. 제품의 구성 기술과 연계 기술 참조를 함께 옮긴다. */
+  rename(oldId: string, newId: string): Promise<Tech>;
+  /** 옛 id 로 들어온 요청을 현재 기술로 잇는다. */
+  findByPreviousId(id: string): Promise<Tech | null>;
   /** id 배열 순서대로 order 를 다시 매긴다. */
   reorder(ids: string[]): Promise<void>;
   saveHealth(id: string, health: Health): Promise<void>;

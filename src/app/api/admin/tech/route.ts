@@ -23,8 +23,30 @@ export async function POST(request: Request) {
   const repo = getRepo();
 
   try {
-    const body = (await request.json()) as { tech?: unknown; mode?: 'create' | 'update' };
+    const body = (await request.json()) as {
+      tech?: unknown;
+      mode?: 'create' | 'update';
+      /** 수정 화면에서 id 를 바꾼 경우의 원래 id */
+      originalId?: string;
+    };
     const incomingId = (body.tech as { id?: string } | undefined)?.id;
+
+    /**
+     * id 변경은 저장 전에 처리한다.
+     *
+     * 새 id 로 조회하면 아무것도 안 나와 신규 등록으로 취급되고, 같은 기술이
+     * 둘로 늘면서 옛 레코드를 아무도 가리키지 않게 된다. 먼저 이름을 옮겨
+     * 참조까지 정리한 뒤에 나머지 항목을 저장한다.
+     */
+    const originalId = typeof body.originalId === 'string' ? body.originalId : '';
+    if (body.mode === 'update' && originalId && incomingId && originalId !== incomingId) {
+      try {
+        await repo.rename(originalId, incomingId);
+      } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 409 });
+      }
+    }
+
     const existing = incomingId ? await repo.get(incomingId) : null;
 
     if (body.mode === 'create' && existing) {

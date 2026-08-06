@@ -143,6 +143,14 @@ export interface Tech {
   status: Status;
   order: number;
   health?: Health;
+  /**
+   * 예전에 쓰던 id 목록.
+   *
+   * id 를 바꾸면 그전에 나간 링크가 전부 깨진다. 영업 담당이 메일로 보낸
+   * 기술 링크나 전시회 자료의 QR 이 여기에 해당한다. 옛 id 를 남겨 두고
+   * 상세 화면에서 현재 주소로 넘겨 준다.
+   */
+  previous_ids?: string[];
   created_at: string;
   updated_at: string;
 }

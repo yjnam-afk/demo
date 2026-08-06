@@ -158,6 +158,8 @@ export function TechForm({
         body: JSON.stringify({
           tech: { ...toTech(draft), status },
           mode: existing ? 'update' : 'create',
+          // id 를 바꾼 경우 서버가 어느 기술을 옮기는지 알아야 한다.
+          originalId: existing?.id,
         }),
       });
 
@@ -217,11 +219,16 @@ export function TechForm({
           <Field
             label="기술 id"
             required
-            hint={existing ? '등록 후에는 바꿀 수 없습니다.' : '영문 소문자·숫자·하이픈 (URL 에 쓰입니다)'}
+            hint={
+              existing
+                ? draft.id !== existing.id
+                  ? `주소가 /tech/${draft.id} 로 바뀝니다. 제품 구성과 연계 기술은 함께 옮겨지고, 예전 주소 /tech/${existing.id} 로 들어와도 새 주소로 연결됩니다.`
+                  : '바꾸면 주소가 함께 바뀝니다. 예전 주소로 들어온 방문자는 새 주소로 연결됩니다.'
+                : '영문 소문자·숫자·하이픈 (URL 에 쓰입니다)'
+            }
           >
             <TextInput
               value={draft.id}
-              disabled={Boolean(existing)}
               placeholder="intrusion-detection"
               onChange={(event) => set({ id: event.target.value })}
             />

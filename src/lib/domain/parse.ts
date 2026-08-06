@@ -250,6 +250,8 @@ export function parseTechInput(
     status: pick(STATUSES, raw.status, '상태'),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
     health: existing?.health,
+    // 옛 id 목록은 관리자 입력이 아니라 저장소가 rename 시점에 쌓는다.
+    previous_ids: existing?.previous_ids,
     created_at: existing?.created_at ?? now,
     updated_at: now,
   };

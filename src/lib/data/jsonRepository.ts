@@ -162,6 +162,67 @@ export class JsonTechRepository implements TechRepository {
     });
   }
 
+  /**
+   * 기술 id 변경.
+   *
+   * id 는 URL 이자 다른 데이터가 이 기술을 가리키는 열쇠다. 값만 바꾸면
+   * 제품의 구성 기술과 연계 기술이 존재하지 않는 id 를 가리키게 되어
+   * 화면에서 조용히 사라진다. 그래서 참조를 같은 쓰기 안에서 함께 옮긴다.
+   *
+   * 옛 id 는 버리지 않고 previous_ids 에 쌓는다 — 이미 나간 링크를 살린다.
+   */
+  async rename(oldId: string, newId: string): Promise<Tech> {
+    return serialized(async () => {
+      const all = await this.allTech();
+      const target = all.find((t) => t.id === oldId);
+      if (!target) throw new Error(`기술을 찾을 수 없습니다: ${oldId}`);
+
+      if (all.some((t) => t.id === newId)) {
+        throw new Error(`이미 존재하는 기술 id 입니다: ${newId}`);
+      }
+      // 다른 기술이 쓰던 옛 id 를 가져가면 그 기술의 옛 링크가 엉뚱한 곳으로
+      // 넘어간다. 링크가 깨지는 것보다 나쁘다.
+      const heldBy = all.find((t) => t.id !== oldId && t.previous_ids?.includes(newId));
+      if (heldBy) {
+        throw new Error(`"${heldBy.name_ko}" 이(가) 예전에 쓰던 id 입니다: ${newId}`);
+      }
+
+      const history = [...(target.previous_ids ?? []), oldId].filter((v) => v !== newId);
+      target.id = newId;
+      target.previous_ids = [...new Set(history)];
+      target.updated_at = new Date().toISOString();
+
+      // 다른 기술의 연계 목록
+      for (const tech of all) {
+        if (tech.related_tech.includes(oldId)) {
+          tech.related_tech = tech.related_tech.map((v) => (v === oldId ? newId : v));
+        }
+      }
+      await this.saveTech(all);
+
+      // 제품·구성의 구성 기술
+      const solutions = await readJson<Solution[]>(SOLUTION_FILE, []);
+      let touched = false;
+      for (const solution of solutions) {
+        for (const step of solution.steps) {
+          if (step.tech_id === oldId) {
+            step.tech_id = newId;
+            touched = true;
+          }
+        }
+      }
+      if (touched) await writeJson(SOLUTION_FILE, solutions);
+
+      return target;
+    });
+  }
+
+  /** 옛 id 로 들어온 요청을 현재 기술로 잇는다. 상세 화면이 현재 주소로 넘긴다. */
+  async findByPreviousId(id: string): Promise<Tech | null> {
+    const all = await this.allTech();
+    return all.find((t) => t.previous_ids?.includes(id)) ?? null;
+  }
+
   async remove(id: string): Promise<void> {
     return serialized(async () => {
       const all = await this.allTech();
