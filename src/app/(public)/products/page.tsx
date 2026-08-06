@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: '제품',
-  description: '제품마다 어떤 기술이 들어가 있는지',
+  description: '제품별 구성 기술',
 };
 
 export default async function ProductsPage() {
@@ -23,7 +23,7 @@ export default async function ProductsPage() {
             제품
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
-            어느 제품에 어떤 기술이 몇 단계로 들어가 있는지 적었습니다.
+            각 제품이 어떤 기술로 구성되어 있는지 단계별로 정리했습니다.
           </p>
         </div>
       </section>

@@ -54,7 +54,7 @@ export function TechGrid({
     return (
       <div className="rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center">
         <p className="text-sm text-ink-600">조건에 맞는 기술이 없습니다.</p>
-        <p className="mt-1 text-sm text-ink-400">필터를 줄여서 다시 확인해 주세요.</p>
+        <p className="mt-1 text-sm text-ink-400">필터를 줄여 다시 확인해 보십시오.</p>
       </div>
     );
   }

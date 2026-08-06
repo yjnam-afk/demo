@@ -18,7 +18,7 @@ export function MetricDemo({
   if (!headline) {
     return (
       <div className="rounded-lg border border-ink-200 bg-white p-6 text-sm text-ink-500">
-        이 기술은 화면으로 보여드릴 게 없어 수치만 올려 뒀습니다. 직접 보시려면 문의 주세요.
+        화면으로 시연할 항목이 없어 성능 수치로 대신합니다. 직접 확인이 필요하시면 문의해 주십시오.
       </div>
     );
   }
