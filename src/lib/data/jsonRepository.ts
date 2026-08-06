@@ -284,7 +284,9 @@ export class JsonTechRepository implements TechRepository {
     return {
       techCount: all.length,
       thirdPartyCount: all.filter((t) => t.verification.level === 'third_party').length,
-      metrics: summarizeAchievement(all.map((t) => t.metrics)),
+      // 대외 제한 기술의 지표는 화면에 나가지 않는다. 여기서 세면 어디에도
+      // 보이지 않는 숫자가 합계에 섞인다.
+      metrics: summarizeAchievement(all.filter((t) => !t.restricted).map((t) => t.metrics)),
       provenCount: all.filter(
         (t) => t.business.maturity === 'field_proven' || t.business.maturity === 'pilot_done',
       ).length,

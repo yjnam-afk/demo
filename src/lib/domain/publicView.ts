@@ -52,12 +52,25 @@ export function toPublicTech(
   void previous_ids;
   void related_tech;
 
+  /**
+   * 과제 연계 기술의 대외 제외 항목.
+   *
+   * 공개 범위를 낮추는 것과는 다른 문제다 — 기술은 외부에 공개하되 그중
+   * 일부 항목만 가려야 한다. 화면마다 조건문을 두면 한 곳을 빠뜨리는 순간
+   * 새어 나가므로, 공개 직렬화라는 한 지점에서 통째로 지운다.
+   */
+  const restricted = tech.restricted;
+
   // 축이 삭제된 뒤 남은 기술도 화면에서 사라지면 안 된다. 라벨은 id 로
   // 대신하고 색만 기본값으로 떨어뜨려 목록에는 그대로 남긴다.
   const def = domains.get(tech.domain);
 
   return {
     ...rest,
+    // 과제명·수요처, 알고리즘·모델 정보, 소속 조직
+    project: restricted ? undefined : rest.project,
+    base_model: restricted ? undefined : rest.base_model,
+    team: restricted ? undefined : rest.team,
     domain_label: def?.label ?? tech.domain,
     domain_short: def?.short_label ?? def?.label ?? tech.domain,
     domain_accent: def?.accent ?? FALLBACK_ACCENT,
@@ -65,10 +78,13 @@ export function toPublicTech(
     // 다시 조회하면 같은 변환이 흩어지므로 이 경계에서 한 번만 바꾼다.
     industries: rest.industries.map((id) => industryLabels.get(id) ?? id),
     demo: toPublicDemo(demo),
-    metrics: metrics.map(({ dataset_url, ...metric }) => {
-      void dataset_url;
-      return metric;
-    }),
+    // 성능 수치·시험 결과. 평가 데이터셋에 실증 장소가 드러나는 경우도 있다.
+    metrics: restricted
+      ? []
+      : metrics.map(({ dataset_url, ...metric }) => {
+          void dataset_url;
+          return metric;
+        }),
     resources: resources.filter((r) => !r.internal),
   };
 }

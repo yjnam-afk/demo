@@ -53,6 +53,7 @@ export function TechDetail({
   related,
   usedIn = [],
   unlisted = false,
+  restricted = false,
 }: {
   tech: PublicTech;
   /** 함께 쓰는 기술 — 외부 공개 대상만 넘어온다. */
@@ -61,6 +62,8 @@ export function TechDetail({
   usedIn?: { id: string; title: string; name_en?: string }[];
   /** 링크 공개 — 목록에 없는 화면이다. 방문자에게 그 사실을 알린다. */
   unlisted?: boolean;
+  /** 과제 연계로 일부 항목이 빠져 있다. 빈 자리의 이유를 밝힌다. */
+  restricted?: boolean;
 }) {
   const style = accentStyle(tech.domain_accent);
   const business = tech.business;
@@ -186,6 +189,17 @@ export function TechDetail({
         {tech.metrics.length > 0 ? (
           <Section title="성능 지표">
             <MetricTable metrics={tech.metrics} />
+          </Section>
+        ) : restricted ? (
+          /*
+            수치가 없는 것과 못 밝히는 것은 다르다. 이유를 적지 않으면
+            "측정을 안 했다" 로 읽혀 오히려 신뢰를 깎는다.
+          */
+          <Section title="성능 지표">
+            <p className="text-sm leading-relaxed text-ink-500">
+              과제 협약에 따라 성능 수치와 시험 결과는 공개하지 않습니다. 개별 미팅에서
+              안내해 드립니다.
+            </p>
           </Section>
         ) : null}
 

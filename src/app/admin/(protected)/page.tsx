@@ -25,6 +25,7 @@ export default async function AdminTechListPage() {
     category: tech.category,
     demoType: DEMO_TYPE_LABELS[tech.demo.type],
     visibility: tech.visibility,
+    restricted: tech.restricted,
     metricCount: tech.metrics.length,
     health: tech.health ?? null,
     // 데모 서버가 없는 타입은 헬스체크 대상이 아니다.

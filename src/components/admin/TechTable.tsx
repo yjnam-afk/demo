@@ -22,6 +22,7 @@ export interface AdminRow {
   category: string;
   demoType: string;
   visibility: Visibility;
+  restricted: boolean;
   metricCount: number;
   health: Health | null;
   hasEndpoint: boolean;
@@ -208,6 +209,9 @@ export function TechTable({ rows }: { rows: AdminRow[] }) {
                       직접 조립하게 두면 오타가 나고, 오타 난 링크는 고객에게
                       404 로 도착한다.
                     */}
+                    {row.restricted ? (
+                      <span className="text-xs text-[var(--color-signal-warn)]">과제 제한</span>
+                    ) : null}
                     {row.visibility === 'link' ? (
                       <button
                         type="button"

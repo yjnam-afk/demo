@@ -243,6 +243,7 @@ export function parseTechInput(
     resources: parseResources(raw.resources),
     related_tech: strList(raw.related_tech),
     visibility: pick(VISIBILITIES, raw.visibility, '공개 범위'),
+    restricted: raw.restricted === true,
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),
     health: existing?.health,
     // 옛 id 목록은 관리자 입력이 아니라 저장소가 rename 시점에 쌓는다.

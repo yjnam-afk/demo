@@ -99,7 +99,8 @@
     "visibility": "public",
     "order": 0,
     "created_at": "2026-01-12T02:00:00.000Z",
-    "updated_at": "2026-07-30T05:20:00.000Z"
+    "updated_at": "2026-07-30T05:20:00.000Z",
+    "restricted": false
   },
   {
     "id": "crowd-counting",
@@ -175,7 +176,8 @@
     "visibility": "public",
     "order": 1,
     "created_at": "2026-02-03T02:00:00.000Z",
-    "updated_at": "2026-07-28T08:10:00.000Z"
+    "updated_at": "2026-07-28T08:10:00.000Z",
+    "restricted": false
   },
   {
     "id": "digital-twin-plant",
@@ -242,7 +244,8 @@
     "visibility": "public",
     "order": 2,
     "created_at": "2026-03-11T02:00:00.000Z",
-    "updated_at": "2026-07-25T01:40:00.000Z"
+    "updated_at": "2026-07-25T01:40:00.000Z",
+    "restricted": false
   },
   {
     "id": "flood-simulation",
@@ -318,7 +321,8 @@
     "visibility": "public",
     "order": 3,
     "created_at": "2026-04-02T02:00:00.000Z",
-    "updated_at": "2026-07-22T06:00:00.000Z"
+    "updated_at": "2026-07-22T06:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "photoreal-3d",
@@ -378,7 +382,8 @@
     "visibility": "internal",
     "order": 4,
     "created_at": "2026-05-19T02:00:00.000Z",
-    "updated_at": "2026-07-15T03:30:00.000Z"
+    "updated_at": "2026-07-15T03:30:00.000Z",
+    "restricted": false
   },
   {
     "id": "video-summary",
@@ -449,7 +454,8 @@
     "visibility": "public",
     "order": 5,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "privacy-masking",
@@ -518,7 +524,8 @@
     "visibility": "public",
     "order": 6,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "adaptive-model-switch",
@@ -589,7 +596,8 @@
     "visibility": "public",
     "order": 7,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "synthetic-data",
@@ -649,7 +657,8 @@
     "visibility": "public",
     "order": 8,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "doc-structuring",
@@ -708,7 +717,8 @@
     "visibility": "public",
     "order": 9,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "predictive-maintenance-twin",
@@ -777,7 +787,8 @@
     "visibility": "public",
     "order": 10,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "process-simulation",
@@ -825,7 +836,8 @@
     "visibility": "public",
     "order": 11,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "facility-extraction",
@@ -896,7 +908,8 @@
     "visibility": "public",
     "order": 12,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   },
   {
     "id": "landslide-risk",
@@ -957,6 +970,7 @@
     "visibility": "public",
     "order": 13,
     "created_at": "2026-08-05T00:00:00.000Z",
-    "updated_at": "2026-08-05T00:00:00.000Z"
+    "updated_at": "2026-08-05T00:00:00.000Z",
+    "restricted": false
   }
 ]

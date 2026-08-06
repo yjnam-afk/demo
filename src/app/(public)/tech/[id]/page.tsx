@@ -60,6 +60,7 @@ export default async function TechDetailPage({ params }: { params: Promise<{ id:
       related={related}
       usedIn={usedIn}
       unlisted={tech.visibility === 'link'}
+      restricted={tech.restricted}
     />
   );
 }

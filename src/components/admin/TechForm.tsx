@@ -43,6 +43,18 @@ type Draft = Omit<Tech, 'metrics'> & { metrics: MetricDraft[] };
 const options = <T extends string>(list: readonly T[], labels: Record<T, string>) =>
   list.map((value) => ({ value, label: labels[value] }));
 
+/**
+ * 과제 연계 시 대외로 내보내지 않는 항목.
+ * 2026 국제치안산업대전 전시 기획안의 「공통 제외 항목」을 이 화면이 다룰 수
+ * 있는 범위로 옮긴 것이다. 관리자가 무엇이 가려지는지 저장 전에 알아야 한다.
+ */
+const RESTRICTED_FIELDS = [
+  '과제명 · 수요처명',
+  '베이스 모델 등 알고리즘 · AI 모델 정보',
+  '성능 지표와 평가 데이터셋 (시험 결과 · 실증 장소가 드러납니다)',
+  '담당 조직',
+];
+
 function blank(): Draft {
   const now = new Date().toISOString();
   return {
@@ -65,6 +77,7 @@ function blank(): Draft {
     resources: [],
     related_tech: [],
     visibility: 'draft',
+    restricted: false,
     order: 0,
     created_at: now,
     updated_at: now,
@@ -655,6 +668,35 @@ export function TechForm({
             onAdded={setIndustries}
           />
         </Field>
+      </Section>
+
+      <Section
+        title="대외 공개 제한"
+        description="정부 과제로 개발한 기술은 외부에 공개하되 일부 항목은 내보낼 수 없습니다."
+      >
+        <label className="flex items-start gap-2 text-sm text-ink-700">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={draft.restricted}
+            onChange={(event) => set({ restricted: event.target.checked })}
+          />
+          <span>
+            과제 연계 기술입니다
+            <span className="mt-1 block text-ink-500">
+              켜면 아래 항목이 공개 화면과 공개 API 에서 모두 빠집니다. 공개 범위 설정과는
+              별개로 동작합니다.
+            </span>
+          </span>
+        </label>
+
+        {draft.restricted ? (
+          <ul className="flex flex-col gap-1 rounded border border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)] px-4 py-3 text-sm text-[var(--color-signal-warn)]">
+            {RESTRICTED_FIELDS.map((item) => (
+              <li key={item}>· {item}</li>
+            ))}
+          </ul>
+        ) : null}
       </Section>
 
       {/* 저장 막대는 화면에 고정한다. 폼이 길어 하단까지 내려가야 저장할 수 있으면 불편하다. */}
