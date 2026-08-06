@@ -209,18 +209,18 @@ export function DomainForm({
 
             <Field
               label="한 줄 소개"
-              hint="이 영역이 고객에게 무엇을 해주는지. 카드 제목 아래 굵게 들어갑니다."
+              hint="기술이 하는 일만 씁니다. 산업이나 제품은 각각 다른 화면이 맡습니다."
             >
               <TextInput
                 value={item.lead}
-                placeholder="현장에 가지 않고 설비를 확인합니다"
+                placeholder="실물의 상태를 화면 안에서 재현합니다"
                 onChange={(event) => patch(index, { lead: event.target.value })}
               />
             </Field>
 
             <Field
               label="구성 설명"
-              hint="이 영역에 어떤 기술이 들어 있는지. 위 한 줄과 같은 말을 반복하지 않습니다."
+              hint="어떤 데이터를 어떤 방법으로 다루는지. 위 한 줄을 다시 풀어 쓰거나 적용 사례를 들지 않습니다."
             >
               <TextArea
                 rows={2}

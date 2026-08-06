@@ -265,9 +265,14 @@ export interface DomainDef {
   label: string;
   /** 카드처럼 폭이 좁은 자리에 쓰는 짧은 이름 (예: "AI") */
   short_label: string;
-  /** 이 영역이 고객에게 무엇을 해주는지. 카드 제목 아래 한 줄. */
+  /**
+   * 기술이 하는 일 한 줄.
+   *
+   * 산업이나 제품을 끌어오지 않는다. 셋은 같은 목록을 보는 서로 다른
+   * 기준인데 기술 설명이 적용처를 말해 버리면 세 기준이 겹쳐 읽힌다.
+   */
   lead: string;
-  /** 이 영역에 어떤 기술이 들어 있는지. lead 를 다시 풀어 쓰지 않는다. */
+  /** 어떤 데이터를 어떤 방법으로 다루는지. lead 를 다시 풀어 쓰지 않는다. */
   description: string;
   /** ACCENTS 중 하나. 임의 hex 를 허용하지 않는다. */
   accent: Accent;
