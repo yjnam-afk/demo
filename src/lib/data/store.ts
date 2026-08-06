@@ -190,3 +190,36 @@ export class BlobStore implements DocumentStore {
 export function createStore(): DocumentStore {
   return process.env.BLOB_READ_WRITE_TOKEN ? new BlobStore() : new FileStore();
 }
+
+/**
+ * 저장 가능한 환경인지 미리 알려 준다.
+ *
+ * 저장이 막힌 것을 저장 버튼을 눌러야 알게 되면 관리자는 폼을 다 채운 뒤에야
+ * 헛수고였음을 안다. 화면을 열 때 먼저 알린다.
+ *
+ * 파일 저장소만 검사하면 된다 — Blob 은 토큰이 있으면 쓸 수 있고, 실제 실패는
+ * 저장 시점에 오류로 나온다.
+ */
+let writableCache: boolean | null = null;
+
+export async function storeStatus(): Promise<{ kind: DocumentStore['kind']; writable: boolean }> {
+  const kind = process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'file';
+  if (kind === 'blob') return { kind, writable: true };
+
+  if (writableCache === null) {
+    /*
+      권한 비트를 보는 access(W_OK) 로는 부족하다. root 로 도는 컨테이너에서는
+      비트와 무관하게 통과하고, 읽기 전용 마운트(Vercel 의 EROFS)는 비트가
+      아니라 파일시스템이 막는 것이라 실제로 써 봐야만 드러난다.
+    */
+    const probe = path.join(DATA_DIR, '.write-probe');
+    try {
+      await fs.writeFile(probe, '');
+      await fs.rm(probe, { force: true });
+      writableCache = true;
+    } catch {
+      writableCache = false;
+    }
+  }
+  return { kind, writable: writableCache };
+}
