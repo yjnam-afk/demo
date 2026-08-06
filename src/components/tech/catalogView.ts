@@ -38,6 +38,13 @@ export const VIEW_TITLES: Record<CatalogView, string> = {
   product: '제품에 적용된 기술',
 };
 
+/** 제목 위에 붙는 짧은 분류 표시 */
+export const VIEW_EYEBROWS: Record<CatalogView, string> = {
+  tech: '기술',
+  industry: '산업',
+  product: '제품',
+};
+
 export function isCatalogView(value: unknown): value is CatalogView {
   return typeof value === 'string' && (CATALOG_VIEWS as readonly string[]).includes(value);
 }

@@ -5,12 +5,12 @@ import { GroupJumpBar } from '@/components/tech/GroupJumpBar';
 import { TechGrid } from '@/components/tech/TechGrid';
 import {
   DEFAULT_VIEW,
+  VIEW_EYEBROWS,
   VIEW_TITLES,
   isCatalogView,
   type CatalogView,
 } from '@/components/tech/catalogView';
 import { DomainPillars } from '@/components/site/DomainPillars';
-import { TrustBar } from '@/components/site/TrustBar';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
@@ -189,41 +189,34 @@ export default async function TechCatalogPage({
 
   return (
     <>
-      <section className="grid-backdrop bg-ink-950">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-          <p
-            className={
-              narrative
-                ? 'text-sm font-medium tracking-wide text-ink-400 uppercase'
-                : 'text-sm font-medium tracking-wide text-[var(--color-brand-bright)]'
-            }
-          >
-            {narrative ? narrative.label : BRAND.slogan}
+      {/*
+        카탈로그 머리는 랜딩 히어로가 아니다.
+        같은 슬로건과 같은 헤드라인을 그대로 반복하면 두 화면이 구분되지 않고,
+        방문자는 링크를 눌러도 제자리인 것처럼 느낀다. 여기서는 지금 무엇을
+        보고 있는지만 밝히고 크기도 히어로보다 낮춘다.
+      */}
+      <section className="grid-backdrop border-b border-white/5 bg-ink-950">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-14">
+          <p className="text-sm font-medium tracking-wide text-ink-400 uppercase">
+            {narrative ? narrative.label : VIEW_EYEBROWS[view]}
           </p>
-          <h1 className="headline mt-4 max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
-            {narrative ? narrative.lead : BRAND.headline}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-300">
-            {narrative ? narrative.description : BRAND.intro}
-          </p>
-
-          <div className="mt-10 border-t border-white/10 pt-8">
-            <TrustBar summary={summary} />
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <h1 className="max-w-2xl text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              {narrative ? narrative.lead : VIEW_TITLES[view]}
+            </h1>
+            {/* 규모는 제목 옆에 붙인다. 본문 위에 홀로 두면 무엇을 센 값인지 읽히지 않는다. */}
+            <span className="numeric text-sm text-ink-400">{countLabel}</span>
           </div>
+          {narrative ? (
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
+              {narrative.description}
+            </p>
+          ) : null}
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        <section className="pt-12 pb-20">
-          {/* 전환은 GNB 가 맡는다. 여기서는 지금 무엇을 보고 있는지만 밝힌다. */}
-          <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-4">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-ink-900">
-                {VIEW_TITLES[view]}
-              </h2>
-            </div>
-            <p className="numeric text-sm text-ink-500">{countLabel}</p>
-          </div>
+        <section className="pt-10 pb-20">
           {body}
 
         </section>
