@@ -64,14 +64,6 @@ function Footer() {
             </div>
             <p className="mt-1.5 text-sm text-ink-400">{BRAND.tagline}</p>
             <p className="mt-1 max-w-xl text-sm text-ink-500">{BRAND.positioning}</p>
-
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-500">
-              {BRAND.companyFacts.map((fact) => (
-                <span key={fact.label}>
-                  {fact.label} <span className="text-ink-300">{fact.value}</span>
-                </span>
-              ))}
-            </div>
           </div>
           {/* 헤더의 본사 링크는 좁은 화면에서 숨으므로 푸터에서 항상 노출한다. */}
           <div className="flex flex-col items-start gap-2 text-sm sm:items-end">
