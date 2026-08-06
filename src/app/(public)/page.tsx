@@ -100,7 +100,7 @@ export default async function HomePage() {
           <section className="py-16 sm:py-20">
             <SectionHead
               eyebrow="Demo"
-              title="바로 실행해 보실 수 있습니다"
+              title="숫자와 화면으로 확인하십시오"
               action={
                 summary.techCount > featured.length ? (
                   <MoreLink href="/tech">전체 {summary.techCount}건 보기</MoreLink>
