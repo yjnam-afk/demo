@@ -37,6 +37,7 @@ export function Hero({ tech }: { tech: PublicTech | null }) {
           mp4={heroVideo.mp4}
           webm={heroVideo.webm}
           poster={heroVideo.poster}
+          priority
         />
       ) : null}
 

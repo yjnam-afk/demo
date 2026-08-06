@@ -7,7 +7,7 @@ function Header() {
   return (
     // 헤더는 히어로와 같은 색이다. 스크롤 전에는 경계가 보이지 않다가
     // 본문 구간으로 넘어가면 자연스럽게 분리된다.
-    <header className="sticky top-0 z-20 border-b border-white/5 bg-ink-950/95 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-white/5 bg-ink-950">
       {/*
         높이는 본사 사이트의 GNB 에 맞춰 잡는다. 하위 사이트만 헤더가 얕으면
         본사에서 넘어온 방문자에게 다른 사이트로 읽힌다.
