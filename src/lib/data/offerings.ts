@@ -37,7 +37,12 @@ export async function listPublicOfferings(kind: OfferingKind): Promise<ResolvedO
       );
 
       return {
-        offering,
+        /**
+         * 원본 steps 를 그대로 내보내지 않는다. 거기에는 링크 공개·비공개
+         * 기술의 id 가 남아 있어, 공개 화면의 페이로드만 읽어도 주소를
+         * 조립할 수 있다. 화면에 필요한 것은 아래에서 걸러 낸 steps 뿐이다.
+         */
+        offering: { ...offering, steps: [] },
         steps: steps.filter((step): step is ResolvedStep => step !== null),
         industryLabels: offering.industries
           .filter((id) => labels.has(id))

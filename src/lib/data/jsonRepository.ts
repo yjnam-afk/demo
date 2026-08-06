@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { CategoryStore, DomainDef, Health, Industry, Solution, Tech } from '@/lib/domain/types';
 import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
-import { isExternallyVisible } from '@/lib/domain/publicView';
+import { isExternallyVisible, isReachable } from '@/lib/domain/publicView';
 import { summarizeAchievement } from '@/lib/domain/metric';
 import { FALLBACK_ACCENT } from '@/lib/ui/domain';
 import type { PublicSummary, TechPage, TechQuery, TechRepository } from './repository';
@@ -125,6 +125,19 @@ export class JsonTechRepository implements TechRepository {
     const all = await this.allTech();
     const found = all.find((t) => t.id === id);
     return found && isExternallyVisible(found) ? found : null;
+  }
+
+  /**
+   * 주소로 직접 들어온 요청용 조회.
+   *
+   * 링크 공개까지 포함한다. getPublic 과 나눠 두는 이유는 이 결과가 목록에
+   * 섞이면 안 되기 때문이다 — 연계 기술이나 제품 구성이 이 함수를 쓰면
+   * "아는 사람만" 이 무너진다. 그쪽은 getPublic 을 그대로 둔다.
+   */
+  async getShareable(id: string): Promise<Tech | null> {
+    const all = await this.allTech();
+    const found = all.find((t) => t.id === id);
+    return found && isReachable(found) ? found : null;
   }
 
   async listAll(query: TechQuery = {}): Promise<TechPage> {

@@ -14,7 +14,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const ref = new URL(request.url).searchParams.get('ref');
   if (!ref) return new NextResponse('missing ref', { status: 400 });
 
-  const tech = await getRepo().getPublic(id);
+  const tech = await getRepo().getShareable(id);
   if (!tech) return new NextResponse('not found', { status: 404 });
 
   const target = verifyFileRef(id, ref);

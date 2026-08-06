@@ -30,7 +30,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
 
   // 공개 조회를 쓴다 — 비공개·임시저장 기술의 데모는 외부에서 실행할 수 없다.
-  const tech = await getRepo().getPublic(id);
+  const tech = await getRepo().getShareable(id);
   if (!tech || tech.demo.type !== 'api') {
     return NextResponse.json({ error: '데모를 찾을 수 없습니다.' }, { status: 404 });
   }

@@ -100,20 +100,37 @@ export const METRIC_DIRECTION_LABELS: Record<MetricDirection, string> = {
  *
  * 순서가 곧 범위의 크기다 — 뒤로 갈수록 더 넓게 보인다.
  */
-export const VISIBILITIES = ['draft', 'internal', 'public'] as const;
+export const VISIBILITIES = ['draft', 'internal', 'link', 'public'] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
 
 export const VISIBILITY_LABELS: Record<Visibility, string> = {
   draft: '임시저장',
   internal: '내부 공개',
+  link: '링크 공개',
   public: '외부 공개',
 };
 
 export const VISIBILITY_HINTS: Record<Visibility, string> = {
   draft: '작성 중입니다. 어디에도 보이지 않습니다.',
   internal: '사내에서만 봅니다. 공개 사이트에는 나오지 않습니다.',
+  link: '주소를 아는 사람만 볼 수 있습니다. 목록·검색·구글에는 나오지 않습니다.',
   public: '공개 사이트에 나옵니다.',
 };
+
+/**
+ * 목록에 실리는 범위.
+ *
+ * 링크 공개는 주소로만 닿는다 — 카탈로그·산업별·제품 구성 어디에도 실리지
+ * 않는다. 한 곳이라도 실리면 "아는 사람만" 이 성립하지 않는다.
+ */
+export function isListed(visibility: Visibility): boolean {
+  return visibility === 'public';
+}
+
+/** 주소로 직접 들어왔을 때 열어 줄 범위. 데모 실행 권한도 이 기준을 따른다. */
+export function isReachableByLink(visibility: Visibility): boolean {
+  return visibility === 'link' || visibility === 'public';
+}
 
 /** 문자열이 해당 선택지 목록에 속하는지 확인한다. 관리자 입력 검증에 쓴다. */
 export function isOneOf<T extends string>(list: readonly T[], value: unknown): value is T {

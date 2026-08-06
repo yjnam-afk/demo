@@ -52,12 +52,15 @@ export function TechDetail({
   tech,
   related,
   usedIn = [],
+  unlisted = false,
 }: {
   tech: PublicTech;
   /** 함께 쓰는 기술 — 외부 공개 대상만 넘어온다. */
   related: PublicTech[];
   /** 이 기술을 구성으로 쓰는 제품 — 제품 데이터에서 역으로 조회한 결과다. */
   usedIn?: { id: string; title: string; name_en?: string }[];
+  /** 링크 공개 — 목록에 없는 화면이다. 방문자에게 그 사실을 알린다. */
+  unlisted?: boolean;
 }) {
   const style = accentStyle(tech.domain_accent);
   const business = tech.business;
@@ -67,6 +70,18 @@ export function TechDetail({
 
   return (
     <article>
+      {/*
+        링크로만 닿는 화면임을 밝힌다. 목록에 없는 이유를 모르면 방문자는
+        사이트가 잘못된 줄 알고, 링크를 아무 데나 옮겨 붙일 수도 있다.
+      */}
+      {unlisted ? (
+        <div className="border-b border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)]">
+          <p className="mx-auto max-w-4xl px-4 py-3 text-sm text-[var(--color-signal-warn)]">
+            개별 안내용으로 공유된 화면입니다. 목록과 검색에는 공개되어 있지 않습니다.
+          </p>
+        </div>
+      ) : null}
+
       {/* 1. 헤더 — 카탈로그 히어로와 같은 톤으로 이어 붙인다 */}
       <header className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-4xl px-4 py-12">

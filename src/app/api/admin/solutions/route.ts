@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const solution = parseSolutionInput(body.solution, existing);
 
     // 기술과 마찬가지로 발행 조건을 서버에서 다시 검사한다.
-    if (solution.visibility === 'public') {
+    if (solution.visibility === 'public' || solution.visibility === 'link') {
       const issues = validateSolutionForPublish(solution);
       if (issues.length > 0) {
         return NextResponse.json(

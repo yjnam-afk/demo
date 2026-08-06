@@ -1,5 +1,6 @@
 import type { Demo, DomainDef, Industry, PublicDemo, PublicTech, Solution, Tech } from './types';
 import { FALLBACK_ACCENT } from '@/lib/ui/domain';
+import { isListed, isReachableByLink } from './enums';
 
 /**
  * 내부망 엔드포인트를 공개 데모 정보로 변환한다.
@@ -44,10 +45,12 @@ export function toPublicTech(
   industryLabels: Map<string, string>,
   domains: Map<string, DomainDef>,
 ): PublicTech {
-  const { demo, metrics, resources, health, visibility, previous_ids, ...rest } = tech;
+  const { demo, metrics, resources, health, visibility, previous_ids, related_tech, ...rest } =
+    tech;
   void health;
   void visibility;
   void previous_ids;
+  void related_tech;
 
   // 축이 삭제된 뒤 남은 기술도 화면에서 사라지면 안 된다. 라벨은 id 로
   // 대신하고 색만 기본값으로 떨어뜨려 목록에는 그대로 남긴다.
@@ -70,9 +73,19 @@ export function toPublicTech(
   };
 }
 
-/** 외부 공개 대상인지 판정한다. */
+/**
+ * 목록에 실을 대상인지 판정한다.
+ *
+ * 링크 공개는 여기서 걸러진다. 카탈로그·연계 기술·제품 구성 어디에도
+ * 실리면 안 되고, 오직 주소를 아는 사람만 닿아야 한다.
+ */
 export function isExternallyVisible(tech: Tech): boolean {
-  return tech.visibility === 'public';
+  return isListed(tech.visibility);
+}
+
+/** 주소로 직접 들어온 요청에 열어 줄 대상인지 판정한다. */
+export function isReachable(tech: Tech): boolean {
+  return isReachableByLink(tech.visibility);
 }
 
 export function isSolutionVisible(solution: Solution): boolean {

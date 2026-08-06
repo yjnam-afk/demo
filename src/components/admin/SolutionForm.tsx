@@ -335,6 +335,14 @@ export function SolutionForm({
             <button
               type="button"
               disabled={pending || blocked}
+              onClick={() => void save('link')}
+              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              링크 공개
+            </button>
+            <button
+              type="button"
+              disabled={pending || blocked}
               onClick={() => void save('public')}
               className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-40"
             >

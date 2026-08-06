@@ -58,7 +58,9 @@ export async function POST(request: Request) {
     const allowedDomains = (await repo.listDomains()).map((d) => d.id);
     const tech = parseTechInput(body.tech, existing, allowedDomains);
 
-    if (tech.visibility === 'public') {
+    // 링크 공개도 고객이 보는 화면이라 같은 조건을 건다. 다른 것은 목록에
+    // 실리는지 여부뿐이다.
+    if (tech.visibility === 'public' || tech.visibility === 'link') {
       const issues = validateForPublish(tech);
       if (issues.length > 0) {
         return NextResponse.json(

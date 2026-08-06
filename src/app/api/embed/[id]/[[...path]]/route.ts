@@ -28,7 +28,7 @@ const HOP_BY_HOP = new Set([
 const FRAME_BLOCKING = new Set(['x-frame-options', 'content-security-policy']);
 
 async function proxy(request: Request, id: string, segments: string[]) {
-  const tech = await getRepo().getPublic(id);
+  const tech = await getRepo().getShareable(id);
   if (!tech || tech.demo.type !== 'embed') {
     return new NextResponse('not found', { status: 404 });
   }

@@ -11,12 +11,15 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const tech = await getRepo().getPublic(id);
+  const tech = await getRepo().getShareable(id);
   if (!tech) return { title: '기술을 찾을 수 없습니다' };
 
   return {
     title: tech.name_ko,
     description: tech.business.problem ?? tech.summary,
+    // 링크 공개는 주소를 아는 사람만 보는 화면이다. 검색에 잡히면
+    // "아는 사람만" 이 성립하지 않는다.
+    robots: tech.visibility === 'link' ? { index: false, follow: false } : undefined,
   };
 }
 
@@ -24,9 +27,9 @@ export default async function TechDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const repo = getRepo();
 
-  // getPublic 은 비공개·임시저장 기술에 null 을 돌려준다 —
-  // 외부 방문자에게는 존재 자체가 드러나지 않는다.
-  const tech = await repo.getPublic(id);
+  // 링크 공개까지 열어 준다. 임시저장·내부 공개는 여기서도 null 이라
+  // 외부 방문자에게 존재 자체가 드러나지 않는다.
+  const tech = await repo.getShareable(id);
   if (!tech) {
     /**
      * id 가 바뀐 기술일 수 있다. 영업 담당이 메일로 보낸 링크나 전시회
@@ -34,7 +37,7 @@ export default async function TechDetailPage({ params }: { params: Promise<{ id:
      * 주소로 넘긴다. 비공개로 돌린 기술은 여기서도 걸리지 않는다.
      */
     const moved = await repo.findByPreviousId(id);
-    if (moved && (await repo.getPublic(moved.id))) permanentRedirect(`/tech/${moved.id}`);
+    if (moved && (await repo.getShareable(moved.id))) permanentRedirect(`/tech/${moved.id}`);
     notFound();
   }
 
@@ -51,5 +54,12 @@ export default async function TechDetailPage({ params }: { params: Promise<{ id:
     .filter((product) => product.steps.some((step) => step.tech_id === tech.id))
     .map((product) => ({ id: product.id, title: product.title, name_en: product.name_en }));
 
-  return <TechDetail tech={toPublicTech(tech, maps.labels, maps.domains)} related={related} usedIn={usedIn} />;
+  return (
+    <TechDetail
+      tech={toPublicTech(tech, maps.labels, maps.domains)}
+      related={related}
+      usedIn={usedIn}
+      unlisted={tech.visibility === 'link'}
+    />
+  );
 }

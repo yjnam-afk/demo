@@ -8,6 +8,7 @@ import { VISIBILITY_LABELS, type Visibility } from '@/lib/domain/enums';
 const VISIBILITY_BADGE: Record<Visibility, string> = {
   draft: 'rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-500',
   internal: 'rounded bg-ink-200 px-1.5 py-0.5 text-xs font-medium text-ink-700',
+  link: 'rounded bg-[var(--color-signal-warn-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-warn)]',
   public:
     'rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]',
 };

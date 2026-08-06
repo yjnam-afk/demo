@@ -10,6 +10,7 @@ import { VISIBILITY_LABELS, type Visibility } from '@/lib/domain/enums';
 const VISIBILITY_BADGE: Record<Visibility, string> = {
   draft: 'w-fit rounded bg-ink-100 px-1.5 py-0.5 text-xs font-medium text-ink-500',
   internal: 'w-fit rounded bg-ink-200 px-1.5 py-0.5 text-xs font-medium text-ink-700',
+  link: 'w-fit rounded bg-[var(--color-signal-warn-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-warn)]',
   public:
     'w-fit rounded bg-[var(--color-signal-ok-soft)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-signal-ok)]',
 };
@@ -71,9 +72,29 @@ function HealthCell({ row, onRecheck }: { row: AdminRow; onRecheck: () => void }
  * 어렵고, 이 순서가 카탈로그 정렬뿐 아니라 랜딩의 히어로·대표 기술까지 정하므로
  * 조작이 확실한 쪽을 택했다.
  */
+/** 주소 조립을 화면이 대신한다. 관리자가 손으로 만들면 오타가 고객에게 간다. */
+function useCopyLink() {
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function copyLink(id: string) {
+    const url = `${window.location.origin}/tech/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // 클립보드 권한이 없는 환경도 있다. 그때는 주소를 띄워 직접 복사하게 한다.
+      window.prompt('아래 주소를 복사하세요', url);
+    }
+    setCopied(id);
+    window.setTimeout(() => setCopied(null), 2000);
+  }
+
+  return { copied, copyLink };
+}
+
 export function TechTable({ rows }: { rows: AdminRow[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  const { copied, copyLink } = useCopyLink();
   const [error, setError] = useState<string | null>(null);
 
   async function call(label: string, input: RequestInfo, init?: RequestInit) {
@@ -178,9 +199,25 @@ export function TechTable({ rows }: { rows: AdminRow[] }) {
 
                 <td className="px-3 py-3">
                   {/* 범위는 하나의 값이다. 두 줄로 나누면 다시 두 축처럼 읽힌다. */}
-                  <span className={VISIBILITY_BADGE[row.visibility]}>
-                    {VISIBILITY_LABELS[row.visibility]}
-                  </span>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className={VISIBILITY_BADGE[row.visibility]}>
+                      {VISIBILITY_LABELS[row.visibility]}
+                    </span>
+                    {/*
+                      링크 공개는 주소를 전달해야 의미가 있다. 관리자가 주소를
+                      직접 조립하게 두면 오타가 나고, 오타 난 링크는 고객에게
+                      404 로 도착한다.
+                    */}
+                    {row.visibility === 'link' ? (
+                      <button
+                        type="button"
+                        onClick={() => void copyLink(row.id)}
+                        className="text-xs text-ink-500 underline underline-offset-2 hover:text-ink-900"
+                      >
+                        {copied === row.id ? '복사했습니다' : '링크 복사'}
+                      </button>
+                    ) : null}
+                  </div>
                 </td>
 
                 <td className="px-3 py-3">

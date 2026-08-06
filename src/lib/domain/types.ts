@@ -170,7 +170,16 @@ export type PublicMetric = Omit<Metric, 'dataset_url'>;
 
 export type PublicTech = Omit<
   Tech,
-  'demo' | 'metrics' | 'resources' | 'health' | 'visibility' | 'previous_ids'
+  | 'demo'
+  | 'metrics'
+  | 'resources'
+  | 'health'
+  | 'visibility'
+  | 'previous_ids'
+  // 연계 기술 id 는 내보내지 않는다. 링크 공개 기술의 id 가 여기 섞여 나가면
+  // 주소를 조립할 수 있어 "주소를 아는 사람만" 이 무너진다. 화면에 필요한
+  // 연계 기술은 서버가 공개 대상만 골라 따로 넘긴다.
+  | 'related_tech'
 > & {
   demo: PublicDemo;
   metrics: PublicMetric[];

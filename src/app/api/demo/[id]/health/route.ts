@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
 
-  const tech = await getRepo().getPublic(id);
+  const tech = await getRepo().getShareable(id);
   if (!tech) {
     return NextResponse.json({ status: 'fail' }, { status: 404 });
   }

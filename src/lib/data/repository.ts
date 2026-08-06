@@ -45,6 +45,8 @@ export interface TechRepository {
   /** 외부 공개 대상만 조회한다 (published + visibility.external). */
   listPublic(query?: TechQuery): Promise<TechPage>;
   getPublic(id: string): Promise<Tech | null>;
+  /** 링크 공개까지 포함해 주소로 닿을 수 있는 기술을 조회한다. 목록에는 쓰지 않는다. */
+  getShareable(id: string): Promise<Tech | null>;
 
   /** 관리자용 — draft 와 비공개 기술을 포함한 전체 조회. */
   listAll(query?: TechQuery): Promise<TechPage>;
