@@ -99,8 +99,8 @@ export default async function HomePage() {
         {featured.length > 0 ? (
           <section className="py-16 sm:py-20">
             <SectionHead
-              eyebrow="Demo"
-              title="숫자와 화면으로 확인하십시오"
+              eyebrow="Featured"
+              title="대표 기술"
               action={
                 summary.techCount > featured.length ? (
                   <MoreLink href="/tech">전체 {summary.techCount}건 보기</MoreLink>
@@ -136,7 +136,7 @@ export default async function HomePage() {
         <section className="border-t border-ink-200 py-16 sm:py-20">
           <SectionHead
             eyebrow="Applications"
-            title="이미 현장에서 쓰이고 있습니다"
+            title="적용 현장"
           />
 
           <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
