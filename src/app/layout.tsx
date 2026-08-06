@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: `${BRAND.name} · 기술 데모 포털`,
+    default: `${BRAND.name} · ${BRAND.productName}`,
     template: `%s · ${BRAND.name}`,
   },
   description: BRAND.tagline,

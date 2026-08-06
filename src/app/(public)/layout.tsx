@@ -18,17 +18,20 @@ function Header() {
           기술 데모 포털" 이라는 하나의 제품명으로 읽혀, 본사와 하위 사이트의
           관계가 드러나지 않는다.
         */}
-        <Link href="/" className="flex items-center gap-3">
-          {/* 로고 슬롯 — 실제 심볼 이미지가 오면 이 마크를 <img> 로 교체한다 */}
-          <span
-            aria-hidden
-            className="h-7 w-7 shrink-0 rounded bg-[var(--color-brand-bright)]"
-          />
-          <span className="text-2xl font-semibold tracking-tight text-white">
+        {/*
+          임시 도형을 두지 않는다. 실제 심볼이 없는 상태에서 색 사각형을 세워
+          두면 로고가 아니라 자리표시자로 읽혀 화면 전체가 미완성으로 보인다.
+          워드마크만으로 세우고, 실제 심볼 파일이 오면 여기에 <img> 를 넣는다.
+        */}
+        <Link href="/" className="flex items-baseline gap-3">
+          <span className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             {BRAND.shortName}
           </span>
-          <span aria-hidden className="hidden h-6 w-px bg-white/20 sm:inline-block" />
-          <span className="hidden text-base text-ink-300 sm:inline">{BRAND.productName}</span>
+          <span aria-hidden className="hidden h-5 w-px self-center bg-white/20 sm:inline-block" />
+          {/* 부제는 국문 문장이 아니라 표기로 둔다 — 워드마크 옆에서 문장이 되면 무겁다 */}
+          <span className="hidden text-xs tracking-[0.18em] text-ink-400 uppercase sm:inline">
+            {BRAND.productNameEn}
+          </span>
         </Link>
 
         {/*

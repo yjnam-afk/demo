@@ -14,8 +14,10 @@ export const BRAND = {
   nameEn: 'INFINIQ',
   /** 헤더 로고 자리의 워드마크. 실제 로고 이미지가 오면 이 텍스트를 대체한다. */
   shortName: 'INFINIQ',
-  /** 워드마크 옆에 붙는 이 사이트의 이름 */
+  /** 이 사이트의 이름. 브라우저 탭 제목 등 문장 자리에 쓴다. */
   productName: '기술 데모 포털',
+  /** 헤더 워드마크 옆 표기. 국문 문장을 그대로 두면 로고 옆에서 무겁다. */
+  productNameEn: 'Tech Demo Portal',
 
   /**
    * 본사 사이트.
