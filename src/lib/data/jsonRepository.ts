@@ -1,18 +1,22 @@
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
 import type { CategoryStore, DomainDef, Health, Industry, Solution, Tech } from '@/lib/domain/types';
 import type { Domain, OfferingKind, VerificationLevel } from '@/lib/domain/enums';
 import { isExternallyVisible, isReachable } from '@/lib/domain/publicView';
 import { summarizeAchievement } from '@/lib/domain/metric';
 import { FALLBACK_ACCENT } from '@/lib/ui/domain';
 import type { PublicSummary, TechPage, TechQuery, TechRepository } from './repository';
+import { createStore } from './store';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const TECH_FILE = path.join(DATA_DIR, 'technologies.json');
-const SOLUTION_FILE = path.join(DATA_DIR, 'solutions.json');
-const CATEGORY_FILE = path.join(DATA_DIR, 'categories.json');
-const INDUSTRY_FILE = path.join(DATA_DIR, 'industries.json');
-const DOMAIN_FILE = path.join(DATA_DIR, 'domains.json');
+/**
+ * 저장 위치는 환경이 정한다 — Vercel 이면 Blob, 그 외에는 파일.
+ * 아래 조회 로직은 어느 쪽인지 알지 못한다.
+ */
+const store = createStore();
+
+const TECH = 'technologies';
+const SOLUTION = 'solutions';
+const CATEGORY = 'categories';
+const INDUSTRY = 'industries';
+const DOMAIN = 'domains';
 
 const DEFAULT_LIMIT = 12;
 
@@ -27,45 +31,13 @@ function serialized<T>(fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
-async function readJson<T>(file: string, fallback: T): Promise<T> {
-  try {
-    const raw = await fs.readFile(file, 'utf8');
-    return JSON.parse(raw) as T;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return fallback;
-    throw err;
-  }
+async function readJson<T>(name: string, fallback: T): Promise<T> {
+  return store.read(name, fallback);
 }
 
-/**
- * 저장소가 읽기 전용일 때 나는 오류.
- *
- * 서버리스 환경(Vercel 등)은 배포 산출물이 읽기 전용이라 파일 기반 저장이
- * 통하지 않는다. 원인 모를 500 대신 무엇이 문제인지 알려 준다.
- */
-export class ReadOnlyStoreError extends Error {
-  constructor() {
-    super(
-      '이 환경에서는 데이터를 저장할 수 없습니다. 파일 기반 저장소는 쓰기 가능한 디스크가 필요합니다 — 사내 서버 배포에서 사용하거나 DB 저장소로 전환하세요.',
-    );
-    this.name = 'ReadOnlyStoreError';
-  }
-}
 
-/** 임시 파일에 쓰고 rename 으로 교체한다. 쓰기 도중 중단되어도 원본이 깨지지 않는다. */
-async function writeJson(file: string, data: unknown): Promise<void> {
-  try {
-    await fs.mkdir(path.dirname(file), { recursive: true });
-    const tmp = `${file}.tmp`;
-    await fs.writeFile(tmp, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
-    await fs.rename(tmp, file);
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === 'EROFS' || code === 'EACCES' || code === 'EPERM') {
-      throw new ReadOnlyStoreError();
-    }
-    throw err;
-  }
+async function writeJson(name: string, data: unknown): Promise<void> {
+  return store.write(name, data);
 }
 
 function normalize(s: string): string {
@@ -106,11 +78,11 @@ function paginate(items: Tech[], query: TechQuery): TechPage {
 
 export class JsonTechRepository implements TechRepository {
   private async allTech(): Promise<Tech[]> {
-    return readJson<Tech[]>(TECH_FILE, []);
+    return readJson<Tech[]>(TECH, []);
   }
 
   private async saveTech(list: Tech[]): Promise<void> {
-    await writeJson(TECH_FILE, list);
+    await writeJson(TECH, list);
   }
 
   async listPublic(query: TechQuery = {}): Promise<TechPage> {
@@ -214,7 +186,7 @@ export class JsonTechRepository implements TechRepository {
       await this.saveTech(all);
 
       // 제품·구성의 구성 기술
-      const solutions = await readJson<Solution[]>(SOLUTION_FILE, []);
+      const solutions = await readJson<Solution[]>(SOLUTION, []);
       let touched = false;
       for (const solution of solutions) {
         for (const step of solution.steps) {
@@ -224,7 +196,7 @@ export class JsonTechRepository implements TechRepository {
           }
         }
       }
-      if (touched) await writeJson(SOLUTION_FILE, solutions);
+      if (touched) await writeJson(SOLUTION, solutions);
 
       return target;
     });
@@ -343,7 +315,7 @@ export class JsonTechRepository implements TechRepository {
   }
 
   async listCategories(): Promise<CategoryStore> {
-    return readJson<CategoryStore>(CATEGORY_FILE, {});
+    return readJson<CategoryStore>(CATEGORY, {});
   }
 
   async addCategory(domain: Domain, name: string): Promise<CategoryStore> {
@@ -354,21 +326,21 @@ export class JsonTechRepository implements TechRepository {
       const list = store[domain] ?? [];
       if (trimmed && !list.includes(trimmed)) {
         store[domain] = [...list, trimmed].sort((a, b) => a.localeCompare(b));
-        await writeJson(CATEGORY_FILE, store);
+        await writeJson(CATEGORY, store);
       }
       return store;
     });
   }
 
   async listDomains(): Promise<DomainDef[]> {
-    const all = await readJson<DomainDef[]>(DOMAIN_FILE, []);
+    const all = await readJson<DomainDef[]>(DOMAIN, []);
     return [...all].sort((a, b) => a.order - b.order);
   }
 
   async saveDomains(next: DomainDef[]): Promise<DomainDef[]> {
     return serialized(async () => {
       const ordered = next.map((domain, index) => ({ ...domain, order: index }));
-      await writeJson(DOMAIN_FILE, ordered);
+      await writeJson(DOMAIN, ordered);
       return ordered;
     });
   }
@@ -385,24 +357,24 @@ export class JsonTechRepository implements TechRepository {
       const usedBy = (await this.allTech()).filter((tech) => tech.domain === id).length;
       if (usedBy > 0) return { removed: false, usedBy };
 
-      const all = await readJson<DomainDef[]>(DOMAIN_FILE, []);
+      const all = await readJson<DomainDef[]>(DOMAIN, []);
       const next = all
         .filter((domain) => domain.id !== id)
         .map((domain, index) => ({ ...domain, order: index }));
-      await writeJson(DOMAIN_FILE, next);
+      await writeJson(DOMAIN, next);
 
       // 카테고리 마스터에 남은 빈 키도 함께 정리한다.
       const store = await this.listCategories();
       if (id in store) {
         delete store[id];
-        await writeJson(CATEGORY_FILE, store);
+        await writeJson(CATEGORY, store);
       }
       return { removed: true, usedBy: 0 };
     });
   }
 
   async listIndustries(): Promise<Industry[]> {
-    return readJson<Industry[]>(INDUSTRY_FILE, []);
+    return readJson<Industry[]>(INDUSTRY, []);
   }
 
   async addIndustry(label: string, description?: string): Promise<Industry[]> {
@@ -421,7 +393,7 @@ export class JsonTechRepository implements TechRepository {
       if (all.some((item) => item.id === id || item.label === trimmed)) return all;
 
       const next = [...all, { id, label: trimmed, description: description?.trim() || undefined }];
-      await writeJson(INDUSTRY_FILE, next);
+      await writeJson(INDUSTRY, next);
       return next;
     });
   }
@@ -429,7 +401,7 @@ export class JsonTechRepository implements TechRepository {
   async listSolutions(
     opts: { publishedOnly?: boolean; kind?: OfferingKind } = {},
   ): Promise<Solution[]> {
-    const all = await readJson<Solution[]>(SOLUTION_FILE, []);
+    const all = await readJson<Solution[]>(SOLUTION, []);
     return all
       .filter((s) => (opts.publishedOnly ? s.visibility === 'public' : true))
       .filter((s) => (opts.kind ? s.kind === opts.kind : true))
@@ -443,21 +415,21 @@ export class JsonTechRepository implements TechRepository {
 
   async upsertSolution(solution: Solution): Promise<Solution> {
     return serialized(async () => {
-      const all = await readJson<Solution[]>(SOLUTION_FILE, []);
+      const all = await readJson<Solution[]>(SOLUTION, []);
       const index = all.findIndex((s) => s.id === solution.id);
       const next = { ...solution, updated_at: new Date().toISOString() };
       if (index === -1) all.push(next);
       else all[index] = next;
-      await writeJson(SOLUTION_FILE, all);
+      await writeJson(SOLUTION, all);
       return next;
     });
   }
 
   async removeSolution(id: string): Promise<void> {
     return serialized(async () => {
-      const all = await readJson<Solution[]>(SOLUTION_FILE, []);
+      const all = await readJson<Solution[]>(SOLUTION, []);
       await writeJson(
-        SOLUTION_FILE,
+        SOLUTION,
         all.filter((s) => s.id !== id),
       );
     });

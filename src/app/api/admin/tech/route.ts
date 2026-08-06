@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
-import { ReadOnlyStoreError } from '@/lib/data/jsonRepository';
+import { ReadOnlyStoreError } from '@/lib/data/store';
 import { requireAdminApi } from '@/lib/auth/guard';
 import { InvalidInputError, parseTechInput } from '@/lib/domain/parse';
 import { validateForPublish } from '@/lib/domain/validate';
