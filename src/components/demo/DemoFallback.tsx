@@ -65,12 +65,12 @@ export function DemoFallback({
               alt="데모 화면 예시"
             />
             <p className="mt-3 text-sm text-ink-500">
-              실제 동작 화면은 문의 주시면 개별 시연으로 안내해 드립니다.
+              실제 돌아가는 화면은 따로 보여드리겠습니다. 문의 주세요.
             </p>
           </>
         ) : (
           <p className="text-sm text-ink-500">
-            준비된 대체 자료가 없습니다. 문의 주시면 개별 시연을 안내해 드립니다.
+            대신 보여드릴 자료가 없습니다. 문의 주시면 직접 시연해 드리겠습니다.
           </p>
         )}
       </div>

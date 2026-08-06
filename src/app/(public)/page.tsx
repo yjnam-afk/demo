@@ -27,12 +27,10 @@ const FEATURED_COUNT = 4;
  * 조각처럼 보인다. 하나로 묶어 리듬을 고정한다.
  */
 function SectionHead({
-  eyebrow,
   title,
   lead,
   action,
 }: {
-  eyebrow: string;
   title: string;
   lead?: string;
   action?: React.ReactNode;
@@ -40,10 +38,7 @@ function SectionHead({
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div className="max-w-2xl">
-        <p className="text-xs font-medium tracking-widest text-ink-400 uppercase">{eyebrow}</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">{title}</h2>
         {lead ? <p className="mt-3 text-sm leading-relaxed text-ink-500">{lead}</p> : null}
       </div>
       {action}
@@ -96,7 +91,6 @@ export default async function HomePage() {
         {featured.length > 0 ? (
           <section className="py-16 sm:py-20">
             <SectionHead
-              eyebrow="Featured"
               title="대표 기술"
               action={
                 summary.techCount > featured.length ? (
@@ -116,7 +110,6 @@ export default async function HomePage() {
         {/* 무엇을 하는 조직인지 — 데모를 본 다음에 온다 */}
         <section className="border-t border-ink-200 py-16 sm:py-20">
           <SectionHead
-            eyebrow="Domains"
             title="기술 영역"
           />
           <div className="mt-10">
@@ -132,7 +125,6 @@ export default async function HomePage() {
         */}
         <section className="border-t border-ink-200 py-16 sm:py-20">
           <SectionHead
-            eyebrow="Applications"
             title="적용 현장"
           />
 

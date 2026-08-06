@@ -23,7 +23,7 @@ export default async function SolutionsPage() {
             현장 구성
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
-            아직 하나의 제품은 아니지만, 한 현장에서 함께 쓰이는 기술 조합입니다.
+            아직 제품으로 묶지는 않았지만 한 현장에서 같이 쓰이는 조합입니다.
           </p>
         </div>
       </section>

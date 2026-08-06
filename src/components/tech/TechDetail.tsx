@@ -197,7 +197,7 @@ export function TechDetail({
           */
           <Section title="성능 지표">
             <p className="text-sm leading-relaxed text-ink-500">
-              과제 협약에 따라 공개하지 않습니다. 개별 미팅에서 안내해 드립니다.
+              과제 협약 때문에 밝힐 수 없습니다. 미팅에서는 말씀드릴 수 있습니다.
             </p>
           </Section>
         ) : null}

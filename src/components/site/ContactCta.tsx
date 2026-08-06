@@ -10,10 +10,10 @@ export function ContactCta() {
     <section id="contact" className="grid-backdrop scroll-mt-24 bg-ink-950">
       <div className="mx-auto max-w-6xl px-4 py-20">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          적용 가능성을 함께 검토해 드립니다
+          도입을 검토 중이시라면
         </h2>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-300">
-          현장 조건을 알려주시면 적용 가능한 기술과 도입 조건을 정리해 회신드립니다.
+          현장 조건을 알려주시면 어떤 기술이 맞을지 정리해 보내드리겠습니다.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -27,7 +27,7 @@ export function ContactCta() {
             href="/tech"
             className="rounded border border-white/25 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-white/60"
           >
-            기술 카탈로그 먼저 보기
+            기술 먼저 보기
           </Link>
         </div>
       </div>
