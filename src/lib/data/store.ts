@@ -261,13 +261,25 @@ export async function storeStatus(): Promise<{
   }
   /*
     "연결했는데 왜 안 되지" 를 좁혀 준다. 값은 절대 내보내지 않고 이름만 센다.
-    Blob 관련 변수가 아예 없으면 연결 자체가 안 된 것이고, 있는데도 토큰으로
-    잡히지 않으면 이름이 규칙에서 벗어난 것이다.
+
+    저장소를 연결하면 Vercel 이 BLOB_STORE_ID 같은 부속 변수와 함께
+    BLOB_READ_WRITE_TOKEN 을 넣어 준다. 부속 변수만 있고 토큰이 없는 상태가
+    실제로 나오는데, 그때는 연결이 안 된 것이 아니라 토큰만 빠진 것이라
+    해야 할 일이 다르다(재연결이 아니라 변수 직접 추가).
+
+    이름을 나열하는 이유는 화면 밖에서 확인할 방법이 없기 때문이다. 인증 뒤
+    화면이고 이름만 내보내므로 값이 새지 않는다.
   */
-  const blobish = Object.keys(process.env).filter((name) => name.includes('BLOB'));
+  const related = Object.keys(process.env)
+    .filter(
+      (name) =>
+        name.includes('BLOB') || name.includes('OIDC') || name.endsWith('_READ_WRITE_TOKEN'),
+    )
+    .sort();
+
   const hint =
-    blobish.length > 0
-      ? `BLOB 이 들어간 환경 변수는 있지만(${blobish.join(', ')}) 토큰으로 쓸 수 있는 이름이 아닙니다. <접두어>_READ_WRITE_TOKEN 이어야 합니다.`
+    related.length > 0
+      ? `저장소 연결 흔적은 있지만(${related.join(', ')}) 인증에 쓸 토큰이 없습니다. 프로젝트 환경 변수에 BLOB_READ_WRITE_TOKEN 을 직접 추가한 뒤 다시 배포하세요 — 값은 Vercel 의 Blob 저장소 화면에서 복사할 수 있습니다.`
       : 'Blob 관련 환경 변수가 이 배포에 하나도 없습니다. 연결이 되지 않았거나, 연결 후 다시 배포하지 않은 상태입니다.';
 
   return { kind, writable: writableCache, label: `파일 (${DATA_DIR})`, hint };
