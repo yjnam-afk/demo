@@ -6,12 +6,38 @@ import { storeStatus } from '@/lib/data/store';
 export const dynamic = 'force-dynamic';
 
 /**
+ * 지금 보고 있는 배포가 어느 것인지.
+ *
+ * "연결한 환경과 같은 주소를 보고 있는가" 는 점검 목록에 적어 놔도 확인할
+ * 방법이 없으면 확인할 수 없다. 한 저장소로 프로젝트를 두 개 만들었거나,
+ * Production 에만 연결하고 Preview 주소를 보고 있는 경우가 여기서 갈린다.
+ * Vercel 이 넣어 주는 값을 그대로 적어 대시보드와 눈으로 맞춰 보게 한다.
+ *
+ * 값이 없으면(사내 서버·로컬) 아무것도 내지 않는다.
+ */
+function deploymentLine(): string | null {
+  if (!process.env.VERCEL) return null;
+
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA;
+  const parts = [
+    process.env.VERCEL_ENV && `환경 ${process.env.VERCEL_ENV}`,
+    process.env.VERCEL_GIT_COMMIT_REF && `브랜치 ${process.env.VERCEL_GIT_COMMIT_REF}`,
+    sha && `커밋 ${sha.slice(0, 7)}`,
+    process.env.VERCEL_URL,
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+/**
  * 저장 불가 안내.
  *
  * 저장이 막힌 것을 저장 버튼을 눌러야 알게 되면 폼을 다 채운 뒤에 헛수고였음을
  * 안다. 화면을 여는 순간 먼저 알리고, 무엇을 해야 하는지까지 적는다.
  */
 function ReadOnlyNotice({ label, hint }: { label: string; hint?: string }) {
+  const deployment = deploymentLine();
+
   return (
     <div className="border-b border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)]">
       <div className="mx-auto max-w-6xl px-4 py-3 text-sm text-[var(--color-signal-warn)]">
@@ -37,6 +63,10 @@ function ReadOnlyNotice({ label, hint }: { label: string; hint?: string }) {
             따로입니다)
           </li>
         </ul>
+        {/* 마지막 항목은 값을 보여 줘야 확인이 된다. 대시보드에서 고른 것과 맞춰 본다. */}
+        {deployment ? (
+          <p className="numeric mt-2 text-xs opacity-80">지금 이 화면 · {deployment}</p>
+        ) : null}
       </div>
     </div>
   );
