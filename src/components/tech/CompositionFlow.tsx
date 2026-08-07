@@ -19,6 +19,9 @@ export function CompositionFlow({
 }: {
   steps: { role: string; tech: PublicTech }[];
 }) {
+  /* 단계가 하나면 번호를 붙이지 않는다. 매길 순서가 없는데 "1" 만 남는다. */
+  const ordered = steps.length > 1;
+
   return (
     <ol className="mt-6 flex flex-col">
       {steps.map(({ role, tech }, index) => {
@@ -33,11 +36,14 @@ export function CompositionFlow({
             <div className="flex flex-col items-center">
               <span
                 className={cn(
-                  'numeric flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white',
+                  'flex shrink-0 items-center justify-center rounded-full',
                   style.bar,
+                  ordered
+                    ? 'numeric h-7 w-7 text-xs font-semibold text-white'
+                    : 'mt-2 h-2.5 w-2.5',
                 )}
               >
-                {index + 1}
+                {ordered ? index + 1 : null}
               </span>
               {!last ? <span className="w-px flex-1 bg-ink-200" /> : null}
             </div>

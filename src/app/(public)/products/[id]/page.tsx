@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { OfferingSection } from '@/components/site/OfferingSection';
+import { OfferingBody } from '@/components/site/OfferingSection';
 import { BRAND } from '@/lib/brand';
 import { listPublicOfferings } from '@/lib/data/offerings';
 
@@ -40,17 +40,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {found.offering.title}
           </h1>
+          {/*
+            머리에는 이름까지만 둔다. 요약을 여기서 한 번 더 쓰면 바로 아래
+            본문에 같은 문장이 다시 나온다.
+          */}
           {found.offering.name_en && found.offering.name_en !== found.offering.title ? (
             <p className="mt-1.5 text-sm text-ink-500">{found.offering.name_en}</p>
           ) : null}
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
-            {found.offering.summary}
-          </p>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        <OfferingSection item={found} index={0} headingLevel="h3" />
+        <section className="py-12">
+          <OfferingBody item={found} />
+        </section>
 
         <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
           <p className="text-lg font-medium text-white">

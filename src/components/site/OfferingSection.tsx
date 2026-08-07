@@ -16,49 +16,20 @@ export interface ResolvedOffering {
 }
 
 /**
- * 제품·시나리오 공통 표시 블록.
+ * 묶음의 내용.
  *
- * 둘은 데이터 구조가 같아 화면도 같은 뼈대를 쓴다. 다른 것은 제품에만 있는
- * 출시 단계·배포 형태뿐이라, 그 부분만 조건부로 얹는다.
+ * 제목과 번호를 포함하지 않는다. 목록에서는 제목을 세워야 하고 상세 화면에서는
+ * 머리에 이미 제목이 있어서, 여기에 제목을 넣어 두면 상세 화면에서 이름과
+ * 요약이 두 번씩 나온다.
  */
-export function OfferingSection({
-  item,
-  index,
-  headingLevel = 'h2',
-  linkToDetail = false,
-}: {
-  item: ResolvedOffering;
-  index: number;
-  headingLevel?: 'h2' | 'h3';
-  /** 제품 목록에서는 제목이 상세로 연결된다 */
-  linkToDetail?: boolean;
-}) {
+export function OfferingBody({ item }: { item: ResolvedOffering }) {
   const { offering, steps, industryLabels } = item;
-  const Heading = headingLevel;
   const isProduct = offering.kind === 'product';
 
   return (
-    <section className="border-b border-ink-200 py-14 last:border-b-0">
-      <div className="flex flex-wrap items-baseline gap-3">
-        <span className="numeric text-sm font-semibold text-ink-400">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-        <Heading className="text-2xl font-semibold tracking-tight text-ink-900">
-          {linkToDetail ? (
-            <Link href={`/products/${offering.id}`} className="hover:underline">
-              {offering.title}
-            </Link>
-          ) : (
-            offering.title
-          )}
-        </Heading>
-        {offering.name_en && offering.name_en !== offering.title ? (
-          <span className="text-sm text-ink-400">{offering.name_en}</span>
-        ) : null}
-      </div>
-
+    <>
       {isProduct && (offering.release || offering.deployment?.length) ? (
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           {offering.release ? (
             <span className="rounded border border-ink-300 bg-white px-2 py-0.5 text-ink-600">
               {RELEASE_STAGE_LABELS[offering.release]}
@@ -97,19 +68,57 @@ export function OfferingSection({
       ) : null}
 
       {steps.length === 0 ? (
-        <p className="mt-8 text-sm text-ink-400">
-          상세 구성과 도입 사례는 문의 주시면 보내드립니다.
-        </p>
+        <p className="mt-8 text-sm text-ink-400">상세 구성과 도입 사례는 문의 주시면 보내드립니다.</p>
       ) : (
-      <div className="mt-8">
-        <h3 className="text-sm font-medium text-ink-700">{steps.length}단계 구성</h3>
-        {/*
-          격자로 늘어놓으면 기술 목록과 같은 화면이 된다. 제품에서 알고 싶은
-          것은 개별 성능이 아니라 무엇이 어떤 순서로 맞물리는가다.
-        */}
-        <CompositionFlow steps={steps} />
-      </div>
+        <div className="mt-8">
+          {/* 하나뿐이면 "1단계" 라고 쓰지 않는다 — 순서가 없는데 순서를 말하는 꼴이 된다. */}
+          <h3 className="text-sm font-medium text-ink-700">
+            {steps.length > 1 ? `${steps.length}단계 구성` : '구성 기술'}
+          </h3>
+          {/*
+            격자로 늘어놓으면 기술 목록과 같은 화면이 된다. 제품에서 알고 싶은
+            것은 개별 성능이 아니라 무엇이 어떤 순서로 맞물리는가다.
+          */}
+          <CompositionFlow steps={steps} />
+        </div>
       )}
+    </>
+  );
+}
+
+/**
+ * 묶음 하나를 목록에 세우는 블록.
+ *
+ * 여러 개를 이어 붙이는 화면(현장 구성)에서만 쓴다. 상세 화면은 머리에 제목이
+ * 따로 있으므로 OfferingBody 만 가져다 쓴다.
+ */
+export function OfferingSection({
+  item,
+  index,
+  headingLevel = 'h2',
+}: {
+  item: ResolvedOffering;
+  index: number;
+  headingLevel?: 'h2' | 'h3';
+}) {
+  const { offering } = item;
+  const Heading = headingLevel;
+
+  return (
+    <section className="border-b border-ink-200 py-14 last:border-b-0">
+      <div className="mb-3 flex flex-wrap items-baseline gap-3">
+        <span className="numeric text-sm font-semibold text-ink-400">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <Heading className="text-2xl font-semibold tracking-tight text-ink-900">
+          {offering.title}
+        </Heading>
+        {offering.name_en && offering.name_en !== offering.title ? (
+          <span className="text-sm text-ink-400">{offering.name_en}</span>
+        ) : null}
+      </div>
+
+      <OfferingBody item={item} />
     </section>
   );
 }
