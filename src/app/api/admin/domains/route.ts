@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
-import { ReadOnlyStoreError } from '@/lib/data/store';
+import { errorDetail, ReadOnlyStoreError } from '@/lib/data/store';
 import { requireAdminApi } from '@/lib/auth/guard';
 import { InvalidInputError, parseDomainList } from '@/lib/domain/parse';
 
@@ -33,7 +33,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     console.error('[admin] 대분류 저장 실패', err);
-    return NextResponse.json({ error: '대분류를 저장하지 못했습니다.' }, { status: 500 });
+    return NextResponse.json(
+      { error: '대분류를 저장하지 못했습니다.', detail: errorDetail(err) },
+      { status: 500 },
+    );
   }
 }
 
@@ -77,6 +80,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     console.error('[admin] 대분류 삭제 실패', err);
-    return NextResponse.json({ error: '대분류를 삭제하지 못했습니다.' }, { status: 500 });
+    return NextResponse.json(
+      { error: '대분류를 삭제하지 못했습니다.', detail: errorDetail(err) },
+      { status: 500 },
+    );
   }
 }

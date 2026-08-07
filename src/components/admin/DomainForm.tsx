@@ -109,9 +109,13 @@ export function DomainForm({
       const body = (await response.json().catch(() => ({}))) as {
         domains?: DomainDef[];
         error?: string;
+        detail?: string;
       };
       if (!response.ok || !body.domains) {
-        setError(body.error ?? '저장하지 못했습니다.');
+        // 원인을 함께 보여 준다 — 서버 로그를 볼 수 없는 자리다.
+        setError(
+          body.detail ? `${body.error} (${body.detail})` : (body.error ?? '저장하지 못했습니다.'),
+        );
         return;
       }
       setItems(body.domains);

@@ -40,6 +40,20 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const filePath = (name: string) => path.join(DATA_DIR, `${name}.json`);
 
 /**
+ * 화면에 함께 보여 줄 오류 요약.
+ *
+ * "저장하지 못했습니다" 만 띄우면 관리자는 원인을 알 수 없다. 서버 로그는
+ * Vercel 대시보드에 있고, 그걸 볼 수 있는 사람과 이 화면을 쓰는 사람이
+ * 같지 않다. 인증 뒤 화면이므로 원인을 감출 이유가 없다.
+ *
+ * 다만 토큰이 오류 문구에 섞여 나오는 경우가 있어 지우고, 길이를 자른다.
+ */
+export function errorDetail(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  return message.replace(/vercel_blob_rw_[A-Za-z0-9_-]+/g, 'vercel_blob_rw_***').slice(0, 300);
+}
+
+/**
  * Blob 토큰이 들어 있는 환경 변수 이름.
  *
  * 기본 이름만 보면 안 된다. Vercel 에서 Blob 저장소를 연결할 때 환경 변수

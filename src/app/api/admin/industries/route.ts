@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRepo } from '@/lib/data';
-import { ReadOnlyStoreError } from '@/lib/data/store';
+import { errorDetail, ReadOnlyStoreError } from '@/lib/data/store';
 import { requireAdminApi } from '@/lib/auth/guard';
 
 export const runtime = 'nodejs';
@@ -37,6 +37,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     console.error('[admin] 산업군 추가 실패', err);
-    return NextResponse.json({ error: '산업군을 추가하지 못했습니다.' }, { status: 500 });
+    return NextResponse.json(
+      { error: '산업군을 추가하지 못했습니다.', detail: errorDetail(err) },
+      { status: 500 },
+    );
   }
 }

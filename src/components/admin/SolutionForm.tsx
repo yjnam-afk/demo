@@ -80,11 +80,17 @@ export function SolutionForm({
       const body = (await response.json().catch(() => ({}))) as {
         error?: string;
         issues?: { label: string }[];
+        detail?: string;
       };
 
       if (!response.ok) {
-        const detail = body.issues?.map((issue) => issue.label).join(', ');
-        setError(detail ? `${body.error} (${detail})` : (body.error ?? '저장하지 못했습니다.'));
+        /*
+          검증 실패는 비어 있는 항목 이름을, 서버 오류는 원인 문구를 덧붙인다.
+          "저장하지 못했습니다" 만 띄우면 관리자는 서버 로그를 볼 수 없어
+          다음에 무엇을 해야 할지 알 수 없다.
+        */
+        const extra = body.issues?.map((issue) => issue.label).join(', ') ?? body.detail;
+        setError(extra ? `${body.error} (${extra})` : (body.error ?? '저장하지 못했습니다.'));
         return;
       }
 

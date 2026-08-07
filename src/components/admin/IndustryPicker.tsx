@@ -35,10 +35,14 @@ export function IndustryPicker({
     const body = (await response.json().catch(() => ({}))) as {
       industries?: Industry[];
       error?: string;
+      detail?: string;
     };
 
     if (!response.ok || !body.industries) {
-      setError(body.error ?? '산업군을 추가하지 못했습니다.');
+      // 원인을 함께 보여 준다 — 서버 로그를 볼 수 없는 자리다.
+      setError(
+        body.detail ? `${body.error} (${body.detail})` : (body.error ?? '산업군을 추가하지 못했습니다.'),
+      );
       return;
     }
     setError(null);
