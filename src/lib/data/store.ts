@@ -39,6 +39,31 @@ export class ReadOnlyStoreError extends Error {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const filePath = (name: string) => path.join(DATA_DIR, `${name}.json`);
 
+/**
+ * Blob 토큰이 들어 있는 환경 변수 이름.
+ *
+ * 기본 이름만 보면 안 된다. Vercel 에서 Blob 저장소를 연결할 때 환경 변수
+ * 접두어를 지정할 수 있고(여러 저장소를 한 프로젝트에 붙이는 경우), 그러면
+ * 이름이 BLOB_READ_WRITE_TOKEN 이 아니라 <접두어>_READ_WRITE_TOKEN 이 된다.
+ * 연결은 됐는데 화면은 계속 "읽기 전용" 이라고 하는 상황이 여기서 나온다.
+ *
+ * 이름을 돌려주는 이유는 관리 화면에 어느 변수를 잡았는지 밝히기 위해서다.
+ * 값은 절대 화면에 내보내지 않는다.
+ */
+export function blobTokenName(): string | null {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return 'BLOB_READ_WRITE_TOKEN';
+  return (
+    Object.keys(process.env).find(
+      (name) => name.endsWith('_READ_WRITE_TOKEN') && process.env[name],
+    ) ?? null
+  );
+}
+
+function blobToken(): string | undefined {
+  const name = blobTokenName();
+  return name ? process.env[name] : undefined;
+}
+
 export class FileStore implements DocumentStore {
   readonly kind = 'file' as const;
 
@@ -130,8 +155,10 @@ export class BlobStore implements DocumentStore {
     const { list } = await import('@vercel/blob');
     let value: T;
     try {
+      // 토큰을 넘겨준다. 라이브러리는 기본 이름만 스스로 읽으므로, 접두어가
+      // 붙은 변수로 연결한 배포에서는 명시하지 않으면 인증에 실패한다.
       const found = await withTimeout(
-        list({ prefix: this.key(name), limit: 1 }),
+        list({ prefix: this.key(name), limit: 1, token: blobToken() }),
         READ_TIMEOUT_MS,
         'Blob 목록 조회',
       );
@@ -165,6 +192,7 @@ export class BlobStore implements DocumentStore {
       put(this.key(name), `${JSON.stringify(data, null, 2)}\n`, {
         access: 'public',
         contentType: 'application/json',
+        token: blobToken(),
         // 같은 키를 덮어쓴다. 기본값은 이름 뒤에 임의 문자열을 붙여 새 파일을
         // 만들기 때문에, 그대로 두면 저장할 때마다 다른 주소가 생긴다.
         addRandomSuffix: false,
@@ -188,7 +216,7 @@ export class BlobStore implements DocumentStore {
  * 그대로 파일 저장으로 돌아간다.
  */
 export function createStore(): DocumentStore {
-  return process.env.BLOB_READ_WRITE_TOKEN ? new BlobStore() : new FileStore();
+  return blobTokenName() ? new BlobStore() : new FileStore();
 }
 
 /**
@@ -207,9 +235,14 @@ export async function storeStatus(): Promise<{
   writable: boolean;
   /** 화면에 그대로 보여 줄 저장 위치 설명 */
   label: string;
+  /** 저장이 막혔을 때 원인을 좁혀 주는 한 줄 (없을 수 있다) */
+  hint?: string;
 }> {
-  const kind = process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'file';
-  if (kind === 'blob') return { kind, writable: true, label: 'Vercel Blob' };
+  const tokenName = blobTokenName();
+  if (tokenName) {
+    return { kind: 'blob', writable: true, label: `Vercel Blob · ${tokenName}` };
+  }
+  const kind = 'file' as const;
 
   if (writableCache === null) {
     /*
@@ -226,5 +259,16 @@ export async function storeStatus(): Promise<{
       writableCache = false;
     }
   }
-  return { kind, writable: writableCache, label: `파일 (${DATA_DIR})` };
+  /*
+    "연결했는데 왜 안 되지" 를 좁혀 준다. 값은 절대 내보내지 않고 이름만 센다.
+    Blob 관련 변수가 아예 없으면 연결 자체가 안 된 것이고, 있는데도 토큰으로
+    잡히지 않으면 이름이 규칙에서 벗어난 것이다.
+  */
+  const blobish = Object.keys(process.env).filter((name) => name.includes('BLOB'));
+  const hint =
+    blobish.length > 0
+      ? `BLOB 이 들어간 환경 변수는 있지만(${blobish.join(', ')}) 토큰으로 쓸 수 있는 이름이 아닙니다. <접두어>_READ_WRITE_TOKEN 이어야 합니다.`
+      : 'Blob 관련 환경 변수가 이 배포에 하나도 없습니다. 연결이 되지 않았거나, 연결 후 다시 배포하지 않은 상태입니다.';
+
+  return { kind, writable: writableCache, label: `파일 (${DATA_DIR})`, hint };
 }

@@ -11,16 +11,16 @@ export const dynamic = 'force-dynamic';
  * 저장이 막힌 것을 저장 버튼을 눌러야 알게 되면 폼을 다 채운 뒤에 헛수고였음을
  * 안다. 화면을 여는 순간 먼저 알리고, 무엇을 해야 하는지까지 적는다.
  */
-function ReadOnlyNotice({ label }: { label: string }) {
+function ReadOnlyNotice({ label, hint }: { label: string; hint?: string }) {
   return (
     <div className="border-b border-[var(--color-signal-warn)]/30 bg-[var(--color-signal-warn-soft)]">
       <div className="mx-auto max-w-6xl px-4 py-3 text-sm text-[var(--color-signal-warn)]">
         <p className="font-medium">읽기 전용 환경입니다. 저장이 되지 않습니다.</p>
         <p className="mt-1 leading-relaxed">
-          지금 이 배포는 <span className="font-medium">{label}</span> 을(를) 쓰고 있습니다. Blob 을
-          연결했는데도 이 안내가 보인다면 토큰이 이 배포에 들어오지 않은 것입니다 — 아래를
-          확인하세요.
+          지금 이 배포는 <span className="font-medium">{label}</span> 을(를) 쓰고 있습니다.
         </p>
+        {/* 실제로 확인한 사실을 먼저 놓는다. 점검 목록은 그다음이다. */}
+        {hint ? <p className="mt-1 leading-relaxed">{hint}</p> : null}
         {/*
           "연결했는데 왜 안 되지" 가 가장 오래 걸린다. 환경 변수는 배포 시점에
           굳으므로 연결만으로는 반영되지 않고, Vercel 은 Production 과 Preview 의
@@ -72,7 +72,7 @@ export default async function ProtectedAdminLayout({
       {store.writable ? (
         <StoreBadge label={store.label} />
       ) : (
-        <ReadOnlyNotice label={store.label} />
+        <ReadOnlyNotice label={store.label} hint={store.hint} />
       )}
       {children}
     </>
