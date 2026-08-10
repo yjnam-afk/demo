@@ -6,6 +6,7 @@ import { Field, Row, Section, Select, TextArea, TextInput } from './fields';
 import { IndustryPicker } from './IndustryPicker';
 import { TechPicker } from './TechPicker';
 import { validateSolutionForPublish } from '@/lib/domain/parse';
+import { cn } from '@/lib/ui/domain';
 import {
   DEPLOYMENTS,
   DEPLOYMENT_LABELS,
@@ -64,7 +65,19 @@ export function SolutionForm({
   const hiddenWarning = draft.steps.length > 0 && visibleSteps.length === 0;
 
   async function save(visibility: Visibility) {
-    if (visibility === 'public' && blocked) return;
+    /*
+      막혔을 때 조용히 돌아가지 않는다. 버튼을 눌렀는데 아무 일이 없으면
+      고장인지 미완인지 구분할 수 없다. 사유를 띄우고 그 구간으로 데려간다.
+    */
+    if ((visibility === 'public' || visibility === 'link') && blocked) {
+      const what = visibility === 'link' ? '링크 공개' : '외부 공개';
+      setError(`${what}하려면 다음 항목이 필요합니다 · ${issues.map((i) => i.label).join(', ')}`);
+      const target = issues.some((i) => i.label.startsWith('구성 기술'))
+        ? 'section-steps'
+        : 'section-basic';
+      document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
 
     setPending(true);
     setError(null);
@@ -105,7 +118,7 @@ export function SolutionForm({
 
   return (
     <div className="flex flex-col gap-5 pb-32">
-      <Section title="기본 정보">
+      <Section id="section-basic" title="기본 정보">
         <Field
           label="종류"
           required
@@ -211,6 +224,7 @@ export function SolutionForm({
       </Section>
 
       <Section
+        id="section-steps"
         title="구성 기술 연결"
         description="등록된 기술을 골라 연결합니다. 새 기술은 기술 화면에서 등록하세요. 기술 정보를 고치면 여기에도 그대로 반영됩니다."
       >
@@ -259,19 +273,26 @@ export function SolutionForm({
             >
               내부 공개
             </button>
+            {/* 기술 폼과 같은 원칙 — 막혀도 누를 수 있게 두고, 누르면 사유를 말한다. */}
             <button
               type="button"
-              disabled={pending || blocked}
+              disabled={pending}
               onClick={() => void save('link')}
-              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
+              className={cn(
+                'rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60',
+                blocked && 'opacity-60',
+              )}
             >
               링크 공개
             </button>
             <button
               type="button"
-              disabled={pending || blocked}
+              disabled={pending}
               onClick={() => void save('public')}
-              className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-40"
+              className={cn(
+                'rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:opacity-60',
+                blocked && 'opacity-60',
+              )}
             >
               외부 공개
             </button>
