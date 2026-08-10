@@ -25,6 +25,7 @@ import {
 } from '@/lib/domain/enums';
 import { validateForPublish } from '@/lib/domain/validate';
 import type { CategoryStore, DomainDef, Industry, Tech } from '@/lib/domain/types';
+import { cn } from '@/lib/ui/domain';
 
 /** 방향은 기본값을 두지 않는다 — 관리자가 반드시 고르게 하려면 빈 값에서 출발해야 한다. */
 type MetricDraft = {
@@ -154,13 +155,48 @@ export function TechForm({
   const publishIssues = useMemo(() => validateForPublish(toTech(draft)), [draft]);
 
   // 지표 방향이 비면 임시저장조차 불가능하다 — 서버 파서가 값 자체를 거부한다.
-  // 눌러 본 뒤 실패를 알려주는 대신 버튼을 미리 잠근다.
   const missingDirection = draft.metrics.some((metric) => !metric.direction);
   const blockedFromPublish = publishIssues.length > 0;
 
+  /** 이 공개 범위로 저장할 수 없는 사유. 없으면 저장할 수 있다. */
+  function blockReason(visibility: Visibility): string | null {
+    if (missingDirection) return '지표 방향을 선택해야 저장할 수 있습니다.';
+    if ((visibility === 'public' || visibility === 'link') && blockedFromPublish) {
+      const what = visibility === 'link' ? '링크 공개' : '외부 공개';
+      return `${what}하려면 다음 항목이 필요합니다 · ${publishIssues
+        .map((issue) => issue.label)
+        .join(', ')}`;
+    }
+    return null;
+  }
+
+  /**
+   * 무엇이 비었는지 말만 하면 그 항목을 긴 폼에서 다시 찾아야 한다.
+   * 해당 구간으로 화면을 옮겨 준다.
+   */
+  function scrollToFirstIssue() {
+    const field = missingDirection ? 'metrics' : (publishIssues[0]?.field ?? '');
+    const id = field.startsWith('metrics')
+      ? 'section-metrics'
+      : field.startsWith('business')
+        ? 'section-business'
+        : field.startsWith('demo')
+          ? 'section-demo'
+          : null;
+    if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function save(visibility: Visibility) {
-    if (missingDirection) return;
-    if (visibility === 'public' && blockedFromPublish) return;
+    /*
+      막혔을 때 버튼을 잠가 두면 눌러도 아무 일이 없어서, 왜 안 되는지 모른 채
+      이것저것 고쳐 보게 된다. 누르면 사유를 말하고 그 자리로 데려간다.
+    */
+    const blocked = blockReason(visibility);
+    if (blocked) {
+      setError(blocked);
+      scrollToFirstIssue();
+      return;
+    }
 
     setPending(true);
     setError(null);
@@ -322,6 +358,7 @@ export function TechForm({
       </Section>
 
       <Section
+        id="section-business"
         title="해결하는 문제 / 도입 정보"
         description="외부 공개하려면 이 구간이 모두 채워져야 합니다. 방문자가 가장 먼저 읽는 내용입니다."
       >
@@ -389,6 +426,7 @@ export function TechForm({
       </Section>
 
       <Section
+        id="section-metrics"
         title="성능 지표"
         description="지표가 없는 기술도 있습니다. 비워 두면 상세 화면에서 지표 블록이 생략됩니다."
       >
@@ -730,39 +768,54 @@ export function TechForm({
             둘이 어긋난 채로 저장되는 경우가 생긴다.
           */}
           <div className="flex items-center gap-2">
+            {/*
+              막혔을 때도 버튼은 살려 둔다. 잠가 두면 눌러도 아무 반응이 없어
+              고장인지 미완인지 구분이 안 된다. 흐리게만 두고, 누르면 사유를
+              말하며 비어 있는 구간으로 데려간다.
+            */}
             <button
               type="button"
-              disabled={pending || missingDirection}
+              disabled={pending}
               onClick={() => void save('draft')}
-              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60"
+              className={cn(
+                'rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60',
+                missingDirection && 'opacity-60',
+              )}
             >
               임시저장
             </button>
             <button
               type="button"
-              disabled={pending || missingDirection}
+              disabled={pending}
               onClick={() => void save('internal')}
-              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60"
+              className={cn(
+                'rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60',
+                missingDirection && 'opacity-60',
+              )}
             >
               내부 공개
             </button>
             <button
               type="button"
-              disabled={pending || blockedFromPublish || missingDirection}
-              title={
-                blockedFromPublish ? '필수 항목이 비어 있어 링크 공개할 수 없습니다.' : undefined
-              }
+              disabled={pending}
+              title={blockReason('link') ?? undefined}
               onClick={() => void save('link')}
-              className="rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
+              className={cn(
+                'rounded border border-ink-400 px-4 py-2 text-sm text-ink-700 hover:border-ink-600 disabled:opacity-60',
+                blockReason('link') && 'opacity-60',
+              )}
             >
               링크 공개
             </button>
             <button
               type="button"
-              disabled={pending || blockedFromPublish || missingDirection}
-              title={blockedFromPublish ? '필수 항목이 비어 있어 외부 공개할 수 없습니다.' : undefined}
+              disabled={pending}
+              title={blockReason('public') ?? undefined}
               onClick={() => void save('public')}
-              className="rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-40"
+              className={cn(
+                'rounded bg-ink-800 px-4 py-2 text-sm font-medium text-white hover:bg-ink-900 disabled:opacity-60',
+                blockReason('public') && 'opacity-60',
+              )}
             >
               외부 공개
             </button>
@@ -778,7 +831,7 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
   const demo = draft.demo;
 
   return (
-    <Section title="데모">
+    <Section id="section-demo" title="데모">
       <Field label="데모 타입" required>
         <Select
           value={demo.type}

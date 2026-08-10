@@ -124,11 +124,14 @@ export function TagList({
 }
 
 export function Section({
+  id,
   title,
   description,
   action,
   children,
 }: {
+  /** 저장이 막힌 구간으로 화면을 옮길 때 쓰는 앵커 */
+  id?: string;
   title: string;
   description?: string;
   /** 제목 줄 오른쪽에 붙는 조작 (순서 변경·삭제 등) */
@@ -136,7 +139,7 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-ink-300 bg-white p-5">
+    <section id={id} className="scroll-mt-4 rounded-lg border border-ink-300 bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-ink-900">{title}</h2>
         {action}
