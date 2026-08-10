@@ -162,7 +162,7 @@ export function TechTable({ rows }: { rows: AdminRow[] }) {
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={row.id} className="border-b border-ink-100 align-top">
+              <tr key={row.id} className="border-b border-ink-100 align-top last:border-b-0">
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-1">
                     <span className="numeric w-5 text-xs text-ink-400">{index + 1}</span>

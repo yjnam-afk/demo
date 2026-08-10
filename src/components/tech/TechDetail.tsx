@@ -31,7 +31,7 @@ function Section({
 
 function DefinitionRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-ink-100 py-3 sm:flex-row sm:gap-6">
+    <div className="flex flex-col gap-1 border-b border-ink-100 py-3 last:border-b-0 sm:flex-row sm:gap-6">
       <dt className="w-40 shrink-0 text-sm text-ink-500">{label}</dt>
       <dd className="text-sm text-ink-900">{children}</dd>
     </div>

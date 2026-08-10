@@ -77,7 +77,7 @@ export function SolutionTable({ rows }: { rows: SolutionRow[] }) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b border-ink-100 align-top">
+              <tr key={row.id} className="border-b border-ink-100 align-top last:border-b-0">
                 <td className="px-3 py-3">
                   <Link
                     href={`/admin/solutions/${row.id}`}

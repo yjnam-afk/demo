@@ -84,7 +84,9 @@ export function MetricTable({ metrics }: { metrics: AnyMetric[] }) {
             const ratePercent = formatRate(rate);
 
             return (
-              <tr key={metric.label} className="border-b border-ink-100 align-top">
+              // 마지막 줄에는 밑줄을 긋지 않는다. 지표가 하나뿐인 기술에서
+              // 표 아래에 선만 하나 남아, 뒤에 무언가 더 있다가 잘린 것처럼 보인다.
+              <tr key={metric.label} className="border-b border-ink-100 align-top last:border-b-0">
                 <td className="py-3 pr-4">
                   <div className="font-medium text-ink-900">{metric.label}</div>
                   {metric.condition?.trim() ? (
