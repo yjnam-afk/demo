@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ContactCta } from '@/components/site/ContactCta';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { Hero } from '@/components/site/Hero';
-import { TrustBar, TrustPanel } from '@/components/site/TrustBar';
+import { TrustBar } from '@/components/site/TrustBar';
 import { TechCard } from '@/components/tech/TechCard';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
@@ -78,20 +78,11 @@ export default async function HomePage() {
 
   return (
     <>
-      {/*
-        첫 문장에 들어갈 축 이름. 관리자가 대분류를 고치면 문장도 따라 바뀐다.
-        지표 패널은 넓은 화면에서 히어로 오른쪽에 선다 — 주장 옆에 근거를 놓는다.
-      */}
-      <Hero
-        axes={maps.domainList.map((domain) => domain.label)}
-        aside={<TrustPanel summary={summary} />}
-      />
+      {/* 첫 문장에 들어갈 축 이름. 관리자가 대분류를 고치면 문장도 따라 바뀐다. */}
+      <Hero axes={maps.domainList.map((domain) => domain.label)} />
 
-      {/*
-        성과 요약 띠 — 히어로 패널이 없는 좁은 화면에서만.
-        넓은 화면에서 둘 다 내면 같은 숫자가 화면에 두 번 선다.
-      */}
-      <section className="border-b border-ink-200 bg-white lg:hidden">
+      {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
+      <section className="border-b border-ink-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <TrustBar summary={summary} tone="light" />
         </div>
