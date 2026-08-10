@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ContactCta } from '@/components/site/ContactCta';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { Hero } from '@/components/site/Hero';
-import { TrustBar } from '@/components/site/TrustBar';
+import { TrustBar, TrustPanel } from '@/components/site/TrustBar';
 import { TechCard } from '@/components/tech/TechCard';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
@@ -59,11 +59,17 @@ function MoreLink({ href, children }: { href: string; children: React.ReactNode 
 
 export default async function HomePage() {
   const repo = getRepo();
-  const [page, summary, products] = await Promise.all([
+  const [page, summary, facets, products] = await Promise.all([
     repo.listPublic({ limit: LANDING_POOL }),
     repo.publicSummary(),
+    repo.publicFacets(),
     listPublicOfferings('product'),
   ]);
+
+  /* 산업 칩 옆에 붙일 건수. 실제 공개 기술에서 집계된 값만 쓴다. */
+  const industryCounts = new Map(
+    facets.industries.map((industry) => [industry.value, industry.count]),
+  );
 
   const maps = await loadPublicMaps(repo);
   const techs = page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains));
@@ -72,11 +78,20 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 첫 문장에 들어갈 축 이름. 관리자가 대분류를 고치면 문장도 따라 바뀐다. */}
-      <Hero axes={maps.domainList.map((domain) => domain.label)} />
+      {/*
+        첫 문장에 들어갈 축 이름. 관리자가 대분류를 고치면 문장도 따라 바뀐다.
+        지표 패널은 넓은 화면에서 히어로 오른쪽에 선다 — 주장 옆에 근거를 놓는다.
+      */}
+      <Hero
+        axes={maps.domainList.map((domain) => domain.label)}
+        aside={<TrustPanel summary={summary} />}
+      />
 
-      {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
-      <section className="border-b border-ink-200 bg-white">
+      {/*
+        성과 요약 띠 — 히어로 패널이 없는 좁은 화면에서만.
+        넓은 화면에서 둘 다 내면 같은 숫자가 화면에 두 번 선다.
+      */}
+      <section className="border-b border-ink-200 bg-white lg:hidden">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <TrustBar summary={summary} tone="light" />
         </div>
@@ -138,15 +153,22 @@ export default async function HomePage() {
                 </span>
               </div>
               <div className="mt-5 flex flex-1 flex-wrap content-start gap-2">
-                {maps.industryList.map((industry) => (
-                  <Link
-                    key={industry.id}
-                    href={`/industries/${industry.id}`}
-                    className="rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
-                  >
-                    {industry.label}
-                  </Link>
-                ))}
+                {maps.industryList.map((industry) => {
+                  const count = industryCounts.get(industry.id) ?? 0;
+                  return (
+                    <Link
+                      key={industry.id}
+                      href={`/industries/${industry.id}`}
+                      className="flex items-baseline gap-1.5 rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
+                    >
+                      {industry.label}
+                      {/* 어느 산업에 얼마나 쌓였는지가 이 칩의 정보다 */}
+                      {count > 0 ? (
+                        <span className="numeric text-xs text-ink-400">{count}</span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
               </div>
               <div className="mt-6">
                 <MoreLink href="/tech?view=industry">산업별 보기</MoreLink>
