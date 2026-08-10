@@ -149,14 +149,54 @@ function withTimeout<T>(work: Promise<T>, ms: number, what: string): Promise<T> 
   ]);
 }
 
+type BlobAccess = 'public' | 'private';
+
+/**
+ * 저장소의 공개 설정.
+ *
+ * Blob 저장소는 만들 때 public 과 private 중 하나로 정해지고, 호출할 때마다
+ * 그 값을 그대로 넘겨야 한다. 다르면 저장소가 거절한다
+ * ("Cannot use public access on a private store").
+ *
+ * 어느 쪽인지는 코드가 알 수 없고 환경 변수로도 들어오지 않는다. 그래서
+ * 한쪽으로 시도해 보고 저장소가 아니라고 하면 반대쪽으로 한 번 더 간다.
+ * 알아낸 값은 기억해 두므로 그 뒤로는 한 번에 통한다.
+ *
+ * BLOB_ACCESS 로 못 박을 수도 있다. 값이 있으면 시행착오 없이 그것만 쓴다.
+ */
+const ACCESS_OVERRIDE: BlobAccess | null =
+  process.env.BLOB_ACCESS === 'private' || process.env.BLOB_ACCESS === 'public'
+    ? process.env.BLOB_ACCESS
+    : null;
+
+/** 공개 설정이 어긋났다는 응답인지. 다른 오류까지 재시도하면 실패가 두 배로 느려진다. */
+function isAccessMismatch(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return /access on a (private|public) store|configured with (private|public) access/i.test(
+    message,
+  );
+}
+
 export class BlobStore implements DocumentStore {
   readonly kind = 'blob' as const;
   private readonly fallbackStore = new FileStore();
   private cache = new Map<string, { at: number; value: unknown }>();
   private degradedUntil = 0;
+  private access: BlobAccess = ACCESS_OVERRIDE ?? 'public';
 
   private key(name: string) {
     return `data/${name}.json`;
+  }
+
+  /** 공개 설정이 어긋나면 반대쪽으로 한 번 더 시도하고, 통한 쪽을 기억한다. */
+  private async withAccess<T>(run: (access: BlobAccess) => Promise<T>): Promise<T> {
+    try {
+      return await run(this.access);
+    } catch (err) {
+      if (ACCESS_OVERRIDE || !isAccessMismatch(err)) throw err;
+      this.access = this.access === 'public' ? 'private' : 'public';
+      return run(this.access);
+    }
   }
 
   async read<T>(name: string, fallback: T): Promise<T> {
@@ -166,24 +206,29 @@ export class BlobStore implements DocumentStore {
     // 방금 실패했다면 묻지 않는다.
     if (Date.now() < this.degradedUntil) return this.fallbackStore.read(name, fallback);
 
-    const { list } = await import('@vercel/blob');
+    const { get } = await import('@vercel/blob');
     let value: T;
     try {
-      // 토큰을 넘겨준다. 라이브러리는 기본 이름만 스스로 읽으므로, 접두어가
-      // 붙은 변수로 연결한 배포에서는 명시하지 않으면 인증에 실패한다.
-      const found = await withTimeout(
-        list({ prefix: this.key(name), limit: 1, token: blobToken() }),
-        READ_TIMEOUT_MS,
-        'Blob 목록 조회',
+      /*
+        주소를 받아 직접 fetch 하지 않는다. private 저장소의 주소는 그냥
+        열리지 않고 인증이 필요한데, get 이 그 처리를 대신한다.
+
+        useCache: false — 같은 키를 계속 덮어쓰므로 CDN 캐시가 남으면 방금
+        저장한 내용 대신 이전 것이 온다.
+
+        토큰을 넘겨주는 이유: 라이브러리는 기본 이름의 환경 변수만 스스로
+        읽으므로, 접두어가 붙은 변수로 연결한 배포에서는 인증에 실패한다.
+      */
+      const found = await this.withAccess((access) =>
+        withTimeout(
+          get(this.key(name), { access, useCache: false, token: blobToken() }),
+          READ_TIMEOUT_MS,
+          'Blob 읽기',
+        ),
       );
-      const blob = found.blobs.find((b) => b.pathname === this.key(name));
-      if (blob) {
-        const res = await fetch(blob.url, {
-          cache: 'no-store',
-          signal: AbortSignal.timeout(READ_TIMEOUT_MS),
-        });
-        if (!res.ok) throw new Error(`blob ${res.status}`);
-        value = (await res.json()) as T;
+
+      if (found?.statusCode === 200) {
+        value = JSON.parse(await new Response(found.stream).text()) as T;
       } else {
         // 아직 저장한 적 없는 문서 — 배포에 포함된 초기 데이터를 쓴다.
         value = await this.fallbackStore.read(name, fallback);
@@ -202,19 +247,21 @@ export class BlobStore implements DocumentStore {
   async write(name: string, data: unknown): Promise<void> {
     const { put } = await import('@vercel/blob');
     // 쓰기는 대체할 수단이 없다. 실패하면 관리자에게 오류로 알린다.
-    await withTimeout(
-      put(this.key(name), `${JSON.stringify(data, null, 2)}\n`, {
-        access: 'public',
-        contentType: 'application/json',
-        token: blobToken(),
-        // 같은 키를 덮어쓴다. 기본값은 이름 뒤에 임의 문자열을 붙여 새 파일을
-        // 만들기 때문에, 그대로 두면 저장할 때마다 다른 주소가 생긴다.
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        cacheControlMaxAge: 0,
-      }),
-      WRITE_TIMEOUT_MS,
-      'Blob 저장',
+    await this.withAccess((access) =>
+      withTimeout(
+        put(this.key(name), `${JSON.stringify(data, null, 2)}\n`, {
+          access,
+          contentType: 'application/json',
+          token: blobToken(),
+          // 같은 키를 덮어쓴다. 기본값은 이름 뒤에 임의 문자열을 붙여 새 파일을
+          // 만들기 때문에, 그대로 두면 저장할 때마다 다른 주소가 생긴다.
+          addRandomSuffix: false,
+          allowOverwrite: true,
+          cacheControlMaxAge: 0,
+        }),
+        WRITE_TIMEOUT_MS,
+        'Blob 저장',
+      ),
     );
     // 저장이 됐다면 읽기도 살아 있다.
     this.degradedUntil = 0;
