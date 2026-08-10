@@ -26,11 +26,17 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     });
   }
 
-  if (!b.target_industries || b.target_industries.filter((s) => s.trim()).length === 0) {
+  /*
+    산업군(마스터 id)을 요구한다. 전에는 자유 입력인 target_industries 만
+    요구했는데, 그러면 산업군이 비어 있어도 발행이 되어 그 기술이 산업별
+    화면과 필터 어디에도 걸리지 않는다. 기술-산업-제품을 한 쌍으로 잇는 값은
+    이쪽이다.
+  */
+  if (!tech.industries || tech.industries.filter((s) => s.trim()).length === 0) {
     issues.push({
-      field: 'business.target_industries',
-      label: '적용 대상 산업',
-      message: '최소 1개 이상 입력해야 합니다.',
+      field: 'industries',
+      label: '산업군',
+      message: '산업별 화면과 카탈로그 필터가 이 값으로 연결됩니다. 최소 1개 이상 골라야 합니다.',
     });
   }
 

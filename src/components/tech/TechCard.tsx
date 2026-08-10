@@ -71,9 +71,12 @@ export function TechCard({ tech }: { tech: PublicTech }) {
     tech.metrics as never,
     tech.demo.type === 'metric' ? tech.demo.highlight_metric : undefined,
   );
-  const industries = tech.business.target_industries?.length
-    ? tech.business.target_industries
-    : tech.industries;
+  /*
+    산업군 라벨만 쓴다. 전에는 자유 입력인 주요 수요처가 있으면 그쪽으로
+    갈아치웠는데, 그러면 카드에 적힌 산업과 눌렀을 때 걸리는 산업이 서로 달랐다.
+    더 좁은 수요처는 상세 화면에서 따로 밝힌다.
+  */
+  const industries = tech.industries;
 
   const hasVisual = Boolean(tech.media.loop ?? tech.media.thumbnail);
 

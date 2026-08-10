@@ -182,7 +182,9 @@ export function TechForm({
         ? 'section-business'
         : field.startsWith('demo')
           ? 'section-demo'
-          : null;
+          : field.startsWith('industries')
+            ? 'section-basic'
+            : null;
     if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -270,7 +272,7 @@ export function TechForm({
 
   return (
     <div className="flex flex-col gap-5 pb-32">
-      <Section title="기본 정보">
+      <Section id="section-basic" title="기본 정보">
         <Row>
           <Field
             label="기술 id"
@@ -355,6 +357,24 @@ export function TechForm({
             />
           </Field>
         </Row>
+
+        {/*
+          산업군은 기술을 어디에 놓을지 정하는 값이라 대분류·카테고리 옆이
+          제자리다. 전에는 화면 아래쪽 "관련 자료" 구간에 있어서, 도입 정보에
+          있던 자유 입력 쪽이 본체처럼 보였다.
+        */}
+        <Field
+          label="산업군"
+          required
+          hint="산업별 화면과 카탈로그 필터가 이 값으로 연결됩니다. 목록에서만 고를 수 있습니다."
+        >
+          <IndustryPicker
+            industries={industries}
+            selected={draft.industries}
+            onChange={(next) => set({ industries: next })}
+            onAdded={setIndustries}
+          />
+        </Field>
       </Section>
 
       <Section
@@ -370,7 +390,16 @@ export function TechForm({
           />
         </Field>
 
-        <Field label="적용 대상 산업" required hint="최소 1개">
+        {/*
+          산업군과 다른 값이다. 산업군은 "안전·보안" 같은 대분류고 여기는
+          "공항·항만" 처럼 실제로 쓰는 곳이다. 전에는 이름이 "적용 대상 산업"
+          이라 산업군과 같은 것으로 읽혔고, 화면에서도 이 값이 산업군 자리를
+          덮어써서 두 번 쓰는 것처럼 보였다.
+        */}
+        <Field
+          label="주요 수요처"
+          hint="산업군보다 좁은 단위. 완성차·지자체·석유화학처럼 실제 도입처를 적습니다. 비워도 됩니다."
+        >
           <TagList
             values={draft.business.target_industries ?? []}
             placeholder="공항·항만"
@@ -699,18 +728,6 @@ export function TechForm({
               ))}
             </div>
           )}
-        </Field>
-
-        <Field
-          label="산업군"
-          hint="카탈로그 필터와 산업별 화면에 쓰입니다. 목록에서만 고를 수 있습니다."
-        >
-          <IndustryPicker
-            industries={industries}
-            selected={draft.industries}
-            onChange={(next) => set({ industries: next })}
-            onAdded={setIndustries}
-          />
         </Field>
       </Section>
 
