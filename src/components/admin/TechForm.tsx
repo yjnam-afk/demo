@@ -380,7 +380,7 @@ export function TechForm({
       <Section
         id="section-business"
         title="해결하는 문제 / 도입 정보"
-        description="외부 공개하려면 이 구간이 모두 채워져야 합니다. 방문자가 가장 먼저 읽는 내용입니다."
+        description="상세 화면의 첫 문단과 '도입 정보' 블록이 됩니다. 외부 공개하려면 모두 채워야 합니다."
       >
         <Field label="해결하는 문제" required hint="고객이 겪는 문제를 한 문장으로.">
           <TextArea
@@ -433,7 +433,13 @@ export function TechForm({
         </Row>
 
         <Row>
-          <Field label="성숙도" required>
+          {/*
+            성숙도와 검증 등급은 다른 축이다. 성숙도는 기술이 어디까지 나가
+            봤는지(현장·실증·자체 검증·연구)고, 누가 성능을 확인했는지(제3자
+            인증·자체 시험)는 아래 검증 등급이 답한다. 인증을 받았다는 이유로
+            성숙도를 올려 적으면 두 값이 서로 다른 이야기를 하게 된다.
+          */}
+          <Field label="성숙도" required hint="적용이 어디까지 갔는지. 인증 여부는 '검증 등급'에 따로 적습니다.">
             <Select
               value={draft.business.maturity ?? ''}
               placeholder="선택하세요"
@@ -582,9 +588,14 @@ export function TechForm({
         </button>
       </Section>
 
-      <Section title="검증 및 기술 구성">
+      {/*
+        상세 화면에서는 '기술 구성' 블록이 된다. 관리자 구간 이름과 공개 블록
+        이름이 달라 "이 항목은 관리자 어디서 고치나" 를 못 찾는 일이 있었다 —
+        이름이 다른 구간마다 어느 블록으로 나가는지 적는다.
+      */}
+      <Section title="검증 및 기술 구성" description="상세 화면의 '기술 구성' 블록에 표시됩니다. 검증 등급은 배지로도 나갑니다.">
         <Row>
-          <Field label="검증 등급" required>
+          <Field label="검증 등급" required hint="성능을 누가 확인했는지. 어디까지 적용됐는지는 '성숙도'가 답합니다.">
             <Select
               value={draft.verification.level}
               options={options(VERIFICATION_LEVELS, VERIFICATION_LABELS)}
@@ -651,7 +662,10 @@ export function TechForm({
         </Field>
       </Section>
 
-      <Section title="관련 자료 및 연계 기술">
+      <Section
+        title="관련 자료 및 연계 기술"
+        description="상세 화면의 '관련 자료' 블록에 표시됩니다. 자료와 연계 기술이 모두 비면 블록이 생략됩니다."
+      >
         <Field label="관련 자료">
           <div className="flex flex-col gap-2">
             {draft.resources.map((resource, index) => {
