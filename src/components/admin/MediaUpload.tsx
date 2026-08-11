@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { TextInput } from './fields';
+import { MEDIA_EXTENSIONS } from '@/lib/media';
 
 /**
  * 썸네일·영상 업로드.
@@ -25,6 +26,47 @@ export function MediaUpload({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** 파일 환경 — 서버가 public/uploads 디스크에 쓴다. */
+  async function uploadToServer(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('techId', techId);
+    form.append('kind', kind);
+
+    const response = await fetch('/api/admin/upload', { method: 'POST', body: form });
+    const body = (await response.json().catch(() => ({}))) as { path?: string; error?: string };
+
+    if (!response.ok || !body.path) {
+      setError(body.error ?? '업로드하지 못했습니다.');
+      return;
+    }
+    onChange(body.path);
+  }
+
+  /**
+   * Blob 환경 — 브라우저가 Blob 에 직접 올린다.
+   *
+   * 서버를 거치면 Vercel 함수의 요청 크기 제한(약 4.5MB)에 걸려 영상이
+   * 통과하지 못한다. 서버는 토큰만 내준다(/api/admin/upload/blob).
+   * 올라간 파일은 /api/media/ 경로로 참조한다 — private 저장소의 Blob
+   * 주소는 그냥 열리지 않아, 그 경로가 서명된 주소로 이어 준다.
+   */
+  async function uploadToBlob(file: File, access: 'public' | 'private') {
+    const extension = MEDIA_EXTENSIONS[file.type];
+    if (!extension) {
+      setError('지원하지 않는 형식입니다. 이미지(jpg/png/webp/svg) 또는 영상(mp4/webm)만 올릴 수 있습니다.');
+      return;
+    }
+
+    const { upload: blobUpload } = await import('@vercel/blob/client');
+    const result = await blobUpload(`uploads/${techId}/${kind}-${Date.now()}.${extension}`, file, {
+      access,
+      handleUploadUrl: '/api/admin/upload/blob',
+      contentType: file.type,
+    });
+    onChange(`/api/media/${result.pathname}`);
+  }
+
   async function upload(file: File) {
     if (!techId) {
       setError('기술 id 를 먼저 입력해야 업로드할 수 있습니다.');
@@ -34,21 +76,21 @@ export function MediaUpload({
     setPending(true);
     setError(null);
     try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('techId', techId);
-      form.append('kind', kind);
+      // 배포 환경에 따라 업로드 경로가 다르다. 서버가 판단해 알려 준다.
+      const probe = await fetch('/api/admin/upload');
+      const target = (await probe.json().catch(() => ({}))) as {
+        mode?: 'file' | 'blob';
+        access?: 'public' | 'private';
+      };
 
-      const response = await fetch('/api/admin/upload', { method: 'POST', body: form });
-      const body = (await response.json().catch(() => ({}))) as { path?: string; error?: string };
-
-      if (!response.ok || !body.path) {
-        setError(body.error ?? '업로드하지 못했습니다.');
-        return;
+      if (target.mode === 'blob') {
+        await uploadToBlob(file, target.access ?? 'public');
+      } else {
+        await uploadToServer(file);
       }
-      onChange(body.path);
-    } catch {
-      setError('업로드 중 오류가 발생했습니다.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      setError(message ? `업로드하지 못했습니다. (${message.slice(0, 200)})` : '업로드 중 오류가 발생했습니다.');
     } finally {
       setPending(false);
       if (fileRef.current) fileRef.current.value = '';

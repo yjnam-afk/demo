@@ -73,7 +73,7 @@ export function blobTokenName(): string | null {
   );
 }
 
-function blobToken(): string | undefined {
+export function blobToken(): string | undefined {
   const name = blobTokenName();
   return name ? process.env[name] : undefined;
 }
@@ -168,6 +168,41 @@ const ACCESS_OVERRIDE: BlobAccess | null =
   process.env.BLOB_ACCESS === 'private' || process.env.BLOB_ACCESS === 'public'
     ? process.env.BLOB_ACCESS
     : null;
+
+/**
+ * 저장소의 공개 설정을 알아낸다.
+ *
+ * 업로드 토큰 발급(클라이언트가 access 를 지정해야 한다)과 미디어 제공
+ * 라우트가 이 값을 필요로 한다. BlobStore 처럼 시행착오로 배우면 되지만,
+ * 둘은 문서 읽기 경로 밖이라 따로 한 번 probe 한다. 결과는 인스턴스가
+ * 사는 동안 기억한다.
+ */
+let accessCache: BlobAccess | null = ACCESS_OVERRIDE;
+
+export async function resolveBlobAccess(): Promise<BlobAccess> {
+  if (accessCache) return accessCache;
+  const { put, del } = await import('@vercel/blob');
+  const probe = 'data/.access-probe';
+  try {
+    // 시간 제한이 없으면 토큰이 잘못됐을 때 이 확인이 무한정 매달린다.
+    await withTimeout(
+      put(probe, '', {
+        access: 'public',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        token: blobToken(),
+      }),
+      WRITE_TIMEOUT_MS,
+      '공개 설정 확인',
+    );
+    accessCache = 'public';
+    await del(probe, { token: blobToken() }).catch(() => {});
+  } catch (err) {
+    if (!isAccessMismatch(err)) throw err;
+    accessCache = 'private';
+  }
+  return accessCache;
+}
 
 /** 공개 설정이 어긋났다는 응답인지. 다른 오류까지 재시도하면 실패가 두 배로 느려진다. */
 function isAccessMismatch(err: unknown): boolean {
