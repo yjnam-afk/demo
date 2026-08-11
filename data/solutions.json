@@ -14,7 +14,7 @@
     ],
     "steps": [
       {
-        "tech_id": "intrusion-detection",
+        "tech_id": "intrusion-detect-x",
         "role": "통제구역 진입 인원을 실시간 탐지합니다."
       },
       {
@@ -87,7 +87,7 @@
         "role": "이벤트 구간을 추출해 순서대로 재구성합니다."
       },
       {
-        "tech_id": "intrusion-detection",
+        "tech_id": "intrusion-detect-x",
         "role": "구간 분할의 기준이 되는 이벤트를 생성합니다."
       }
     ],
@@ -205,7 +205,7 @@
         "role": "영상을 검색 가능한 구간으로 분할합니다."
       },
       {
-        "tech_id": "intrusion-detection",
+        "tech_id": "intrusion-detect-x",
         "role": "지정 구역의 출입을 이벤트로 기록합니다."
       }
     ],
@@ -234,7 +234,7 @@
         "role": "구역별 인원과 밀도를 추정해 위험 수준을 사전 경보합니다."
       },
       {
-        "tech_id": "intrusion-detection",
+        "tech_id": "intrusion-detect-x",
         "role": "통제선을 넘는 인원을 탐지합니다."
       }
     ],
@@ -258,7 +258,7 @@
         "role": "3D 모델에 센서를 결합해 이상 설비를 원격으로 특정합니다."
       },
       {
-        "tech_id": "intrusion-detection",
+        "tech_id": "intrusion-detect-x",
         "role": "단지 외곽과 위험 구역의 무단 진입을 감시합니다."
       },
       {

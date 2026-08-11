@@ -32,24 +32,30 @@ export async function POST(request: Request) {
     const incomingId = (body.tech as { id?: string } | undefined)?.id;
 
     /**
-     * id 변경은 저장 전에 처리한다.
+     * 수정 대상은 원래 id 로 찾는다.
      *
-     * 새 id 로 조회하면 아무것도 안 나와 신규 등록으로 취급되고, 같은 기술이
-     * 둘로 늘면서 옛 레코드를 아무도 가리키지 않게 된다. 먼저 이름을 옮겨
-     * 참조까지 정리한 뒤에 나머지 항목을 저장한다.
+     * id 를 바꿔 저장하는 경우, 새 id 로 조회하면 아무것도 안 나와 신규
+     * 등록으로 취급되고 같은 기술이 둘로 늘어난다.
+     *
+     * 옛 id 로도 안 나오면 새 id 로 한 번 더 찾는다 — 이전 저장이 id 변경까지
+     * 하고 검증에서 막힌 적이 있으면, 화면은 아직 옛 id 를 원본으로 알고
+     * 있지만 저장소는 이미 새 id 다. 그때 "찾을 수 없습니다" 로 끝내면
+     * 관리자는 저장할 길이 없어진다.
      */
     const originalId = typeof body.originalId === 'string' ? body.originalId : '';
-    if (body.mode === 'update' && originalId && incomingId && originalId !== incomingId) {
-      try {
-        await repo.rename(originalId, incomingId);
-      } catch (err) {
-        return NextResponse.json({ error: (err as Error).message }, { status: 409 });
-      }
+    const lookupId = body.mode === 'update' ? originalId || incomingId : incomingId;
+    let existing = lookupId ? await repo.get(lookupId) : null;
+    if (!existing && body.mode === 'update' && incomingId && incomingId !== lookupId) {
+      existing = await repo.get(incomingId);
     }
 
-    const existing = incomingId ? await repo.get(incomingId) : null;
-
-    if (body.mode === 'create' && existing) {
+    if (body.mode === 'update' && !existing) {
+      return NextResponse.json(
+        { error: `수정할 기술을 찾을 수 없습니다: ${lookupId}` },
+        { status: 404 },
+      );
+    }
+    if (body.mode === 'create' && incomingId && (await repo.get(incomingId))) {
       return NextResponse.json({ error: `이미 존재하는 id 입니다: ${incomingId}` }, { status: 409 });
     }
 
@@ -73,6 +79,25 @@ export async function POST(request: Request) {
     // 등록·수정 시 1회 헬스체크. 목록 화면은 이때 저장된 결과를 보여준다.
     const health = await checkHealth(tech);
     tech.health = { ...health, checked_at: new Date().toISOString() };
+
+    /*
+     * id 변경은 모든 검증을 통과한 뒤에만 실행한다.
+     *
+     * 검증 앞에 두면 검증이 막았을 때 id 만 바뀐 반쪽 저장이 남는다 — 화면은
+     * 옛 id 를 원본으로 알고 있는데 저장소는 새 id 라, 다음 저장부터
+     * "찾을 수 없습니다" 로 막히는 상태가 됐다.
+     */
+    if (body.mode === 'update' && existing && incomingId && existing.id !== incomingId) {
+      try {
+        const renamed = await repo.rename(existing.id, incomingId);
+        // 옛 id 이력은 rename 이 만든다. parse 는 rename 전의 existing 을 보고
+        // 있어서, 이걸 옮겨 주지 않으면 다음 줄의 저장이 이력을 지워 버리고
+        // 이미 나간 옛 주소 링크가 끊긴다.
+        tech.previous_ids = renamed.previous_ids;
+      } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 409 });
+      }
+    }
 
     const saved = existing ? await repo.update(tech.id, tech) : await repo.create(tech);
     return NextResponse.json({ tech: saved });
