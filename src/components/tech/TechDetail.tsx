@@ -16,28 +16,40 @@ function Section({
   id,
   title,
   description,
+  tick,
   children,
 }: {
   /** 옆 레일의 바로가기가 이 앵커로 연결된다 */
   id?: string;
   title: string;
   description?: string;
+  /** 제목 왼쪽에 세우는 축 색 틱. 긴 세로 흐름에서 구간 시작을 표시한다. */
+  tick?: string;
   children: React.ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-ink-200 pt-8">
-      <h2 className="text-lg font-semibold tracking-tight text-ink-900">{title}</h2>
+      <div className="flex items-center gap-2.5">
+        {tick ? <span className={cn('h-4 w-1 rounded-full', tick)} /> : null}
+        <h2 className="text-lg font-semibold tracking-tight text-ink-900">{title}</h2>
+      </div>
       {description ? <p className="mt-1 text-sm text-ink-500">{description}</p> : null}
       <div className="mt-4">{children}</div>
     </section>
   );
 }
 
-function DefinitionRow({ label, children }: { label: string; children: React.ReactNode }) {
+/**
+ * 라벨 붙은 값 한 칸.
+ *
+ * 정의 목록(dl)의 문제는 값이 "본문 옆 회색 메타"로 읽힌다는 것이었다.
+ * 칸으로 만들면 값이 그 칸의 내용이 된다 — 도입 정보와 기술 구성이 쓴다.
+ */
+function ValueCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-ink-100 py-3 last:border-b-0 sm:flex-row sm:gap-6">
-      <dt className="w-40 shrink-0 text-sm text-ink-500">{label}</dt>
-      <dd className="text-sm font-medium text-ink-900">{children}</dd>
+    <div className="bg-white p-5">
+      <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">{label}</div>
+      <div className="mt-1.5 text-base font-medium text-ink-900">{children}</div>
     </div>
   );
 }
@@ -226,13 +238,13 @@ export function TechDetail({
           ) : null}
 
           {/* 3. 데모 슬롯 */}
-          <Section id="demo" title="데모">
+          <Section id="demo" title="데모" tick={style.bar}>
             <DemoSlot tech={tech} />
           </Section>
 
           {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
           {tech.metrics.length > 0 ? (
-            <Section id="metrics" title="성능 지표">
+            <Section id="metrics" title="성능 지표" tick={style.bar}>
               <MetricStatGrid metrics={tech.metrics} />
             </Section>
           ) : restricted ? (
@@ -240,7 +252,7 @@ export function TechDetail({
               수치가 없는 것과 못 밝히는 것은 다르다. 이유를 적지 않으면
               "측정을 안 했다" 로 읽혀 오히려 신뢰를 깎는다.
             */
-            <Section id="metrics" title="성능 지표">
+            <Section id="metrics" title="성능 지표" tick={style.bar}>
               <p className="text-sm leading-relaxed text-ink-500">
                 과제 협약에 따라 공개하지 않습니다. 개별 미팅에서 안내해 드립니다.
               </p>
@@ -249,39 +261,68 @@ export function TechDetail({
 
           {/* 5. 도입 정보 */}
           {hasAdoption ? (
-            <Section id="adoption" title="도입 정보">
-              <dl>
-                {business.io?.input ? (
-                  <DefinitionRow label="입력 형식">{business.io.input}</DefinitionRow>
-                ) : null}
-                {business.io?.output ? (
-                  <DefinitionRow label="출력 형식">{business.io.output}</DefinitionRow>
-                ) : null}
-                {business.requirements?.length ? (
-                  <DefinitionRow label="도입 조건 및 제약">
-                    <ul className="flex flex-col gap-1">
-                      {business.requirements.map((requirement) => (
-                        <li key={requirement} className="flex gap-2">
-                          <span className="text-ink-300">·</span>
-                          <span>{requirement}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </DefinitionRow>
-                ) : null}
-              </dl>
+            <Section id="adoption" title="도입 정보" tick={style.bar}>
+              {/*
+                입력과 출력은 나열이 아니라 흐름이다. 무엇을 넣으면 무엇이
+                나오는지가 이 기술의 계약이므로, 두 칸을 화살표로 잇는다.
+              */}
+              {business.io?.input || business.io?.output ? (
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
+                  {business.io?.input ? (
+                    <div className="overflow-hidden rounded-lg border border-ink-200">
+                      <ValueCell label="입력">{business.io.input}</ValueCell>
+                    </div>
+                  ) : null}
+                  {business.io?.input && business.io?.output ? (
+                    <div className="hidden items-center text-xl text-ink-300 sm:flex" aria-hidden>
+                      →
+                    </div>
+                  ) : null}
+                  {business.io?.output ? (
+                    <div className="overflow-hidden rounded-lg border border-ink-200">
+                      <ValueCell label="출력">{business.io.output}</ValueCell>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {/*
+                조건과 제약은 계약의 단서 조항이다 — 숨기는 것이 아니라 세워서
+                보여 준다. 이 목록이 정직해야 위의 수치가 신뢰를 얻는다.
+              */}
+              {business.requirements?.length ? (
+                <div className="mt-2 rounded-lg border border-ink-200 bg-white p-5">
+                  <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+                    도입 조건 및 제약
+                  </div>
+                  <ul className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                    {business.requirements.map((requirement) => (
+                      <li key={requirement} className="flex gap-2.5 text-sm text-ink-800">
+                        <span className={cn('mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full', style.dot)} />
+                        <span className="leading-relaxed">{requirement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </Section>
           ) : null}
 
-          {/* 6. 기술 구성 */}
-          <Section id="composition" title="기술 구성">
-            <dl>
-              <DefinitionRow label="개발 구분">{DEV_TYPE_LABELS[tech.dev_type]}</DefinitionRow>
+          {/* 6. 기술 구성 — 칸이 두세 개뿐이라 격자로 나란히 세운다 */}
+          <Section id="composition" title="기술 구성" tick={style.bar}>
+            <div
+              className={cn(
+                'grid gap-px overflow-hidden rounded-lg border border-ink-200 bg-ink-200',
+                (tech.base_model || tech.metrics.some((m) => m.dataset)) && 'sm:grid-cols-2',
+                tech.base_model && tech.metrics.some((m) => m.dataset) && 'lg:grid-cols-3',
+              )}
+            >
+              <ValueCell label="개발 구분">{DEV_TYPE_LABELS[tech.dev_type]}</ValueCell>
               {tech.base_model ? (
-                <DefinitionRow label="베이스 모델">{tech.base_model}</DefinitionRow>
+                <ValueCell label="베이스 모델">{tech.base_model}</ValueCell>
               ) : null}
               {tech.metrics.some((m) => m.dataset) ? (
-                <DefinitionRow label="평가 데이터셋">
+                <ValueCell label="평가 데이터셋">
                   <ul className="flex flex-col gap-1">
                     {[...new Set(tech.metrics.map((m) => m.dataset).filter(Boolean))].map(
                       (dataset) => (
@@ -289,25 +330,27 @@ export function TechDetail({
                       ),
                     )}
                   </ul>
-                </DefinitionRow>
+                </ValueCell>
               ) : null}
-            </dl>
+            </div>
           </Section>
 
           {/* 7. 관련 자료 및 함께 쓰는 기술 */}
           {hasResources ? (
-            <Section id="resources" title="관련 자료">
+            <Section id="resources" title="관련 자료" tick={style.bar}>
               {tech.resources.length > 0 ? (
-                <ul className="flex flex-col gap-2">
+                /* 밑줄 글자는 본문에 묻힌다. 내려받을 수 있는 것은 눌리는 물건으로 보여야 한다. */
+                <ul className="grid gap-2 sm:grid-cols-2">
                   {tech.resources.map((resource) => (
                     <li key={resource.url}>
                       <a
                         href={resource.url}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="text-sm text-ink-700 underline underline-offset-4 hover:text-ink-900"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
                       >
-                        {resource.label}
+                        <span className="truncate">{resource.label}</span>
+                        <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
                       </a>
                     </li>
                   ))}
@@ -333,11 +376,14 @@ export function TechDetail({
             </Section>
           ) : null}
 
-          {/* 전환 지점 — 상세를 끝까지 읽은 방문자가 다음에 할 행동을 명시한다 */}
+          {/*
+            전환 지점 — 상세를 끝까지 읽은 방문자가 다음에 할 행동을 명시한다.
+            기술 이름은 문장에 끼우지 않는다. "일정 구간을 반복적으로 서성이는
+            인원 적용을 검토하고 계신가요?" 처럼 서술형 이름이면 문장이 깨진다.
+            어느 기술에 대한 문의인지는 메일 제목이 나른다.
+          */}
           <section className="rounded-lg bg-ink-950 p-6 sm:p-8">
-            <p className="text-lg font-medium text-white">
-              {tech.name_ko} 적용을 검토하고 계신가요?
-            </p>
+            <p className="text-lg font-medium text-white">적용 조건을 함께 검토해 드립니다</p>
             <a
               href={mailto}
               className="mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
@@ -409,13 +455,10 @@ export function TechDetail({
                   ))}
                 </ul>
               </nav>
-
-              <a
-                href={mailto}
-                className="mt-4 block rounded bg-ink-800 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-ink-900"
-              >
-                {BRAND.contact.label}
-              </a>
+              {/*
+                여기에 도입 문의 버튼을 두지 않는다. GNB 와 본문 하단에 이미
+                있어서, 레일까지 얹으면 한 화면에 같은 버튼이 세 개 선다.
+              */}
             </div>
           </div>
         </aside>

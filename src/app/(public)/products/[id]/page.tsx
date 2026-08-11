@@ -57,7 +57,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
           <p className="text-lg font-medium text-white">
-            {found.offering.title} 도입을 검토하고 계신가요?
+            도입 조건을 함께 검토해 드립니다
           </p>
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent(
