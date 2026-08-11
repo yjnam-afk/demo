@@ -263,31 +263,71 @@ const SCENES = {
       label(ctx, 'RESTRICTED', lineX + 20 * S, H * 0.36 + 18 * S, 'rgba(224,150,92,0.9)', 14 * S);
     }
 
-    // ── 인물: 왼쪽에서 통제선을 향해 걷다 넘는다 ────────────────────
-    const x = W * 0.16 + t * W * 0.52;
-    const y = H * 0.9;
+    // ── 인물: 걸어와 통제선 앞에서 멈칫하고, 뛰어넘은 뒤 계속 간다 ──
+    const baseY = H * 0.9;
     const h = H * 0.28 * z;
-    const crossed = x > lineX;
+    const jump = h * 0.42;
 
-    // 이동 궤적
+    /*
+      동선을 구간으로 나눈다. "선을 지나가기"만 하면 침입이 아니라 통행으로
+      읽힌다 — 멈칫(주저) → 도약(넘는 동작) → 착지 후 이동이 있어야
+      "넘었다" 가 보인다.
+        0    ~0.42  접근 보행
+        0.42 ~0.5   선 앞에서 멈칫 (두리번)
+        0.5  ~0.66  도약 — 포물선으로 선을 넘는다
+        0.66 ~1     반대편 보행 (경보)
+    */
+    const approachEnd = lineX - W * 0.055;
+    const landX = lineX + W * 0.055;
+    function posAt(tt) {
+      if (tt < 0.42) {
+        const k = tt / 0.42;
+        return { x: W * 0.16 + k * (approachEnd - W * 0.16), y: baseY, mode: 'walk' };
+      }
+      if (tt < 0.5) return { x: approachEnd, y: baseY, mode: 'pause' };
+      if (tt < 0.66) {
+        const k = (tt - 0.5) / 0.16;
+        return {
+          x: approachEnd + k * (landX - approachEnd),
+          y: baseY - Math.sin(k * Math.PI) * jump,
+          mode: 'vault',
+        };
+      }
+      const k = (tt - 0.66) / 0.34;
+      return { x: landX + k * (W * 0.78 - landX), y: baseY, mode: 'walk' };
+    }
+
+    const pos = posAt(t);
+    const crossed = pos.x > lineX;
+
+    // 이동 궤적 — 도약 구간에서는 공중 경로가 그대로 남는다
     for (let k = 3; k <= 24; k += 3) {
-      const tk = Math.max(0, t - k * 0.012);
-      const px = W * 0.16 + tk * W * 0.52;
+      const pk = posAt(Math.max(0, t - k * 0.012));
       ctx.fillStyle = crossed ? `rgba(212,118,60,${0.3 - k * 0.01})` : `rgba(123,163,208,${0.26 - k * 0.009})`;
       ctx.beginPath();
-      ctx.arc(px, y + 2 * S, 3 * S, 0, Math.PI * 2);
+      ctx.arc(pk.x, pk.y + 2 * S, 3 * S, 0, Math.PI * 2);
       ctx.fill();
     }
 
+    // 도약 중에는 몸을 앞으로 기울인다 — 정지 자세로 떠 있으면 순간이동으로 보인다
+    const lean = pos.mode === 'vault' ? 0.3 : 0;
+    if (lean) {
+      ctx.save();
+      ctx.translate(pos.x, pos.y - h * 0.4);
+      ctx.rotate(lean);
+      ctx.translate(-pos.x, -(pos.y - h * 0.4));
+    }
     walker(ctx, {
-      x,
-      y,
+      x: pos.x,
+      y: pos.y,
       h,
-      phase: t * Math.PI * 24,
-      stride: 1,
+      // 멈칫: 다리를 모은다. 도약: 발을 뒤로 접는다. 보행: 걷는다.
+      phase: pos.mode === 'walk' ? t * Math.PI * 26 : pos.mode === 'vault' ? Math.PI * 0.5 : 0,
+      stride: pos.mode === 'walk' ? 1 : pos.mode === 'vault' ? 0.9 : 0.15,
       facing: 1,
       tone: crossed ? 'alert' : 'normal',
     });
+    if (lean) ctx.restore();
 
     // 배경의 정상 인원 — 대비를 위해 흐리게
     if (!opts?.compact) {
@@ -304,8 +344,8 @@ const SCENES = {
 
     bbox(
       ctx,
-      x - h * 0.26,
-      y - h - h * 0.06,
+      pos.x - h * 0.26,
+      pos.y - h - h * 0.06,
       h * 0.52,
       h + h * 0.1,
       crossed ? ALERT : AI,

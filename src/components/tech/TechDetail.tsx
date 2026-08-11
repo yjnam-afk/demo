@@ -65,14 +65,19 @@ function ValueCell({ label, children }: { label: string; children: React.ReactNo
  */
 function DriveResourceFigure({ id, label }: { id: string; label: string }) {
   return (
-    <figure className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white">
+    <figure className="overflow-hidden rounded-lg border border-ink-200 bg-white">
       <a href={driveViewUrl(id)} target="_blank" rel="noopener">
+        {/*
+          문서 첫 장의 윗부분만 고정 비율로 보여준다. 원본 크기대로 펼치면
+          자료 하나가 화면 반을 차지한다 — 여기는 확인용 미리보기고,
+          정독은 원문에서 한다.
+        */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={driveThumbnailUrl(id)}
           alt={label}
           loading="lazy"
-          className="mx-auto max-h-[680px] w-auto bg-ink-50"
+          className="aspect-[4/3] w-full bg-ink-50 object-cover object-top"
         />
       </a>
       <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
@@ -407,110 +412,91 @@ export function TechDetail({
           {hasResources ? (
             <Section id="resources" title="관련 자료" tick={style.bar}>
               {/*
-                이미지는 링크로 접어 두지 않고 그대로 펼친다 — 시험 성적서나
-                구성도는 열어 보게 하는 것보다 보여 주는 쪽이 빠르다.
-                파일과 외부 링크는 눌리는 버튼으로 남는다.
+                미리보기는 한 격자에 균일한 타일로 선다. 자료마다 전체 폭으로
+                쌓으면 관련 자료가 본문보다 넓은 자리를 차지한다 — 여기는
+                확인용이고, 정독은 원문에서 한다.
+                  이미지 → 그대로 / 드라이브 → 첫 장 썸네일(형식 무관) /
+                  업로드 PDF → 내장 뷰어. 외부 링크만 버튼으로 남는다.
               */}
-              {tech.resources.some((resource) => isImagePath(resource.url)) ? (
+              {tech.resources.some(
+                (resource) => isImagePath(resource.url) || isPdfPath(resource.url) || driveIdFromPath(resource.url),
+              ) ? (
                 <div className="mb-4 grid gap-3 sm:grid-cols-2">
-                  {tech.resources
-                    .filter((resource) => isImagePath(resource.url))
-                    .map((resource) => (
-                      <figure
-                        key={resource.url}
-                        className="overflow-hidden rounded-lg border border-ink-200 bg-white"
-                      >
-                        <a href={resource.url} target="_blank" rel="noopener">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={resource.url}
-                            alt={resource.label}
-                            loading="lazy"
-                            className="w-full bg-ink-50"
-                          />
-                        </a>
-                        <figcaption className="border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
-                          {resource.label}
-                        </figcaption>
-                      </figure>
-                    ))}
+                  {tech.resources.map((resource) => {
+                    const driveId = driveIdFromPath(resource.url);
+
+                    if (!driveId && isImagePath(resource.url)) {
+                      return (
+                        <figure
+                          key={resource.url}
+                          className="overflow-hidden rounded-lg border border-ink-200 bg-white"
+                        >
+                          <a href={resource.url} target="_blank" rel="noopener">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={resource.url}
+                              alt={resource.label}
+                              loading="lazy"
+                              className="aspect-[4/3] w-full bg-ink-50 object-cover object-top"
+                            />
+                          </a>
+                          <figcaption className="border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                            {resource.label}
+                          </figcaption>
+                        </figure>
+                      );
+                    }
+
+                    if (driveId) {
+                      return (
+                        <DriveResourceFigure key={resource.url} id={driveId} label={resource.label} />
+                      );
+                    }
+
+                    if (isPdfPath(resource.url)) {
+                      return (
+                        <figure
+                          key={resource.url}
+                          className="overflow-hidden rounded-lg border border-ink-200 bg-white"
+                        >
+                          <object
+                            data={resource.url}
+                            type="application/pdf"
+                            className="block aspect-[4/3] w-full"
+                            aria-label={resource.label}
+                          >
+                            {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
+                            <div className="p-4">
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener"
+                                className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                              >
+                                <span className="truncate">{resource.label}</span>
+                                <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
+                              </a>
+                            </div>
+                          </object>
+                          <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                            <span className="truncate">{resource.label}</span>
+                            <a
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener"
+                              className="shrink-0 text-ink-500 hover:text-ink-900"
+                            >
+                              새 창에서 열기 ↗
+                            </a>
+                          </figcaption>
+                        </figure>
+                      );
+                    }
+
+                    return null;
+                  })}
                 </div>
               ) : null}
-
-              {/*
-                결과보고서 PDF.
-
-                드라이브 PDF 는 원문 주소가 다운로드로 떨어져 인라인 뷰어(object)에
-                걸 수 없다. 대신 드라이브가 만들어 주는 첫 페이지 썸네일을 그림으로
-                펼치고, 누르면 드라이브 뷰어에서 원문이 열린다. 업로드된 PDF 는
-                브라우저 내장 뷰어로 그대로 펼친다.
-              */}
-              {tech.resources.filter((resource) => isPdfPath(resource.url)).map((resource) => {
-                const driveId = driveIdFromPath(resource.url);
-
-                if (driveId) {
-                  return <DriveResourceFigure key={resource.url} id={driveId} label={resource.label} />;
-                }
-
-                return (
-                  <figure
-                    key={resource.url}
-                    className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
-                  >
-                    <object
-                      data={resource.url}
-                      type="application/pdf"
-                      className="block h-[560px] w-full sm:h-[680px]"
-                      aria-label={resource.label}
-                    >
-                      {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
-                      <div className="p-4">
-                        <a
-                          href={resource.url}
-                          target="_blank"
-                          rel="noopener"
-                          className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
-                        >
-                          <span className="truncate">{resource.label}</span>
-                          <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
-                        </a>
-                      </div>
-                    </object>
-                    <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
-                      <span className="truncate">{resource.label}</span>
-                      <a
-                        href={resource.url}
-                        target="_blank"
-                        rel="noopener"
-                        className="shrink-0 text-ink-500 hover:text-ink-900"
-                      >
-                        새 창에서 열기 ↗
-                      </a>
-                    </figcaption>
-                  </figure>
-                );
-              })}
-
-              {/*
-                형식 표식이 안 붙은 드라이브 자료.
-                링크를 붙여넣을 때 형식 조회가 실패하면 확장자 없이 저장되는데,
-                그래도 드라이브 썸네일은 형식과 무관하게 나온다. 표식이 없다고
-                버튼으로 접어 두면 "미리보기가 안 된다" 가 된다.
-              */}
-              {tech.resources
-                .filter(
-                  (resource) =>
-                    !isImagePath(resource.url) &&
-                    !isPdfPath(resource.url) &&
-                    driveIdFromPath(resource.url),
-                )
-                .map((resource) => (
-                  <DriveResourceFigure
-                    key={resource.url}
-                    id={driveIdFromPath(resource.url) as string}
-                    label={resource.label}
-                  />
-                ))}
 
               {tech.resources.some(
                 (resource) =>
