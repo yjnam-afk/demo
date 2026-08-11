@@ -97,8 +97,8 @@ async function main() {
   const jobs = only.length > 0 ? JOBS.filter((job) => only.includes(job.scene)) : JOBS;
 
   const browser = await chromium.launch({
-    // 설치된 playwright 버전과 브라우저 번들이 어긋나도 돌 수 있게, 미리 깔린
-    // 크로미움 경로를 환경 변수로 받는다. 없으면 기본 탐색을 따른다.
+    // 설치된 playwright 버전과 브라우저 번들이 어긋난 환경에서는 미리 깔린
+    // 크로미움 경로를 환경 변수로 받는다.
     executablePath: process.env.CHROMIUM_PATH || undefined,
   });
   const page = await browser.newPage();
@@ -128,6 +128,7 @@ async function main() {
       encode(loopDir, out.replace(/\.mp4$/, '.loop.mp4'), LOOP);
 
       if (job.poster) {
+        // 카드가 영상 로드 전에 쓰는 루프 포스터
         execFileSync(ffmpeg, [
           '-y', '-loglevel', 'error',
           '-i', path.join(loopDir, `${String(Math.floor(loopTotal * 0.72)).padStart(4, '0')}.png`),
