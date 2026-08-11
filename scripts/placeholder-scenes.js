@@ -17,6 +17,12 @@ const OK = '#5aa683';
 
 const scaleOf = (H) => H / 720;
 
+/**
+ * 사람이 나오는 장면의 표준 키 (화면 높이 비율).
+ * 장면마다 값이 다르면 카드가 나란히 설 때 인물 크기가 어긋난다.
+ */
+const WALKER_H = 0.28;
+
 function bg(ctx, W, H) {
   const S = scaleOf(H);
   ctx.fillStyle = INK;
@@ -265,7 +271,7 @@ const SCENES = {
 
     // ── 인물: 걸어와 통제선 앞에서 멈칫하고, 뛰어넘은 뒤 계속 간다 ──
     const baseY = H * 0.9;
-    const h = H * 0.28 * z;
+    const h = H * WALKER_H * z;
     const jump = h * 0.42;
 
     /*
@@ -361,6 +367,166 @@ const SCENES = {
     cctvTexture(ctx, W, H, t);
     if (!opts?.compact) {
       cctvChrome(ctx, W, H, t, 'CAM 03 · 서측 통제선', crossed, 'ALERT', 'MONITORING');
+    }
+  },
+
+  /**
+   * 배회 탐지 — 승강장을 오가는 인원과 체류 시간 누적.
+   *
+   * 다른 자리표시자보다 공들인 이유: 카드 썸네일로 쓰인다. 격자 위 막대인간은
+   * 시험 화면으로 읽혀서, 배경(승강장)·인물(관절 실루엣)·CCTV 질감(타임스탬프·
+   * 노이즈·비네트)을 갖춘 장면으로 그린다.
+   */
+  loitering(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.45 : 1;
+    const rand = (i) => {
+      const v = Math.sin(i * 12.9898) * 43758.5453;
+      return v - Math.floor(v);
+    };
+
+    // ── 배경: 야간 승강장 ────────────────────────────────────────────
+    ctx.fillStyle = '#101318';
+    ctx.fillRect(0, 0, W, H);
+
+    // 벽 패널
+    ctx.fillStyle = '#161b22';
+    ctx.fillRect(0, 0, W, H * 0.52);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 8; i++) {
+      const x = (W / 8) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, H * 0.08);
+      ctx.lineTo(x, H * 0.52);
+      ctx.stroke();
+    }
+    // 벽 상단 안내띠
+    ctx.fillStyle = 'rgba(95,122,160,0.16)';
+    ctx.fillRect(0, H * 0.1, W, H * 0.05);
+
+    // 천장 조명 얼룩
+    for (let i = 0; i < 4; i++) {
+      const lx = W * (0.14 + i * 0.24);
+      const g = ctx.createRadialGradient(lx, H * 0.06, 0, lx, H * 0.06, H * 0.42);
+      g.addColorStop(0, 'rgba(210,220,235,0.10)');
+      g.addColorStop(1, 'rgba(210,220,235,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(lx - H * 0.42, 0, H * 0.84, H * 0.6);
+    }
+
+    // 바닥 타일 (원근)
+    ctx.fillStyle = '#14181f';
+    ctx.fillRect(0, H * 0.52, W, H * 0.48);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    for (let i = 0; i < 7; i++) {
+      const y = H * 0.52 + (i * i * 6 + i * 14) * S;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+    for (let i = -6; i <= 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 + i * 60 * S, H * 0.52);
+      ctx.lineTo(W * 0.5 + i * 200 * S, H);
+      ctx.stroke();
+    }
+
+    // 승강장 안전선 — 노란 점자블록 띠
+    ctx.fillStyle = 'rgba(196,160,66,0.5)';
+    ctx.fillRect(0, H * 0.9, W, 10 * S);
+    ctx.fillStyle = 'rgba(196,160,66,0.28)';
+    ctx.fillRect(0, H * 0.9 + 12 * S, W, 4 * S);
+
+    // 기둥 두 개
+    for (const px of [W * 0.12, W * 0.88]) {
+      ctx.fillStyle = '#1b212b';
+      ctx.fillRect(px - 24 * S, H * 0.14, 48 * S, H * 0.62);
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(px - 24 * S, H * 0.14, 8 * S, H * 0.62);
+    }
+
+    // ── 인물: 배회 동선과 걷는 실루엣 ────────────────────────────────
+    const sway = Math.sin(t * Math.PI * 5);
+    const x = W * 0.5 + sway * W * 0.21;
+    const y = H * 0.885;
+    const h = H * WALKER_H * z;
+    const walkPhase = t * Math.PI * 26;
+    // 방향 전환 순간에는 보폭이 줄되, 다리가 완전히 붙지는 않게 하한을 둔다
+    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 5));
+    const facing = Math.sign(Math.cos(t * Math.PI * 5)) || 1;
+
+    const dwell = Math.floor(t * 52);
+    const flagged = dwell >= 30;
+
+    walker(ctx, {
+      x,
+      y,
+      h,
+      phase: walkPhase,
+      stride,
+      facing,
+      tone: flagged ? 'alert' : 'normal',
+    });
+
+    // ── 탐지 오버레이 ────────────────────────────────────────────────
+    // 감시 구역
+    const zx = W * 0.2;
+    const zw = W * 0.6;
+    const zy = H * 0.5;
+    const zh = H * 0.44;
+    ctx.setLineDash([12 * S, 8 * S]);
+    ctx.strokeStyle = 'rgba(123,163,208,0.5)';
+    ctx.lineWidth = 2 * S * z;
+    ctx.strokeRect(zx, zy, zw, zh);
+    ctx.setLineDash([]);
+    if (!opts?.compact) {
+      label(ctx, 'ZONE A · DWELL WATCH', zx + 10 * S, zy - 10 * S, 'rgba(123,163,208,0.7)', 14 * S);
+    }
+
+    // 이동 궤적 — 바닥에 남는 점
+    for (let k = 2; k <= 26; k += 2) {
+      const tk = Math.max(0, t - k * 0.011);
+      const px = W * 0.5 + Math.sin(tk * Math.PI * 5) * W * 0.21;
+      ctx.fillStyle = flagged ? `rgba(212,118,60,${0.34 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
+      ctx.beginPath();
+      ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    bbox(
+      ctx,
+      x - h * 0.26,
+      y - h - h * 0.06,
+      h * 0.52,
+      h + h * 0.1,
+      flagged ? ALERT : AI,
+      flagged ? 'LOITERING 0.91' : 'PERSON 0.95',
+      S * z * 0.9,
+    );
+
+    if (!opts?.compact) {
+      const mm = String(Math.floor(dwell / 60)).padStart(2, '0');
+      const ss = String(dwell % 60).padStart(2, '0');
+      label(
+        ctx,
+        `DWELL ${mm}:${ss}`,
+        zx + 10 * S,
+        zy + zh - 12 * S,
+        flagged ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.65)',
+        16 * S,
+      );
+    }
+
+    if (flagged) {
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 07 · 동측 승강장', flagged, 'ALERT', 'TRACKING');
     }
   },
 
