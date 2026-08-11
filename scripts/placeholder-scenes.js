@@ -147,6 +147,82 @@ const SCENES = {
     }
   },
 
+  /** 배회 탐지 — 감시 구역 안을 오가는 인원과 체류 시간 누적 */
+  loitering(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.7 : 1;
+    bg(ctx, W, H);
+    ground(ctx, W, H);
+
+    // 감시 구역 — 체류 시간을 재는 범위를 화면에 밝힌다
+    const zx = W * 0.22;
+    const zw = W * 0.56;
+    const zy = H * 0.42;
+    const zh = H * 0.5;
+    ctx.setLineDash([14 * S, 9 * S]);
+    ctx.strokeStyle = 'rgba(123,163,208,0.55)';
+    ctx.lineWidth = 2.5 * S * z;
+    ctx.strokeRect(zx, zy, zw, zh);
+    ctx.setLineDash([]);
+    if (!opts?.compact) {
+      label(ctx, 'ZONE A · DWELL WATCH', zx + 10 * S, zy - 10 * S, 'rgba(123,163,208,0.75)', 15 * S);
+    }
+
+    // 두 번 반 오간다 — 배회는 방향 전환이 정체성이다
+    const sway = Math.sin(t * Math.PI * 5);
+    const x = W * 0.5 + sway * zw * 0.36;
+    const y = H * 0.86 + Math.cos(t * Math.PI * 10) * 6 * S;
+    const h = H * 0.24 * z;
+
+    // 체류 시간 누적 — 문턱을 넘으면 배회 판정
+    const dwell = Math.floor(t * 52);
+    const flagged = dwell >= 30;
+
+    person(ctx, x, y, h, flagged ? 'rgba(212,118,60,0.95)' : 'rgba(255,255,255,0.8)');
+    bbox(
+      ctx,
+      x - h * 0.24,
+      y - h - h * 0.09,
+      h * 0.48,
+      h + h * 0.13,
+      flagged ? ALERT : AI,
+      flagged ? 'LOITERING 0.91' : 'PERSON 0.95',
+      S * z,
+    );
+
+    // 이동 궤적 — 같은 자리를 오갔음을 남긴다
+    ctx.strokeStyle = flagged ? 'rgba(212,118,60,0.35)' : 'rgba(123,163,208,0.3)';
+    ctx.lineWidth = 2 * S;
+    ctx.beginPath();
+    for (let k = 0; k <= 24; k++) {
+      const tk = Math.max(0, t - k * 0.012);
+      const px = W * 0.5 + Math.sin(tk * Math.PI * 5) * zw * 0.36;
+      const py = H * 0.86 + Math.cos(tk * Math.PI * 10) * 6 * S - 4 * S;
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    if (!opts?.compact) {
+      const mm = String(Math.floor(dwell / 60)).padStart(2, '0');
+      const ss = String(dwell % 60).padStart(2, '0');
+      label(
+        ctx,
+        `DWELL ${mm}:${ss}`,
+        zx + 10 * S,
+        zy + zh - 14 * S,
+        flagged ? 'rgba(212,118,60,0.9)' : 'rgba(255,255,255,0.6)',
+        16 * S,
+      );
+    }
+
+    hud(ctx, W, H, 'CAM 07 · 동측 승강장', flagged ? '● ALERT' : '● TRACKING', opts);
+    if (flagged) {
+      ctx.fillStyle = 'rgba(212,118,60,0.09)';
+      ctx.fillRect(0, 0, W, H);
+    }
+  },
+
   /** 같은 구역 원본 영상 — 오버레이 없음 (모델 입력 샘플) */
   intrusionRawA(ctx, W, H, t, opts) {
     const S = scaleOf(H);

@@ -32,6 +32,7 @@ const FULL = { w: 1280, h: 720, compact: false, crf: '24', vp9: '900k' };
 const LOOP = { w: 640, h: 400, compact: true, crf: '30', vp9: '350k' };
 
 const JOBS = [
+  { scene: 'loitering', out: 'public/videos/loitering.mp4', loop: true, poster: true },
   { scene: 'intrusion', out: 'public/videos/intrusion-detection.mp4', loop: true, poster: true },
   { scene: 'twin', out: 'public/videos/digital-twin-plant.mp4', loop: true, poster: true },
   { scene: 'flood', out: 'public/videos/flood-simulation.mp4', loop: true, poster: true },
@@ -91,12 +92,20 @@ function encode(dir, out, variant) {
 }
 
 async function main() {
-  const browser = await chromium.launch();
+  // 인자로 장면 이름을 주면 그 작업만 만든다. 없으면 전부.
+  const only = process.argv.slice(2);
+  const jobs = only.length > 0 ? JOBS.filter((job) => only.includes(job.scene)) : JOBS;
+
+  const browser = await chromium.launch({
+    // 설치된 playwright 버전과 브라우저 번들이 어긋나도 돌 수 있게, 미리 깔린
+    // 크로미움 경로를 환경 변수로 받는다. 없으면 기본 탐색을 따른다.
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
   const page = await browser.newPage();
   await page.setContent('<body style="margin:0"><canvas id="c"></canvas></body>');
   await page.addScriptTag({ content: SCENES_JS });
 
-  for (const job of JOBS) {
+  for (const job of jobs) {
     const out = path.join(ROOT, job.out);
 
     const fullDir = path.join(TMP, `${job.scene}-full`);
@@ -115,8 +124,17 @@ async function main() {
 
     if (job.loop) {
       const loopDir = path.join(TMP, `${job.scene}-loop`);
-      await renderFrames(page, job.scene, LOOP, loopDir);
+      const loopTotal = await renderFrames(page, job.scene, LOOP, loopDir);
       encode(loopDir, out.replace(/\.mp4$/, '.loop.mp4'), LOOP);
+
+      if (job.poster) {
+        execFileSync(ffmpeg, [
+          '-y', '-loglevel', 'error',
+          '-i', path.join(loopDir, `${String(Math.floor(loopTotal * 0.72)).padStart(4, '0')}.png`),
+          '-q:v', '4',
+          path.join(ROOT, 'public/thumbnails', path.basename(out).replace(/\.mp4$/, '.loop.jpg')),
+        ]);
+      }
     }
 
     console.log('rendered', job.out);
