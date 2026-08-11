@@ -153,8 +153,15 @@ export function TechDetail({
   */
   const isCertMetric = (metric: PublicTech['metrics'][number]) =>
     Boolean(metric.source && /인증/.test(metric.source));
-  const certMetrics = tech.metrics.filter(isCertMetric);
-  const fieldMetrics = tech.metrics.filter((metric) => !isCertMetric(metric));
+  /*
+    인증 구간은 검증 수준이 제3자 인증일 때만 선다. 그 구간이 없는데
+    출처가 "…인증" 이라는 이유로 지표를 빼돌리면 숫자가 화면에서 통째로
+    사라진다 — 인증 구간이 없으면 모든 지표는 성능 지표에 남는다.
+  */
+  const certMetrics = certified ? tech.metrics.filter(isCertMetric) : [];
+  const fieldMetrics = certified
+    ? tech.metrics.filter((metric) => !isCertMetric(metric))
+    : tech.metrics;
   /*
     인증 시험명은 별도 필드가 없어 인증 수치의 평가 데이터셋 이름에 실려
     있다("지능형 CCTV 성능시험인증(침입)" 등). 인증 출처가 붙은 지표의
