@@ -150,7 +150,12 @@ export function TechCard({ tech }: { tech: PublicTech }) {
             {tech.name_ko}
           </h3>
           {/* 카드에서 읽히는 문장은 기술 설명이 아니라 고객의 문제다 */}
-          <p className="line-clamp-2 mt-1.5 text-sm leading-relaxed text-ink-600">
+          {/*
+            자르지 않는다. 격자는 auto-rows-fr 라 줄 수가 달라도 같은 행의
+            카드 높이가 함께 늘고, 하단 정보줄은 mt-auto 로 바닥에 붙어
+            정렬이 유지된다. 두 줄에서 자르면 가장 공들인 문장이 잘려 나간다.
+          */}
+          <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
             {tech.business.problem ?? tech.summary}
           </p>
         </div>
