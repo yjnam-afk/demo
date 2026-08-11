@@ -79,7 +79,13 @@ export type Maturity = (typeof MATURITY_LEVELS)[number];
 export const MATURITY_LABELS: Record<Maturity, string> = {
   field_proven: '현장 적용',
   pilot_done: '실증 완료',
-  lab_verified: '자체 검증',
+  /*
+    '자체 검증' 이었으나 검증 등급의 '자체 시험' 과 거의 같은 말이라, 제3자
+    인증을 받은 기술에 이 단계를 고르는 것이 모순처럼 읽혔다. 성숙도는
+    "누가 확인했나" 가 아니라 "어디까지 갔나" 다 — 시험실 수준까지 검증됐고
+    아직 현장 전이라는 뜻이므로, 누가 했는지 색을 뺀 이름으로 바꾼다.
+  */
+  lab_verified: '시험 검증',
   research: '연구 단계',
 };
 
