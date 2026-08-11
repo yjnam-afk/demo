@@ -147,61 +147,191 @@ const SCENES = {
     }
   },
 
-  /** 배회 탐지 — 감시 구역 안을 오가는 인원과 체류 시간 누적 */
+  /**
+   * 배회 탐지 — 승강장을 오가는 인원과 체류 시간 누적.
+   *
+   * 다른 자리표시자보다 공들인 이유: 카드 썸네일로 쓰인다. 격자 위 막대인간은
+   * 시험 화면으로 읽혀서, 배경(승강장)·인물(관절 실루엣)·CCTV 질감(타임스탬프·
+   * 노이즈·비네트)을 갖춘 장면으로 그린다.
+   */
   loitering(ctx, W, H, t, opts) {
     const S = scaleOf(H);
-    const z = opts?.compact ? 1.7 : 1;
-    bg(ctx, W, H);
-    ground(ctx, W, H);
+    const z = opts?.compact ? 1.45 : 1;
+    const rand = (i) => {
+      const v = Math.sin(i * 12.9898) * 43758.5453;
+      return v - Math.floor(v);
+    };
 
-    // 감시 구역 — 체류 시간을 재는 범위를 화면에 밝힌다
-    const zx = W * 0.22;
-    const zw = W * 0.56;
-    const zy = H * 0.42;
-    const zh = H * 0.5;
-    ctx.setLineDash([14 * S, 9 * S]);
-    ctx.strokeStyle = 'rgba(123,163,208,0.55)';
-    ctx.lineWidth = 2.5 * S * z;
-    ctx.strokeRect(zx, zy, zw, zh);
-    ctx.setLineDash([]);
-    if (!opts?.compact) {
-      label(ctx, 'ZONE A · DWELL WATCH', zx + 10 * S, zy - 10 * S, 'rgba(123,163,208,0.75)', 15 * S);
+    // ── 배경: 야간 승강장 ────────────────────────────────────────────
+    ctx.fillStyle = '#101318';
+    ctx.fillRect(0, 0, W, H);
+
+    // 벽 패널
+    ctx.fillStyle = '#161b22';
+    ctx.fillRect(0, 0, W, H * 0.52);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 8; i++) {
+      const x = (W / 8) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, H * 0.08);
+      ctx.lineTo(x, H * 0.52);
+      ctx.stroke();
+    }
+    // 벽 상단 안내띠
+    ctx.fillStyle = 'rgba(95,122,160,0.16)';
+    ctx.fillRect(0, H * 0.1, W, H * 0.05);
+
+    // 천장 조명 얼룩
+    for (let i = 0; i < 4; i++) {
+      const lx = W * (0.14 + i * 0.24);
+      const g = ctx.createRadialGradient(lx, H * 0.06, 0, lx, H * 0.06, H * 0.42);
+      g.addColorStop(0, 'rgba(210,220,235,0.10)');
+      g.addColorStop(1, 'rgba(210,220,235,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(lx - H * 0.42, 0, H * 0.84, H * 0.6);
     }
 
-    // 두 번 반 오간다 — 배회는 방향 전환이 정체성이다
-    const sway = Math.sin(t * Math.PI * 5);
-    const x = W * 0.5 + sway * zw * 0.36;
-    const y = H * 0.86 + Math.cos(t * Math.PI * 10) * 6 * S;
-    const h = H * 0.24 * z;
+    // 바닥 타일 (원근)
+    ctx.fillStyle = '#14181f';
+    ctx.fillRect(0, H * 0.52, W, H * 0.48);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    for (let i = 0; i < 7; i++) {
+      const y = H * 0.52 + (i * i * 6 + i * 14) * S;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+    for (let i = -6; i <= 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 + i * 60 * S, H * 0.52);
+      ctx.lineTo(W * 0.5 + i * 200 * S, H);
+      ctx.stroke();
+    }
 
-    // 체류 시간 누적 — 문턱을 넘으면 배회 판정
+    // 승강장 안전선 — 노란 점자블록 띠
+    ctx.fillStyle = 'rgba(196,160,66,0.5)';
+    ctx.fillRect(0, H * 0.9, W, 10 * S);
+    ctx.fillStyle = 'rgba(196,160,66,0.28)';
+    ctx.fillRect(0, H * 0.9 + 12 * S, W, 4 * S);
+
+    // 기둥 두 개
+    for (const px of [W * 0.12, W * 0.88]) {
+      ctx.fillStyle = '#1b212b';
+      ctx.fillRect(px - 24 * S, H * 0.14, 48 * S, H * 0.62);
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(px - 24 * S, H * 0.14, 8 * S, H * 0.62);
+    }
+
+    // ── 인물: 배회 동선과 걷는 실루엣 ────────────────────────────────
+    const sway = Math.sin(t * Math.PI * 5);
+    const x = W * 0.5 + sway * W * 0.21;
+    const y = H * 0.885;
+    const h = H * 0.3 * z;
+    const walkPhase = t * Math.PI * 26;
+    // 방향 전환 순간에는 보폭이 줄되, 다리가 완전히 붙지는 않게 하한을 둔다
+    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 5));
+    const facing = Math.sign(Math.cos(t * Math.PI * 5)) || 1;
+
     const dwell = Math.floor(t * 52);
     const flagged = dwell >= 30;
 
-    person(ctx, x, y, h, flagged ? 'rgba(212,118,60,0.95)' : 'rgba(255,255,255,0.8)');
+    // 그림자
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(x, y + 4 * S, h * 0.22, h * 0.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    /*
+      투톤 실루엣 — 상의와 하의 색을 갈라야 몸통과 다리가 분리돼 보인다.
+      한 색으로 그리면 획들이 합쳐져 볼링핀이 된다.
+    */
+    const jacket = flagged ? 'rgba(224,150,92,0.95)' : 'rgba(196,204,216,0.88)';
+    const pants = flagged ? 'rgba(176,108,62,0.95)' : 'rgba(132,142,158,0.85)';
+    ctx.lineCap = 'round';
+
+    const hipY = y - h * 0.48;
+    const shoulderY = y - h * 0.8;
+    const legSwing = Math.sin(walkPhase) * 0.4 * stride;
+    const armSwing = Math.sin(walkPhase + Math.PI) * 0.3 * stride;
+
+    // 다리 — 앞뒤 다리의 명도를 갈라 겹쳐도 형태가 남게 한다
+    for (const dir of [1, -1]) {
+      ctx.strokeStyle = dir === 1 ? pants : (flagged ? 'rgba(140,84,48,0.9)' : 'rgba(104,112,126,0.8)');
+      ctx.lineWidth = h * 0.075;
+      const kneeX = x + facing * Math.sin(legSwing) * h * 0.2 * dir;
+      const footX = x + facing * Math.sin(legSwing) * h * 0.38 * dir;
+      ctx.beginPath();
+      ctx.moveTo(x, hipY);
+      ctx.quadraticCurveTo(kneeX, y - h * 0.26, footX, y);
+      ctx.stroke();
+    }
+    // 몸통 — 어깨가 엉덩이보다 넓은 사다리꼴
+    ctx.fillStyle = jacket;
+    ctx.beginPath();
+    ctx.moveTo(x - h * 0.1, shoulderY);
+    ctx.lineTo(x + h * 0.1, shoulderY);
+    ctx.lineTo(x + h * 0.065, hipY + h * 0.02);
+    ctx.lineTo(x - h * 0.065, hipY + h * 0.02);
+    ctx.closePath();
+    ctx.fill();
+    // 팔 — 상의보다 살짝 어둡게, 손끝은 허리 근처까지만
+    ctx.strokeStyle = flagged ? 'rgba(200,128,74,0.95)' : 'rgba(168,177,192,0.85)';
+    ctx.lineWidth = h * 0.055;
+    for (const dir of [1, -1]) {
+      const handX = x + facing * Math.sin(armSwing) * h * 0.24 * dir;
+      ctx.beginPath();
+      ctx.moveTo(x + facing * h * 0.01, shoulderY - h * 0.03 + h * 0.05);
+      ctx.quadraticCurveTo(
+        x + facing * Math.sin(armSwing) * h * 0.12 * dir,
+        y - h * 0.6,
+        handX,
+        y - h * 0.42,
+      );
+      ctx.stroke();
+    }
+    // 머리 — 목 간격을 두어 몸통과 붙지 않게
+    ctx.fillStyle = jacket;
+    ctx.beginPath();
+    ctx.arc(x + facing * h * 0.03, shoulderY - h * 0.16, h * 0.088, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── 탐지 오버레이 ────────────────────────────────────────────────
+    // 감시 구역
+    const zx = W * 0.2;
+    const zw = W * 0.6;
+    const zy = H * 0.5;
+    const zh = H * 0.44;
+    ctx.setLineDash([12 * S, 8 * S]);
+    ctx.strokeStyle = 'rgba(123,163,208,0.5)';
+    ctx.lineWidth = 2 * S * z;
+    ctx.strokeRect(zx, zy, zw, zh);
+    ctx.setLineDash([]);
+    if (!opts?.compact) {
+      label(ctx, 'ZONE A · DWELL WATCH', zx + 10 * S, zy - 10 * S, 'rgba(123,163,208,0.7)', 14 * S);
+    }
+
+    // 이동 궤적 — 바닥에 남는 점
+    for (let k = 2; k <= 26; k += 2) {
+      const tk = Math.max(0, t - k * 0.011);
+      const px = W * 0.5 + Math.sin(tk * Math.PI * 5) * W * 0.21;
+      ctx.fillStyle = flagged ? `rgba(212,118,60,${0.34 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
+      ctx.beginPath();
+      ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     bbox(
       ctx,
-      x - h * 0.24,
-      y - h - h * 0.09,
-      h * 0.48,
-      h + h * 0.13,
+      x - h * 0.26,
+      y - h - h * 0.06,
+      h * 0.52,
+      h + h * 0.1,
       flagged ? ALERT : AI,
       flagged ? 'LOITERING 0.91' : 'PERSON 0.95',
-      S * z,
+      S * z * 0.9,
     );
-
-    // 이동 궤적 — 같은 자리를 오갔음을 남긴다
-    ctx.strokeStyle = flagged ? 'rgba(212,118,60,0.35)' : 'rgba(123,163,208,0.3)';
-    ctx.lineWidth = 2 * S;
-    ctx.beginPath();
-    for (let k = 0; k <= 24; k++) {
-      const tk = Math.max(0, t - k * 0.012);
-      const px = W * 0.5 + Math.sin(tk * Math.PI * 5) * zw * 0.36;
-      const py = H * 0.86 + Math.cos(tk * Math.PI * 10) * 6 * S - 4 * S;
-      if (k === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
 
     if (!opts?.compact) {
       const mm = String(Math.floor(dwell / 60)).padStart(2, '0');
@@ -210,16 +340,51 @@ const SCENES = {
         ctx,
         `DWELL ${mm}:${ss}`,
         zx + 10 * S,
-        zy + zh - 14 * S,
-        flagged ? 'rgba(212,118,60,0.9)' : 'rgba(255,255,255,0.6)',
+        zy + zh - 12 * S,
+        flagged ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.65)',
         16 * S,
       );
     }
 
-    hud(ctx, W, H, 'CAM 07 · 동측 승강장', flagged ? '● ALERT' : '● TRACKING', opts);
+    // ── CCTV 질감 ────────────────────────────────────────────────────
+    // 주사선
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    for (let yy = 0; yy < H; yy += 4 * S) ctx.fillRect(0, yy, W, 1.4 * S);
+    // 노이즈 반점 (프레임마다 결정적으로 변한다)
+    const frameSeed = Math.floor(t * 150);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    for (let i = 0; i < 90; i++) {
+      const nx = rand(i * 7.13 + frameSeed) * W;
+      const ny = rand(i * 3.71 + frameSeed * 1.7) * H;
+      ctx.fillRect(nx, ny, 1.6 * S, 1.6 * S);
+    }
+    // 비네트
+    const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H * 0.95);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,0.4)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+
     if (flagged) {
-      ctx.fillStyle = 'rgba(212,118,60,0.09)';
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
       ctx.fillRect(0, 0, W, H);
+    }
+
+    // HUD — 타임스탬프와 REC 로 CCTV 임을 밝힌다
+    if (!opts?.compact) {
+      const sec = String(10 + Math.floor(t * 52) % 50).padStart(2, '0');
+      ctx.font = `500 ${Math.round(16 * S)}px ui-monospace, monospace`;
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText('CAM 07 · 동측 승강장', 28 * S, 40 * S);
+      ctx.fillText(`2026-08-11 04:12:${sec}`, 28 * S, H - 24 * S);
+
+      const status = flagged ? 'ALERT' : 'TRACKING';
+      ctx.fillStyle = flagged ? 'rgba(212,118,60,0.95)' : 'rgba(120,190,140,0.9)';
+      ctx.beginPath();
+      ctx.arc(W - 28 * S - ctx.measureText(status).width - 14 * S, 34 * S, 5 * S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.fillText(status, W - 28 * S - ctx.measureText(status).width, 40 * S);
     }
   },
 
