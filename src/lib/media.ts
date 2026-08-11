@@ -38,3 +38,12 @@ export const BLOB_UPLOAD_PATH = /^uploads\/[a-z0-9][a-z0-9-]{1,63}\/(thumbnail|l
 export function isImagePath(path: string): boolean {
   return /\.(jpe?g|png|webp|svg|gif)(\?|#|$)/i.test(path);
 }
+
+/**
+ * 브라우저가 문서 뷰어로 펼칠 수 있는 PDF 경로인지.
+ * 시험 성적서·결과보고서가 여기 해당한다. 이미지와 같은 이유로 접어 두지
+ * 않고 상세 화면에 펼친다.
+ */
+export function isPdfPath(path: string): boolean {
+  return /\.pdf(\?|#|$)/i.test(path);
+}

@@ -11,7 +11,7 @@ import { pickHeadlineMetric } from '@/lib/domain/metric';
 import type { PublicTech } from '@/lib/domain/types';
 import { BRAND } from '@/lib/brand';
 import { accentStyle, cn } from '@/lib/ui/domain';
-import { isImagePath } from '@/lib/media';
+import { isImagePath, isPdfPath } from '@/lib/media';
 
 function Section({
   id,
@@ -376,11 +376,52 @@ export function TechDetail({
                 </div>
               ) : null}
 
-              {tech.resources.some((resource) => !isImagePath(resource.url)) ? (
+              {/* 결과보고서 PDF — 브라우저 뷰어로 펼친다. A4 문서라 전체 폭을 쓴다. */}
+              {tech.resources.filter((resource) => isPdfPath(resource.url)).map((resource) => (
+                <figure
+                  key={resource.url}
+                  className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
+                >
+                  <object
+                    data={resource.url}
+                    type="application/pdf"
+                    className="block h-[560px] w-full sm:h-[680px]"
+                    aria-label={resource.label}
+                  >
+                    {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
+                    <div className="p-4">
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                      >
+                        <span className="truncate">{resource.label}</span>
+                        <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
+                      </a>
+                    </div>
+                  </object>
+                  <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                    <span className="truncate">{resource.label}</span>
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="shrink-0 text-ink-500 hover:text-ink-900"
+                    >
+                      새 창에서 열기 ↗
+                    </a>
+                  </figcaption>
+                </figure>
+              ))}
+
+              {tech.resources.some(
+                (resource) => !isImagePath(resource.url) && !isPdfPath(resource.url),
+              ) ? (
                 /* 밑줄 글자는 본문에 묻힌다. 내려받을 수 있는 것은 눌리는 물건으로 보여야 한다. */
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {tech.resources
-                    .filter((resource) => !isImagePath(resource.url))
+                    .filter((resource) => !isImagePath(resource.url) && !isPdfPath(resource.url))
                     .map((resource) => (
                       <li key={resource.url}>
                         <a
