@@ -12,6 +12,7 @@ import {
   VERIFICATION_LEVELS,
   isOneOf,
 } from './enums';
+import { normalizeMediaPath } from '@/lib/gdrive';
 import type {
   Demo,
   DemoSample,
@@ -123,6 +124,12 @@ function parseSamples(value: unknown): DemoSample[] {
     .filter((sample) => sample.label && (sample.path || sample.text !== undefined));
 }
 
+
+/** 미디어 경로 문자열. 드라이브 공유 링크는 재생 가능한 내부 경로로 바꿔 저장한다. */
+function mediaStr(value: unknown): string {
+  return normalizeMediaPath(str(value));
+}
+
 function parseDemo(value: unknown): Demo {
   const raw = asRecord(value, '데모');
   const type = pick(DEMO_TYPES, raw.type, '데모 타입');
@@ -153,9 +160,9 @@ function parseDemo(value: unknown): Demo {
     case 'video':
       return {
         type,
-        src: str(raw.src),
-        src_webm: str(raw.src_webm) || undefined,
-        poster: str(raw.poster) || undefined,
+        src: mediaStr(raw.src),
+        src_webm: mediaStr(raw.src_webm) || undefined,
+        poster: mediaStr(raw.poster) || undefined,
       };
     case 'metric':
       return { type, highlight_metric: str(raw.highlight_metric) || undefined };
@@ -233,12 +240,12 @@ export function parseTechInput(
     base_model: str(raw.base_model) || undefined,
     demo: parseDemo(raw.demo),
     media: {
-      thumbnail: str(media.thumbnail) || undefined,
-      loop: str(media.loop) || undefined,
-      video: str(media.video) || undefined,
-      loop_webm: str(media.loop_webm) || undefined,
-      video_webm: str(media.video_webm) || undefined,
-      loop_poster: str(media.loop_poster) || undefined,
+      thumbnail: mediaStr(media.thumbnail) || undefined,
+      loop: mediaStr(media.loop) || undefined,
+      video: mediaStr(media.video) || undefined,
+      loop_webm: mediaStr(media.loop_webm) || undefined,
+      video_webm: mediaStr(media.video_webm) || undefined,
+      loop_poster: mediaStr(media.loop_poster) || undefined,
     },
     resources: parseResources(raw.resources),
     related_tech: strList(raw.related_tech),
@@ -298,11 +305,11 @@ export function parseSolutionInput(input: unknown, existing?: Solution | null): 
     deployment: kind === 'product' && deployment.length > 0 ? deployment : undefined,
     release: kind === 'product' && release ? pick(RELEASE_STAGES, release, '출시 단계') : undefined,
     media: {
-      thumbnail: str(media.thumbnail) || undefined,
-      loop: str(media.loop) || undefined,
-      video: str(media.video) || undefined,
-      loop_webm: str(media.loop_webm) || undefined,
-      video_webm: str(media.video_webm) || undefined,
+      thumbnail: mediaStr(media.thumbnail) || undefined,
+      loop: mediaStr(media.loop) || undefined,
+      video: mediaStr(media.video) || undefined,
+      loop_webm: mediaStr(media.loop_webm) || undefined,
+      video_webm: mediaStr(media.video_webm) || undefined,
     },
     visibility: pick(VISIBILITIES, raw.visibility, '공개 범위'),
     order: Number.isFinite(Number(raw.order)) ? Number(raw.order) : (existing?.order ?? 0),

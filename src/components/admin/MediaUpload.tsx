@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { TextInput } from './fields';
 import { MEDIA_EXTENSIONS } from '@/lib/media';
+import { normalizeMediaPath } from '@/lib/gdrive';
 
 /**
  * 썸네일·영상 업로드.
@@ -102,8 +103,12 @@ export function MediaUpload({
       <div className="flex gap-2">
         <TextInput
           value={value}
-          placeholder="/uploads/... 또는 직접 경로 입력"
-          onChange={(event) => onChange(event.target.value)}
+          placeholder="/uploads/... 경로, 또는 구글 드라이브 공유 링크"
+          /*
+            드라이브 공유 링크는 붙여넣는 즉시 재생 가능한 내부 경로로 바뀐다.
+            서버 저장 시점에도 같은 정규화를 거치므로 화면을 우회해도 결과는 같다.
+          */
+          onChange={(event) => onChange(normalizeMediaPath(event.target.value))}
           className="flex-1"
         />
         <input

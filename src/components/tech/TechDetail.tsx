@@ -382,13 +382,21 @@ export function TechDetail({
             인원 적용을 검토하고 계신가요?" 처럼 서술형 이름이면 문장이 깨진다.
             어느 기술에 대한 문의인지는 메일 제목이 나른다.
           */}
+          {/*
+            구호를 쓰지 않는다 — "함께 검토해 드립니다" 같은 문장은 어느
+            사이트에나 있어 읽고 나면 남는 것이 없다. 무엇을 받게 되는지와
+            문의처만 사실대로 적는다.
+          */}
           <section className="rounded-lg bg-ink-950 p-6 sm:p-8">
-            <p className="text-lg font-medium text-white">적용 조건을 함께 검토해 드립니다</p>
+            <h2 className="text-lg font-semibold text-white">도입 문의</h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
+              기술 자료와 적용 사례, 도입 조건을 안내해 드립니다.
+            </p>
             <a
               href={mailto}
-              className="mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
+              className="numeric mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
             >
-              {BRAND.contact.label}
+              {BRAND.contact.email}
             </a>
           </section>
         </div>
