@@ -63,55 +63,61 @@ export function MetricStat({
 
 /**
  * 상세 페이지의 성능 지표 블록.
- * 복수 지표를 지원하며, 지표가 없는 기술은 이 컴포넌트를 아예 렌더하지 않는다.
+ *
+ * 표로 두면 페이지에서 가장 중요한 숫자가 본문 글자 크기로 줄어들어 다른
+ * 정의 목록과 구분되지 않는다. 이 사이트의 얼굴은 수치이므로, 지표만은
+ * 어두운 판에 큰 숫자로 세운다 — 페이지에서 가장 무거운 블록이 된다.
+ *
+ * 표가 담던 정보(목표·달성·달성률·판정·조건·데이터셋·출처)는 전부 셀 안에
+ * 남는다. 특히 조건 단서는 값 바로 옆이다 — 떼어 놓으면 과장이 된다.
  */
-export function MetricTable({ metrics }: { metrics: AnyMetric[] }) {
+export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-ink-200 text-left text-xs tracking-wide text-ink-500 uppercase">
-            <th className="py-2 pr-4 font-medium">지표</th>
-            <th className="py-2 pr-4 font-medium">목표</th>
-            <th className="py-2 pr-4 font-medium">달성</th>
-            <th className="py-2 pr-4 font-medium">달성률</th>
-            <th className="py-2 font-medium">판정</th>
-          </tr>
-        </thead>
-        <tbody>
-          {metrics.map((metric) => {
-            const { achieved, rate, targetText } = evaluateMetric(metric as Metric);
-            const ratePercent = formatRate(rate);
+    <div
+      className={cn(
+        // 셀 사이 실선은 gap-px 밑으로 비치는 배경으로 만든다. 선을 따로 긋지 않는다.
+        'grid gap-px overflow-hidden rounded-lg border border-white/10 bg-white/10',
+        metrics.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2',
+      )}
+    >
+      {metrics.map((metric) => {
+        const { achieved, rate, targetText } = evaluateMetric(metric as Metric);
+        const ratePercent = formatRate(rate);
 
-            return (
-              // 마지막 줄에는 밑줄을 긋지 않는다. 지표가 하나뿐인 기술에서
-              // 표 아래에 선만 하나 남아, 뒤에 무언가 더 있다가 잘린 것처럼 보인다.
-              <tr key={metric.label} className="border-b border-ink-100 align-top last:border-b-0">
-                <td className="py-3 pr-4">
-                  <div className="font-medium text-ink-900">{metric.label}</div>
-                  {metric.condition?.trim() ? (
-                    <div className="mt-0.5 text-xs text-ink-500">{metric.condition}</div>
-                  ) : null}
-                  {metric.dataset ? (
-                    <div className="mt-0.5 text-xs text-ink-400">데이터셋 · {metric.dataset}</div>
-                  ) : null}
-                </td>
-                <td className="numeric py-3 pr-4 text-ink-600">{targetText}</td>
-                <td className="numeric py-3 pr-4 text-base font-semibold text-ink-900">
-                  {formatNumber(metric.value)}
-                </td>
-                <td className="numeric py-3 pr-4 text-ink-600">{ratePercent ?? '-'}</td>
-                <td className="py-3">
-                  <AchievementMark achieved={achieved} />
-                  {metric.source ? (
-                    <div className="mt-1 text-xs text-ink-400">{metric.source}</div>
-                  ) : null}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        return (
+          <div key={metric.label} className="bg-ink-950 p-6">
+            <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+              {metric.label}
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="numeric text-4xl font-semibold text-white sm:text-5xl">
+                {formatNumber(metric.value)}
+              </span>
+              <span className="text-sm text-ink-400">목표 {targetText}</span>
+              {ratePercent ? (
+                <span className="numeric text-sm text-ink-400">달성률 {ratePercent}</span>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <AchievementMark achieved={achieved} />
+              {/* 조건 단서 — 값과 떨어지지 않는다. 어두운 판이라 밝은 회색으로 올린다. */}
+              {metric.condition?.trim() ? (
+                <span className="text-xs text-ink-400">· {metric.condition}</span>
+              ) : null}
+            </div>
+
+            {metric.dataset || metric.source ? (
+              <div className="mt-3 border-t border-white/10 pt-2.5 text-xs text-ink-500">
+                {[metric.dataset && `데이터셋 · ${metric.dataset}`, metric.source]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }

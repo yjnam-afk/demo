@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { DemoSlot } from '@/components/demo/DemoSlot';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
-import { MetricStat, MetricTable } from './MetricDisplay';
+import { MetricStat, MetricStatGrid } from './MetricDisplay';
 import {
   DEV_TYPE_LABELS,
   MATURITY_LABELS,
@@ -37,7 +37,7 @@ function DefinitionRow({ label, children }: { label: string; children: React.Rea
   return (
     <div className="flex flex-col gap-1 border-b border-ink-100 py-3 last:border-b-0 sm:flex-row sm:gap-6">
       <dt className="w-40 shrink-0 text-sm text-ink-500">{label}</dt>
-      <dd className="text-sm text-ink-900">{children}</dd>
+      <dd className="text-sm font-medium text-ink-900">{children}</dd>
     </div>
   );
 }
@@ -233,7 +233,7 @@ export function TechDetail({
           {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
           {tech.metrics.length > 0 ? (
             <Section id="metrics" title="성능 지표">
-              <MetricTable metrics={tech.metrics} />
+              <MetricStatGrid metrics={tech.metrics} />
             </Section>
           ) : restricted ? (
             /*
