@@ -68,9 +68,14 @@ export function toPublicTech(
   return {
     ...rest,
     // 과제명·수요처, 알고리즘·모델 정보, 소속 조직
-    project: restricted ? undefined : rest.project,
+    /*
+      담당팀·과제명은 공개 화면에 내보내지 않는다. 방문자의 도입 판단에
+      보태는 것이 없고, 조직 구성과 과제 수행 내역을 굳이 알리는 셈이 된다.
+      관리자 화면에서는 내부 관리용으로 계속 쓴다.
+    */
+    project: undefined,
     base_model: restricted ? undefined : rest.base_model,
-    team: restricted ? undefined : rest.team,
+    team: undefined,
     domain_label: def?.label ?? tech.domain,
     domain_short: def?.short_label ?? def?.label ?? tech.domain,
     domain_accent: def?.accent ?? FALLBACK_ACCENT,

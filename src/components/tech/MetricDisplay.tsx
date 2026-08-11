@@ -102,17 +102,32 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
 
             <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
               <AchievementMark achieved={achieved} />
+              {/*
+                검증 주체는 판정 옆 칩으로 세운다. 하단 잔글씨에 두면 인증이
+                데이터셋 이름에 묻힌다 — 인증 수치와 자체 시험 수치는 무게가
+                다르고, 그 차이가 이 셀에서 읽혀야 한다.
+              */}
+              {metric.source?.trim() ? (
+                <span
+                  className={cn(
+                    'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
+                    /인증/.test(metric.source)
+                      ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
+                      : 'border border-white/20 text-ink-400',
+                  )}
+                >
+                  {metric.source}
+                </span>
+              ) : null}
               {/* 조건 단서 — 값과 떨어지지 않는다. 어두운 판이라 밝은 회색으로 올린다. */}
               {metric.condition?.trim() ? (
                 <span className="text-xs text-ink-400">· {metric.condition}</span>
               ) : null}
             </div>
 
-            {metric.dataset || metric.source ? (
+            {metric.dataset ? (
               <div className="mt-3 border-t border-white/10 pt-2.5 text-xs text-ink-500">
-                {[metric.dataset && `데이터셋 · ${metric.dataset}`, metric.source]
-                  .filter(Boolean)
-                  .join(' · ')}
+                데이터셋 · {metric.dataset}
               </div>
             ) : null}
           </div>

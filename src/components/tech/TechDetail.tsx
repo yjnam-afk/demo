@@ -18,6 +18,7 @@ function Section({
   title,
   description,
   tick,
+  aside,
   children,
 }: {
   /** 옆 레일의 바로가기가 이 앵커로 연결된다 */
@@ -26,13 +27,18 @@ function Section({
   description?: string;
   /** 제목 왼쪽에 세우는 축 색 틱. 긴 세로 흐름에서 구간 시작을 표시한다. */
   tick?: string;
+  /** 제목 줄 오른쪽 — 그 구간 전체에 걸리는 표식(인증 배지 등) */
+  aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-40 border-t border-ink-200 pt-8">
-      <div className="flex items-center gap-2.5">
-        {tick ? <span className={cn('h-4 w-1 rounded-full', tick)} /> : null}
-        <h2 className="text-lg font-semibold tracking-tight text-ink-900">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex items-center gap-2.5">
+          {tick ? <span className={cn('h-4 w-1 rounded-full', tick)} /> : null}
+          <h2 className="text-lg font-semibold tracking-tight text-ink-900">{title}</h2>
+        </div>
+        {aside}
       </div>
       {description ? <p className="mt-1 text-sm text-ink-500">{description}</p> : null}
       <div className="mt-4">{children}</div>
@@ -68,16 +74,16 @@ function DriveResourceFigure({ id, label }: { id: string; label: string }) {
     <figure className="overflow-hidden rounded-lg border border-ink-200 bg-white">
       <a href={driveViewUrl(id)} target="_blank" rel="noopener">
         {/*
-          문서 첫 장의 윗부분만 고정 비율로 보여준다. 원본 크기대로 펼치면
-          자료 하나가 화면 반을 차지한다 — 여기는 확인용 미리보기고,
-          정독은 원문에서 한다.
+          고정 높이 영역에 문서 전체를 담는다(contain). 인증서·성적서는 A4
+          세로라, 가로 비율로 윗부분만 자르면 기관 직인이 있는 아래쪽이
+          잘려 나간다. 남는 여백은 바탕색이 채운다.
         */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={driveThumbnailUrl(id)}
           alt={label}
           loading="lazy"
-          className="aspect-[4/3] w-full bg-ink-50 object-cover object-top"
+          className="h-80 w-full bg-ink-50 object-contain sm:h-96"
         />
       </a>
       <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
@@ -181,12 +187,6 @@ export function TechDetail({
             </Link>
             <span className="text-ink-600">·</span>
             <span className="text-ink-300">{tech.category}</span>
-            {tech.team ? (
-              <>
-                <span className="text-ink-600">·</span>
-                <span className="text-ink-400">{tech.team}</span>
-              </>
-            ) : null}
           </div>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -317,7 +317,15 @@ export function TechDetail({
 
           {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
           {tech.metrics.length > 0 ? (
-            <Section id="metrics" title="성능 지표" tick={style.bar}>
+            <Section
+              id="metrics"
+              title="성능 지표"
+              tick={style.bar}
+              /* 인증은 이 사이트의 무기다 — 지표 셀 잔글씨에 묻지 않고 구간 머리에 세운다 */
+              aside={
+                <VerificationBadge level={tech.verification.level} body={tech.verification.body} />
+              }
+            >
               <MetricStatGrid metrics={tech.metrics} />
             </Section>
           ) : restricted ? (
@@ -437,7 +445,7 @@ export function TechDetail({
                               src={resource.url}
                               alt={resource.label}
                               loading="lazy"
-                              className="aspect-[4/3] w-full bg-ink-50 object-cover object-top"
+                              className="h-80 w-full bg-ink-50 object-contain sm:h-96"
                             />
                           </a>
                           <figcaption className="border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
@@ -462,7 +470,7 @@ export function TechDetail({
                           <object
                             data={resource.url}
                             type="application/pdf"
-                            className="block aspect-[4/3] w-full"
+                            className="block h-80 w-full sm:h-96"
                             aria-label={resource.label}
                           >
                             {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
