@@ -356,13 +356,18 @@ const SCENES = {
       ctx.stroke();
     }
 
-    // 이동 궤적
-    for (let k = 3; k <= 24; k += 3) {
-      const pk = posAt(Math.max(0, t - k * 0.012));
-      ctx.fillStyle = crossed ? `rgba(212,118,60,${0.3 - k * 0.01})` : `rgba(123,163,208,${0.26 - k * 0.009})`;
-      ctx.beginPath();
-      ctx.arc(pk.x, baseY + 2 * S, 3 * S, 0, Math.PI * 2);
-      ctx.fill();
+    /*
+      궤적은 넘은 다음에만 남긴다. 탐지가 선을 물고 있으므로, 선을 넘는
+      순간 상자가 처음 나타나는 것이 이 기술의 화법이다.
+    */
+    if (crossed) {
+      for (let k = 3; k <= 24; k += 3) {
+        const pk = posAt(Math.max(0, t - k * 0.012));
+        ctx.fillStyle = `rgba(212,118,60,${0.3 - k * 0.01})`;
+        ctx.beginPath();
+        ctx.arc(pk.x, baseY + 2 * S, 3 * S, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     // 통과 중에는 상체를 숙인다 — 테이프 밑을 지나는 몸짓
@@ -398,16 +403,18 @@ const SCENES = {
       });
     }
 
-    bbox(
-      ctx,
-      pos.x - h * 0.26,
-      baseY - h - h * 0.06,
-      h * 0.52,
-      h + h * 0.1,
-      crossed ? ALERT : AI,
-      crossed ? 'INTRUSION 0.96' : 'PERSON 0.94',
-      S * z * 0.9,
-    );
+    if (crossed) {
+      bbox(
+        ctx,
+        pos.x - h * 0.26,
+        baseY - h - h * 0.06,
+        h * 0.52,
+        h + h * 0.1,
+        ALERT,
+        'INTRUSION 0.96',
+        S * z * 0.9,
+      );
+    }
 
     if (crossed) {
       ctx.fillStyle = 'rgba(212,118,60,0.07)';
@@ -536,26 +543,33 @@ const SCENES = {
       label(ctx, 'ZONE A · DWELL WATCH', zx + 10 * S, zy - 10 * S, 'rgba(123,163,208,0.7)', 14 * S);
     }
 
-    // 이동 궤적 — 바닥에 남는 점
-    for (let k = 2; k <= 26; k += 2) {
-      const tk = Math.max(0, t - k * 0.011);
-      const px = W * 0.5 + Math.sin(tk * Math.PI * 3) * W * 0.21;
-      ctx.fillStyle = flagged ? `rgba(212,118,60,${0.34 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
-      ctx.beginPath();
-      ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    /*
+      상자와 궤적은 배회 판정이 선 다음에만 그린다. 판정 전부터 상자가
+      붙어 있으면 "이미 잡혀 있는" 화면이라 포착 순간이 없다 — 시스템은
+      조용히 지켜보다가(체류 시간만 쌓인다) 임계에 닿는 순간 상자와 함께
+      그동안의 동선을 증거로 편다.
+    */
+    if (flagged) {
+      for (let k = 2; k <= 26; k += 2) {
+        const tk = Math.max(0, t - k * 0.011);
+        const px = W * 0.5 + Math.sin(tk * Math.PI * 3) * W * 0.21;
+        ctx.fillStyle = `rgba(212,118,60,${0.34 - k * 0.011})`;
+        ctx.beginPath();
+        ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-    bbox(
-      ctx,
-      x - h * 0.26,
-      y - h - h * 0.06,
-      h * 0.52,
-      h + h * 0.1,
-      flagged ? ALERT : AI,
-      flagged ? 'LOITERING 0.91' : 'PERSON 0.95',
-      S * z * 0.9,
-    );
+      bbox(
+        ctx,
+        x - h * 0.26,
+        y - h - h * 0.06,
+        h * 0.52,
+        h + h * 0.1,
+        ALERT,
+        'LOITERING 0.91',
+        S * z * 0.9,
+      );
+    }
 
     if (!opts?.compact) {
       const mm = String(Math.floor(dwell / 60)).padStart(2, '0');
