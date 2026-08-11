@@ -534,18 +534,21 @@ const SCENES = {
    * 경호 구역 반복 이탈·재입장 — 실내 로비의 통제 구역.
    *
    * 침입(선을 한 번 넘음)·배회(구역 안을 서성임)와 구분되는 동작은
-   * "경계를 여러 번 오간다" 이다. 한 번의 통과는 통행으로 읽히므로,
-   * 나감 → 되돌아옴 → 다시 나감(여기서부터 경보) → 재입장을 한 루프에
-   * 담고 횟수를 센다.
+   * "경계를 여러 번 오간다" 이다. 나감 → 되돌아옴 → 다시 나감(여기부터
+   * 경보) → 재입장을 한 루프에 담고 횟수를 센다.
+   *
+   * 동선은 화면 깊이 방향이다. 배회 루프가 좌우로 서성이므로, 이 장면까지
+   * 좌우로 오가면 카드 크기에서 두 기술이 같은 영상으로 읽힌다. 인물이
+   * 차단봉 개구부를 지나 앞으로 나왔다가 다시 안으로 들어가는 움직임은
+   * 원근(커졌다 작아졌다)으로 구분된다.
    */
   zoneReentry(ctx, W, H, t, opts) {
     const S = scaleOf(H);
-    const z = opts?.compact ? 1.45 : 1;
+    const z = opts?.compact ? 1.3 : 1;
 
     // ── 배경: 실내 로비 ──────────────────────────────────────────────
     ctx.fillStyle = '#151920';
     ctx.fillRect(0, 0, W, H);
-    // 벽 — 유리 패널과 문틀
     ctx.fillStyle = '#1c222c';
     ctx.fillRect(0, 0, W, H * 0.5);
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -557,15 +560,12 @@ const SCENES = {
       ctx.lineTo(x, H * 0.5);
       ctx.stroke();
     }
-    // 유리 반사 띠
     ctx.fillStyle = 'rgba(160,180,210,0.09)';
     for (let i = 0; i < 3; i++) {
       ctx.fillRect(W * (0.08 + i * 0.33), H * 0.08, W * 0.05, H * 0.42);
     }
-    // 벽 하단 몰딩 — 벽과 바닥의 경계를 세운다
     ctx.fillStyle = 'rgba(255,255,255,0.07)';
     ctx.fillRect(0, H * 0.495, W, 3 * S);
-    // 천장 조명
     for (let i = 0; i < 3; i++) {
       const lx = W * (0.2 + i * 0.3);
       const g = ctx.createRadialGradient(lx, H * 0.05, 0, lx, H * 0.05, H * 0.52);
@@ -574,7 +574,6 @@ const SCENES = {
       ctx.fillStyle = g;
       ctx.fillRect(lx - H * 0.52, 0, H * 1.04, H * 0.62);
     }
-    // 바닥 — 광택 타일 (원근) + 조명 반사
     ctx.fillStyle = '#1a1f28';
     ctx.fillRect(0, H * 0.5, W, H * 0.5);
     for (let i = 0; i < 3; i++) {
@@ -600,121 +599,130 @@ const SCENES = {
       ctx.stroke();
     }
 
-    // ── 경호 구역: 왼쪽. 바닥 음영 + 차단봉·로프 경계 ─────────────────
-    const lineX = W * 0.46;
+    // ── 경호 구역: 화면 안쪽(위). 차단봉 벽이 가로로 서고 가운데가 개구부다 ──
+    const lineY = H * 0.74;
     ctx.fillStyle = 'rgba(123,163,208,0.09)';
-    ctx.beginPath();
-    ctx.moveTo(0, H * 0.5);
-    ctx.lineTo(lineX + 30 * S, H * 0.5);
-    ctx.lineTo(lineX - 30 * S, H);
-    ctx.lineTo(0, H);
-    ctx.closePath();
-    ctx.fill();
+    ctx.fillRect(0, H * 0.5, W, lineY - H * 0.5);
     ctx.setLineDash([14 * S, 9 * S]);
     ctx.strokeStyle = 'rgba(123,163,208,0.55)';
     ctx.lineWidth = 2.5 * S * z;
     ctx.beginPath();
-    ctx.moveTo(lineX + 30 * S, H * 0.5);
-    ctx.lineTo(lineX - 30 * S, H);
+    ctx.moveTo(0, lineY);
+    ctx.lineTo(W, lineY);
     ctx.stroke();
     ctx.setLineDash([]);
     if (!opts?.compact) {
-      label(ctx, 'PROTECTED ZONE', 28 * S, H * 0.56, 'rgba(123,163,208,0.7)', 15 * S);
-    }
-    // 차단봉 + 로프 — 경계선 위 세 지점, 인물은 아래쪽 틈으로 오간다
-    const posts = [
-      { x: lineX + 24 * S, y: H * 0.53, h: H * 0.1 },
-      { x: lineX + 6 * S, y: H * 0.66, h: H * 0.12 },
-      { x: lineX - 14 * S, y: H * 0.82, h: H * 0.14 },
-    ];
-    for (let i = 0; i < posts.length; i++) {
-      const p = posts[i];
-      // 바닥 접지 그림자 — 없으면 기둥이 공중에 뜬 막대로 읽힌다
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, 9 * S, 3 * S, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#39424f';
-      ctx.fillRect(p.x - 2.5 * S, p.y - p.h, 5 * S, p.h);
-      ctx.fillStyle = '#4a5566';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y - p.h, 4 * S, 0, Math.PI * 2);
-      ctx.fill();
-      if (i > 0) {
-        const q = posts[i - 1];
-        ctx.strokeStyle = 'rgba(196,160,66,0.55)';
-        ctx.lineWidth = 2.2 * S;
-        ctx.beginPath();
-        ctx.moveTo(q.x, q.y - q.h * 0.92);
-        ctx.quadraticCurveTo(
-          (q.x + p.x) / 2,
-          (q.y - q.h * 0.92 + (p.y - p.h * 0.92)) / 2 + 10 * S,
-          p.x,
-          p.y - p.h * 0.92,
-        );
-        ctx.stroke();
-      }
+      label(ctx, 'PROTECTED ZONE', 28 * S, H * 0.545, 'rgba(123,163,208,0.7)', 15 * S);
     }
 
-    // ── 인물: 경계를 반복해서 오간다 ─────────────────────────────────
+    // ── 인물: 개구부를 지나 앞(카메라 쪽)으로 나왔다가 다시 들어간다 ──
     /*
-      키프레임 동선 (x 는 W 비율). 경계 교차 시각: 나감 0.146 → 재입장
-      0.363 → 다시 나감 0.565(여기부터 경보) → 재입장 0.79.
-      t=0 과 t=1 의 좌표가 같아 루프가 이어진다. 포스터 프레임(t=0.72)은
-      경보 상태로 재입장 직전의 모습이 잡힌다.
+      키프레임은 화면 y(깊이). 경계(lineY=0.74) 교차 시각:
+      나감 0.143 → 재입장 0.377 → 다시 나감 0.553(여기부터 경보) → 재입장 0.803.
+      t=0 과 t=1 이 같아 루프가 이어지고, 포스터 프레임(t=0.72)은 경보
+      상태로 화면 앞에 크게 잡힌다.
     */
     const K = [
-      [0, 0.3], [0.12, 0.42], [0.2, 0.54], [0.3, 0.57], [0.42, 0.36],
-      [0.47, 0.33], [0.52, 0.39], [0.62, 0.55], [0.72, 0.58], [0.86, 0.34], [1, 0.3],
+      [0, 0.6], [0.12, 0.7], [0.2, 0.84], [0.3, 0.88], [0.42, 0.66],
+      [0.47, 0.62], [0.52, 0.68], [0.62, 0.86], [0.72, 0.88], [0.86, 0.64], [1, 0.6],
     ];
-    function xAt(tt) {
+    function yAt(tt) {
       for (let i = 1; i < K.length; i++) {
         if (tt <= K[i][0]) {
           const k = (tt - K[i - 1][0]) / (K[i][0] - K[i - 1][0]);
-          return (K[i - 1][1] + k * (K[i][1] - K[i - 1][1])) * W;
+          return (K[i - 1][1] + k * (K[i][1] - K[i - 1][1])) * H;
         }
       }
-      return K[K.length - 1][1] * W;
+      return K[K.length - 1][1] * H;
     }
+    // 깊이에 따른 크기 — 안쪽(위)에 있을수록 작다
+    const scaleAt = (yy) => 0.55 + 0.45 * Math.min(1, Math.max(0, (yy / H - 0.58) / 0.3));
 
-    const x = xAt(t);
-    const y = H * 0.885;
-    const h = H * WALKER_H * z;
-    // 경계선은 바닥에서 기울어져 있다 — 인물 발 높이에서의 경계 x
-    const lineAtY = lineX + 30 * S - ((y - H * 0.5) / (H * 0.5)) * 60 * S;
+    const y = yAt(t);
+    // 좌우로 아주 조금 흔들려야 걸음이 살아 있어 보인다
+    const x = W * 0.52 + Math.sin(t * Math.PI * 6) * W * 0.012;
+    const h = H * WALKER_H * z * scaleAt(y);
 
-    const crossTimes = [0.146, 0.363, 0.565, 0.79];
+    const crossTimes = [0.143, 0.377, 0.553, 0.803];
     const crossings = crossTimes.filter((ct) => t >= ct).length;
     const flagged = crossings >= 3;
-    const outside = x > lineAtY;
+    const outside = y > lineY;
 
-    // 이동 궤적
+    // 이동 궤적 — 깊이 방향으로 이어지는 점
     for (let k = 2; k <= 26; k += 2) {
-      const px = xAt(Math.max(0, t - k * 0.011));
+      const tk = Math.max(0, t - k * 0.011);
+      const py = yAt(tk);
+      const px = W * 0.52 + Math.sin(tk * Math.PI * 6) * W * 0.012;
       ctx.fillStyle = flagged ? `rgba(212,118,60,${0.32 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
       ctx.beginPath();
-      ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
+      ctx.arc(px, py + 2 * S, 3.2 * S * scaleAt(py), 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // 진행 방향과 보폭 — 이동량이 작으면 멈춰 두리번거리는 자세
-    const dx = xAt(Math.min(1, t + 0.015)) - xAt(Math.max(0, t - 0.015));
-    const moving = Math.abs(dx) > 0.6 * S;
-    walker(ctx, {
-      x,
-      y,
-      h,
-      phase: moving ? t * Math.PI * 26 : 0,
-      stride: moving ? 1 : 0.15,
-      facing: dx > 0.2 * S ? 1 : dx < -0.2 * S ? -1 : 1,
-      tone: flagged ? 'alert' : 'normal',
-    });
+    // 걷는 중인지 — 깊이 이동량으로 판정한다
+    const dy = yAt(Math.min(1, t + 0.015)) - yAt(Math.max(0, t - 0.015));
+    const moving = Math.abs(dy) > 0.6 * S;
 
-    // 배경의 경호 인원 — 구역 안쪽에 정지, 흐리게. 라벨과 겹치지 않는 자리.
+    const drawSubject = () =>
+      walker(ctx, {
+        x,
+        y,
+        h,
+        phase: moving ? t * Math.PI * 26 : 0,
+        stride: moving ? 0.9 : 0.15,
+        // 몸의 좌우 방향은 흔들림에서 받는다 — 깊이 이동은 크기 변화가 말해 준다
+        facing: Math.cos(t * Math.PI * 6) >= 0 ? 1 : -1,
+        tone: flagged ? 'alert' : 'normal',
+      });
+
+    // 차단봉 벽 — 개구부(중앙)를 비우고 좌우로 로프가 이어진다
+    const gapL = W * 0.4;
+    const gapR = W * 0.64;
+    const posts = [W * 0.06, W * 0.23, gapL, gapR, W * 0.81, W * 0.97];
+    const postH = H * 0.11;
+    const drawBarrier = () => {
+      for (let i = 0; i < posts.length; i++) {
+        const px = posts[i];
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.beginPath();
+        ctx.ellipse(px, lineY, 10 * S, 3.2 * S, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#39424f';
+        ctx.fillRect(px - 2.5 * S, lineY - postH, 5 * S, postH);
+        ctx.fillStyle = '#4a5566';
+        ctx.beginPath();
+        ctx.arc(px, lineY - postH, 4.2 * S, 0, Math.PI * 2);
+        ctx.fill();
+        // 개구부(2→3 사이)에는 로프를 걸지 않는다
+        if (i > 0 && !(posts[i - 1] === gapL && px === gapR)) {
+          const qx = posts[i - 1];
+          ctx.strokeStyle = 'rgba(196,160,66,0.6)';
+          ctx.lineWidth = 2.4 * S;
+          ctx.beginPath();
+          ctx.moveTo(qx, lineY - postH * 0.9);
+          ctx.quadraticCurveTo((qx + px) / 2, lineY - postH * 0.66, px, lineY - postH * 0.9);
+          ctx.stroke();
+        }
+      }
+    };
+
+    /*
+      그리는 순서가 원근이다. 인물이 구역 안(경계선 위)에 있으면 차단봉이
+      인물 앞을 지나가고, 앞으로 나오면 인물이 차단봉을 가린다.
+    */
+    if (outside) {
+      drawBarrier();
+      drawSubject();
+    } else {
+      drawSubject();
+      drawBarrier();
+    }
+
+    // 배경의 경호 인원 — 구역 안쪽에 정지, 흐리게
     if (!opts?.compact) {
       walker(ctx, {
-        x: W * 0.27,
-        y: H * 0.62,
+        x: W * 0.15,
+        y: H * 0.63,
         h: H * 0.11,
         phase: 0,
         stride: 0.12,
@@ -741,7 +749,7 @@ const SCENES = {
         ctx,
         `EXIT ${String(exits).padStart(2, '0')} · RE-ENTRY ${String(entries).padStart(2, '0')}`,
         28 * S,
-        H * 0.56 + 24 * S,
+        H * 0.545 + 24 * S,
         flagged ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.6)',
         15 * S,
       );
