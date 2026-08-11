@@ -34,6 +34,7 @@ const LOOP = { w: 640, h: 400, compact: true, crf: '30', vp9: '350k' };
 const JOBS = [
   { scene: 'loitering', out: 'public/videos/loitering.mp4', loop: true, poster: true },
   { scene: 'intrusion', out: 'public/videos/intrusion-detection.mp4', loop: true, poster: true },
+  { scene: 'zoneReentry', out: 'public/videos/zone-reentry.mp4', loop: true, poster: true },
   { scene: 'twin', out: 'public/videos/digital-twin-plant.mp4', loop: true, poster: true },
   { scene: 'flood', out: 'public/videos/flood-simulation.mp4', loop: true, poster: true },
   // api 데모의 모델 입력 샘플 — 탐지 오버레이가 없는 원본 영상이어야 한다
