@@ -69,6 +69,13 @@ export function MediaUpload({
       access,
       handleUploadUrl: '/api/admin/upload/blob',
       contentType: file.type,
+      /*
+        큰 파일은 조각으로 나눠 올린다. 한 덩어리 PUT 은 수십 MB 전송 중
+        연결이 한 번만 흔들려도 전체가 멈추는데, 조각 업로드는 조각별로
+        재시도하므로 중간에 끊겨도 이어서 간다. 작은 이미지까지 조각내면
+        요청 수만 늘어나므로 경계를 둔다.
+      */
+      multipart: file.size > 8 * 1024 * 1024,
       onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
     });
     onChange(`/api/media/${result.pathname}`);
