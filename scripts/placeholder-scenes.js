@@ -246,22 +246,66 @@ const SCENES = {
       ctx.stroke();
     }
 
-    // ── 통제선: 펜스 기둥 + 경고 표지 ──────────────────────────────
+    // ── 통제선: 기둥 사이에 걸린 경고 테이프 ──────────────────────
+    /*
+      점선 하나로는 통제선이 "그래프의 보조선" 으로 읽혔다. 기둥을 세우고
+      그 사이에 경고 테이프(주황·흰 사선)를 두 줄 걸어, 넘으면 안 되는
+      물리적 경계라는 것이 장면만 보고도 읽히게 한다.
+    */
     const lineX = W * 0.5;
-    for (let i = 0; i < 4; i++) {
-      const py = H * (0.47 + i * 0.16);
-      const ph = H * (0.05 + i * 0.012);
-      ctx.fillStyle = '#232a35';
-      ctx.fillRect(lineX - 3 * S, py - ph, 6 * S, ph);
-    }
+    const fencePosts = [
+      { y: H * 0.52, h: H * 0.062 },
+      { y: H * 0.68, h: H * 0.082 },
+      { y: H * 0.86, h: H * 0.104 },
+      { y: H * 1.02, h: H * 0.124 },
+    ];
+    // 바닥의 통제선 표시 — 테이프 아래 이어지는 점선
     ctx.setLineDash([16 * S, 10 * S]);
-    ctx.strokeStyle = ALERT;
-    ctx.lineWidth = 3 * S * z;
+    ctx.strokeStyle = 'rgba(212,118,60,0.75)';
+    ctx.lineWidth = 3.5 * S * z;
     ctx.beginPath();
-    ctx.moveTo(lineX, H * 0.34);
+    ctx.moveTo(lineX, H * 0.47);
     ctx.lineTo(lineX, H);
     ctx.stroke();
     ctx.setLineDash([]);
+    for (const p of fencePosts) {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(lineX, p.y, 9 * S, 3 * S, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#39424f';
+      ctx.fillRect(lineX - 3 * S, p.y - p.h, 6 * S, p.h);
+      ctx.fillStyle = '#4a5566';
+      ctx.beginPath();
+      ctx.arc(lineX, p.y - p.h, 4 * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // 기둥 사이 경고 테이프 두 줄 — 통제선의 몸통
+    for (let i = 1; i < fencePosts.length; i++) {
+      const a = fencePosts[i - 1];
+      const b = fencePosts[i];
+      for (const lvl of [0.92, 0.55]) {
+        const ay = a.y - a.h * lvl;
+        const by = b.y - b.h * lvl;
+        ctx.strokeStyle = 'rgba(212,118,60,0.85)';
+        ctx.lineWidth = 5 * S;
+        ctx.beginPath();
+        ctx.moveTo(lineX, ay);
+        ctx.lineTo(lineX, by);
+        ctx.stroke();
+        // 테이프의 흰 사선 무늬
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.lineWidth = 1.6 * S;
+        const seg = Math.abs(by - ay);
+        for (let d = 4 * S; d < seg; d += 9 * S) {
+          const yy = Math.min(ay, by) + d;
+          ctx.beginPath();
+          ctx.moveTo(lineX - 2.5 * S, yy + 3 * S);
+          ctx.lineTo(lineX + 2.5 * S, yy - 3 * S);
+          ctx.stroke();
+        }
+      }
+    }
     if (!opts?.compact) {
       // 경고 표지판
       ctx.fillStyle = 'rgba(212,118,60,0.16)';
@@ -269,67 +313,73 @@ const SCENES = {
       label(ctx, 'RESTRICTED', lineX + 20 * S, H * 0.36 + 18 * S, 'rgba(224,150,92,0.9)', 14 * S);
     }
 
-    // ── 인물: 걸어와 통제선 앞에서 멈칫하고, 뛰어넘은 뒤 계속 간다 ──
+    // ── 인물: 걸어와 통제선 앞에서 멈칫하고, 테이프 사이로 넘어간다 ──
     const baseY = H * 0.9;
     const h = H * WALKER_H * z;
-    const jump = h * 0.42;
 
     /*
-      동선을 구간으로 나눈다. "선을 지나가기"만 하면 침입이 아니라 통행으로
-      읽힌다 — 멈칫(주저) → 도약(넘는 동작) → 착지 후 이동이 있어야
-      "넘었다" 가 보인다.
+      동선을 구간으로 나눈다. 넘는 동작은 도약이 아니라 "테이프 사이를
+      비집고 지나가는" 통과다 — 통제선이 뚜렷하니 선을 지나는 것만으로
+      침입이 읽히고, 넘는 순간 경보가 붙는 것이 탐지의 핵심이다.
         0    ~0.42  접근 보행
-        0.42 ~0.5   선 앞에서 멈칫 (두리번)
-        0.5  ~0.66  도약 — 포물선으로 선을 넘는다
-        0.66 ~1     반대편 보행 (경보)
+        0.42 ~0.52  선 앞에서 멈칫 (두리번)
+        0.52 ~0.68  통과 — 상체를 숙이고 테이프 사이를 지난다
+        0.68 ~1     반대편 보행 (경보)
     */
-    const approachEnd = lineX - W * 0.055;
-    const landX = lineX + W * 0.055;
+    const approachEnd = lineX - W * 0.05;
+    const landX = lineX + W * 0.05;
     function posAt(tt) {
       if (tt < 0.42) {
         const k = tt / 0.42;
-        return { x: W * 0.16 + k * (approachEnd - W * 0.16), y: baseY, mode: 'walk' };
+        return { x: W * 0.16 + k * (approachEnd - W * 0.16), mode: 'walk' };
       }
-      if (tt < 0.5) return { x: approachEnd, y: baseY, mode: 'pause' };
-      if (tt < 0.66) {
-        const k = (tt - 0.5) / 0.16;
-        return {
-          x: approachEnd + k * (landX - approachEnd),
-          y: baseY - Math.sin(k * Math.PI) * jump,
-          mode: 'vault',
-        };
+      if (tt < 0.52) return { x: approachEnd, mode: 'pause' };
+      if (tt < 0.68) {
+        const k = (tt - 0.52) / 0.16;
+        return { x: approachEnd + k * (landX - approachEnd), mode: 'cross' };
       }
-      const k = (tt - 0.66) / 0.34;
-      return { x: landX + k * (W * 0.78 - landX), y: baseY, mode: 'walk' };
+      const k = (tt - 0.68) / 0.32;
+      return { x: landX + k * (W * 0.78 - landX), mode: 'walk' };
     }
 
     const pos = posAt(t);
     const crossed = pos.x > lineX;
 
-    // 이동 궤적 — 도약 구간에서는 공중 경로가 그대로 남는다
+    // 넘는 순간 — 통제선이 반응한다. 탐지가 선을 물고 있다는 표시.
+    if (t >= 0.52 && t < 0.72) {
+      const p = Math.min(1, (t - 0.52) / 0.14);
+      ctx.strokeStyle = `rgba(224,150,92,${0.5 * (1 - Math.abs(p - 0.5) * 1.2)})`;
+      ctx.lineWidth = 10 * S * z;
+      ctx.beginPath();
+      ctx.moveTo(lineX, H * 0.47);
+      ctx.lineTo(lineX, H);
+      ctx.stroke();
+    }
+
+    // 이동 궤적
     for (let k = 3; k <= 24; k += 3) {
       const pk = posAt(Math.max(0, t - k * 0.012));
       ctx.fillStyle = crossed ? `rgba(212,118,60,${0.3 - k * 0.01})` : `rgba(123,163,208,${0.26 - k * 0.009})`;
       ctx.beginPath();
-      ctx.arc(pk.x, pk.y + 2 * S, 3 * S, 0, Math.PI * 2);
+      ctx.arc(pk.x, baseY + 2 * S, 3 * S, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // 도약 중에는 몸을 앞으로 기울인다 — 정지 자세로 떠 있으면 순간이동으로 보인다
-    const lean = pos.mode === 'vault' ? 0.3 : 0;
+    // 통과 중에는 상체를 숙인다 — 테이프 밑을 지나는 몸짓
+    const lean = pos.mode === 'cross' ? 0.22 : 0;
     if (lean) {
       ctx.save();
-      ctx.translate(pos.x, pos.y - h * 0.4);
+      ctx.translate(pos.x, baseY - h * 0.4);
       ctx.rotate(lean);
-      ctx.translate(-pos.x, -(pos.y - h * 0.4));
+      ctx.translate(-pos.x, -(baseY - h * 0.4));
     }
     walker(ctx, {
       x: pos.x,
-      y: pos.y,
-      h,
-      // 멈칫: 다리를 모은다. 도약: 발을 뒤로 접는다. 보행: 걷는다.
-      phase: pos.mode === 'walk' ? t * Math.PI * 26 : pos.mode === 'vault' ? Math.PI * 0.5 : 0,
-      stride: pos.mode === 'walk' ? 1 : pos.mode === 'vault' ? 0.9 : 0.15,
+      y: baseY,
+      h: pos.mode === 'cross' ? h * 0.92 : h,
+      // 멈칫: 다리를 모은다. 통과·보행: 걷는다.
+      phase: pos.mode === 'pause' ? 0 : t * Math.PI * 26,
+      stride: pos.mode === 'walk' ? 1 : pos.mode === 'cross' ? 0.6 : 0.15,
       facing: 1,
       tone: crossed ? 'alert' : 'normal',
     });
@@ -351,7 +401,7 @@ const SCENES = {
     bbox(
       ctx,
       pos.x - h * 0.26,
-      pos.y - h - h * 0.06,
+      baseY - h - h * 0.06,
       h * 0.52,
       h + h * 0.1,
       crossed ? ALERT : AI,
@@ -448,14 +498,15 @@ const SCENES = {
     }
 
     // ── 인물: 배회 동선과 걷는 실루엣 ────────────────────────────────
-    const sway = Math.sin(t * Math.PI * 5);
+    // 왕복 횟수를 줄여 서성임을 초조한 왕복이 아니라 느린 배회로 만든다
+    const sway = Math.sin(t * Math.PI * 3);
     const x = W * 0.5 + sway * W * 0.21;
     const y = H * 0.885;
     const h = H * WALKER_H * z;
-    const walkPhase = t * Math.PI * 26;
+    const walkPhase = t * Math.PI * 16;
     // 방향 전환 순간에는 보폭이 줄되, 다리가 완전히 붙지는 않게 하한을 둔다
-    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 5));
-    const facing = Math.sign(Math.cos(t * Math.PI * 5)) || 1;
+    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 3));
+    const facing = Math.sign(Math.cos(t * Math.PI * 3)) || 1;
 
     const dwell = Math.floor(t * 52);
     const flagged = dwell >= 30;
@@ -488,7 +539,7 @@ const SCENES = {
     // 이동 궤적 — 바닥에 남는 점
     for (let k = 2; k <= 26; k += 2) {
       const tk = Math.max(0, t - k * 0.011);
-      const px = W * 0.5 + Math.sin(tk * Math.PI * 5) * W * 0.21;
+      const px = W * 0.5 + Math.sin(tk * Math.PI * 3) * W * 0.21;
       ctx.fillStyle = flagged ? `rgba(212,118,60,${0.34 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
       ctx.beginPath();
       ctx.arc(px, y + 2 * S, 3.2 * S, 0, Math.PI * 2);
@@ -531,11 +582,12 @@ const SCENES = {
   },
 
   /**
-   * 경호 구역 반복 이탈·재입장 — 실내 로비의 통제 구역.
+   * 경호 구역 반복 이탈·재입장 — Re-ID(재식별) 기술.
    *
-   * 침입(선을 한 번 넘음)·배회(구역 안을 서성임)와 구분되는 동작은
-   * "경계를 여러 번 오간다" 이다. 나감 → 되돌아옴 → 다시 나감(여기부터
-   * 경보) → 재입장을 한 루프에 담고 횟수를 센다.
+   * 이 기술의 핵심은 "사라졌던 인물이 다시 나타났을 때 같은 사람임을
+   * 알아본다" 이다. 그래서 인물은 구역 안 가림막 뒤로 완전히 사라졌다가
+   * 다시 나타나고, 나타나는 순간 매치 링과 함께 고정 ID(047)가 다시
+   * 붙는다 — 두 번째 등장부터는 RE-ID 매치가 경보 색으로 선다.
    *
    * 동선은 화면 깊이 방향이다. 배회 루프가 좌우로 서성이므로, 이 장면까지
    * 좌우로 오가면 카드 크기에서 두 기술이 같은 영상으로 읽힌다. 인물이
@@ -615,12 +667,15 @@ const SCENES = {
       label(ctx, 'PROTECTED ZONE', 28 * S, H * 0.545, 'rgba(123,163,208,0.7)', 15 * S);
     }
 
-    // ── 인물: 개구부를 지나 앞(카메라 쪽)으로 나왔다가 다시 들어간다 ──
+    // ── 인물: 가림막 뒤에서 나타나 앞으로 나왔다가, 다시 들어가 사라진다 ──
     /*
-      키프레임은 화면 y(깊이). 경계(lineY=0.74) 교차 시각:
-      나감 0.143 → 재입장 0.377 → 다시 나감 0.553(여기부터 경보) → 재입장 0.803.
-      t=0 과 t=1 이 같아 루프가 이어지고, 포스터 프레임(t=0.72)은 경보
-      상태로 화면 앞에 크게 잡힌다.
+      키프레임은 화면 y(깊이). t=0 과 t=1 이 같아 루프가 이어진다.
+      가림막(y<0.665 에서 가려짐) 기준의 사건 시각:
+        나타남 0.078 (첫 등장 — ID 047 부여)
+        사라짐 0.417 (가림막 뒤로)
+        다시 나타남 0.5075 (RE-ID 매치 — 여기부터 경보 색)
+        사라짐 0.845
+      포스터 프레임(t=0.72)은 매치 이후 화면 앞에 크게 잡힌 모습이다.
     */
     const K = [
       [0, 0.6], [0.12, 0.7], [0.2, 0.84], [0.3, 0.88], [0.42, 0.66],
@@ -635,31 +690,31 @@ const SCENES = {
       }
       return K[K.length - 1][1] * H;
     }
-    // 깊이에 따른 크기 — 안쪽(위)에 있을수록 작다
     const scaleAt = (yy) => 0.55 + 0.45 * Math.min(1, Math.max(0, (yy / H - 0.58) / 0.3));
 
+    const hideY = H * 0.665;
+    const APPEAR_FIRST = 0.078;
+    const APPEAR_MATCH = 0.5075;
+
     const y = yAt(t);
-    // 좌우로 아주 조금 흔들려야 걸음이 살아 있어 보인다
     const x = W * 0.52 + Math.sin(t * Math.PI * 6) * W * 0.012;
     const h = H * WALKER_H * z * scaleAt(y);
-
-    const crossTimes = [0.143, 0.377, 0.553, 0.803];
-    const crossings = crossTimes.filter((ct) => t >= ct).length;
-    const flagged = crossings >= 3;
+    const visible = y >= hideY;
+    const matched = t >= APPEAR_MATCH;
     const outside = y > lineY;
 
-    // 이동 궤적 — 깊이 방향으로 이어지는 점
+    // 이동 궤적 — 가림막 뒤 구간은 남기지 않는다 (보이지 않는 동선이므로)
     for (let k = 2; k <= 26; k += 2) {
       const tk = Math.max(0, t - k * 0.011);
       const py = yAt(tk);
+      if (py < hideY) continue;
       const px = W * 0.52 + Math.sin(tk * Math.PI * 6) * W * 0.012;
-      ctx.fillStyle = flagged ? `rgba(212,118,60,${0.32 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
+      ctx.fillStyle = matched ? `rgba(212,118,60,${0.32 - k * 0.011})` : `rgba(123,163,208,${0.3 - k * 0.01})`;
       ctx.beginPath();
       ctx.arc(px, py + 2 * S, 3.2 * S * scaleAt(py), 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // 걷는 중인지 — 깊이 이동량으로 판정한다
     const dy = yAt(Math.min(1, t + 0.015)) - yAt(Math.max(0, t - 0.015));
     const moving = Math.abs(dy) > 0.6 * S;
 
@@ -670,10 +725,28 @@ const SCENES = {
         h,
         phase: moving ? t * Math.PI * 26 : 0,
         stride: moving ? 0.9 : 0.15,
-        // 몸의 좌우 방향은 흔들림에서 받는다 — 깊이 이동은 크기 변화가 말해 준다
         facing: Math.cos(t * Math.PI * 6) >= 0 ? 1 : -1,
-        tone: flagged ? 'alert' : 'normal',
+        tone: matched ? 'alert' : 'normal',
       });
+
+    // 가림막 — 구역 안쪽의 파티션. 인물이 이 뒤로 사라졌다가 다시 나온다.
+    const partBase = H * 0.7;
+    const partW = W * 0.17;
+    const partH = H * 0.34;
+    const drawPartition = () => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(W * 0.52, partBase, partW * 0.56, 4 * S, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#222a36';
+      ctx.fillRect(W * 0.52 - partW / 2, partBase - partH, partW, partH);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(W * 0.52 - partW / 2, partBase - partH, partW, 3 * S);
+      ctx.fillRect(W * 0.52 - partW / 2, partBase - partH, 6 * S, partH);
+      if (!opts?.compact) {
+        label(ctx, 'SCREEN', W * 0.52 - partW / 2 + 10 * S, partBase - partH + 22 * S, 'rgba(255,255,255,0.3)', 12 * S);
+      }
+    };
 
     // 차단봉 벽 — 개구부(중앙)를 비우고 좌우로 로프가 이어진다
     const gapL = W * 0.4;
@@ -693,7 +766,6 @@ const SCENES = {
         ctx.beginPath();
         ctx.arc(px, lineY - postH, 4.2 * S, 0, Math.PI * 2);
         ctx.fill();
-        // 개구부(2→3 사이)에는 로프를 걸지 않는다
         if (i > 0 && !(posts[i - 1] === gapL && px === gapR)) {
           const qx = posts[i - 1];
           ctx.strokeStyle = 'rgba(196,160,66,0.6)';
@@ -707,15 +779,21 @@ const SCENES = {
     };
 
     /*
-      그리는 순서가 원근이다. 인물이 구역 안(경계선 위)에 있으면 차단봉이
-      인물 앞을 지나가고, 앞으로 나오면 인물이 차단봉을 가린다.
+      그리는 순서가 원근이다. 인물 발 위치(y)에 따라 가림막(0.7)과
+      차단봉(0.74)의 앞뒤가 갈린다.
     */
-    if (outside) {
-      drawBarrier();
+    if (y < partBase) {
       drawSubject();
+      drawPartition();
+      drawBarrier();
+    } else if (y <= lineY) {
+      drawPartition();
+      drawSubject();
+      drawBarrier();
     } else {
-      drawSubject();
+      drawPartition();
       drawBarrier();
+      drawSubject();
     }
 
     // 배경의 경호 인원 — 구역 안쪽에 정지, 흐리게
@@ -731,38 +809,65 @@ const SCENES = {
       });
     }
 
-    bbox(
-      ctx,
-      x - h * 0.26,
-      y - h - h * 0.06,
-      h * 0.52,
-      h + h * 0.1,
-      flagged ? ALERT : AI,
-      flagged ? 'RE-ENTRY 0.92' : 'PERSON 0.95',
-      S * z * 0.9,
-    );
+    /*
+      매치 링 — 나타나는 순간 인물을 중심으로 링이 퍼진다.
+      첫 등장은 추적 시작(파랑), 두 번째 등장은 재식별(주황)이다.
+      "아까 그 사람" 이라는 판정이 이 링과 고정 ID 로 보인다.
+    */
+    for (const [start, isMatch] of [[APPEAR_FIRST, false], [APPEAR_MATCH, true]]) {
+      const p = (t - start) / 0.12;
+      if (p < 0 || p > 1 || !visible) continue;
+      const cx = x;
+      const cy = y - h * 0.5;
+      for (const rr of [0.5, 0.72]) {
+        ctx.strokeStyle = isMatch
+          ? `rgba(224,150,92,${0.75 * (1 - p)})`
+          : `rgba(123,163,208,${0.65 * (1 - p)})`;
+        ctx.lineWidth = 2.6 * S * z;
+        ctx.beginPath();
+        ctx.arc(cx, cy, h * (rr + p * 0.5), 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    if (visible) {
+      bbox(
+        ctx,
+        x - h * 0.26,
+        y - h - h * 0.06,
+        h * 0.52,
+        h + h * 0.1,
+        matched ? ALERT : AI,
+        // ID 는 등장 내내 같은 번호다 — 재등장에서 같은 번호가 다시 붙는 것이 Re-ID 다
+        matched ? 'RE-ID · ID 047' : 'ID 047 · 0.95',
+        S * z * 0.9,
+      );
+    }
 
     if (!opts?.compact) {
-      const exits = Math.min(2, Math.ceil(crossings / 2));
-      const entries = Math.floor(crossings / 2);
+      const status = !visible
+        ? 'ID 047 · OUT OF VIEW'
+        : matched
+          ? 'RE-ID MATCH · ID 047 (0.97)'
+          : 'TRACKING · ID 047';
       label(
         ctx,
-        `EXIT ${String(exits).padStart(2, '0')} · RE-ENTRY ${String(entries).padStart(2, '0')}`,
+        status,
         28 * S,
         H * 0.545 + 24 * S,
-        flagged ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.6)',
+        matched ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.6)',
         15 * S,
       );
     }
 
-    if (flagged) {
+    if (matched && visible) {
       ctx.fillStyle = 'rgba(212,118,60,0.06)';
       ctx.fillRect(0, 0, W, H);
     }
 
     cctvTexture(ctx, W, H, t);
     if (!opts?.compact) {
-      cctvChrome(ctx, W, H, t, 'CAM 12 · 경호 구역 A', flagged, 'ALERT', 'TRACKING');
+      cctvChrome(ctx, W, H, t, 'CAM 12 · 경호 구역 A', matched && visible, 'RE-ID', 'TRACKING');
     }
   },
 
