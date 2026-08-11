@@ -142,6 +142,21 @@ export function TechDetail({
   const industries = tech.industries;
   const buyers = business.target_industries?.filter((buyer) => buyer.trim()) ?? [];
 
+  const certified = tech.verification.level === 'third_party';
+  /*
+    인증 시험명은 별도 필드가 없어 인증 수치의 평가 데이터셋 이름에 실려
+    있다("지능형 CCTV 성능시험인증(침입)" 등). 인증 출처가 붙은 지표의
+    데이터셋을 모으면 인증 목록이 된다.
+  */
+  const certNames = [
+    ...new Set(
+      tech.metrics
+        .filter((metric) => metric.source && /인증/.test(metric.source))
+        .map((metric) => metric.dataset)
+        .filter((name): name is string => Boolean(name?.trim())),
+    ),
+  ];
+
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
   );
@@ -150,6 +165,7 @@ export function TechDetail({
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
     tech.demo.type !== 'metric' ? { id: 'demo', label: '데모' } : null,
+    certified ? { id: 'certification', label: '인증' } : null,
     tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
     { id: 'composition', label: '기술 구성' },
@@ -315,17 +331,40 @@ export function TechDetail({
             </Section>
           ) : null}
 
+          {/*
+            인증 — 제3자 인증이 있으면 독립 블록으로 세운다.
+            지표 구간의 부속으로 두면 배지와 칩 사이에 묻힌다. 인증은 이
+            사이트가 내세우는 신뢰 자산이라 제 이름의 자리를 갖는다.
+          */}
+          {certified ? (
+            <Section id="certification" title="인증" tick={style.bar}>
+              <div className="rounded-lg border border-[var(--color-signal-ok)]/30 bg-[var(--color-signal-ok-soft)] p-6">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-xl font-semibold text-[var(--color-signal-ok)]">
+                    제3자 인증
+                  </span>
+                  {tech.verification.body ? (
+                    <span className="text-xl font-semibold text-ink-900">
+                      {tech.verification.body}
+                    </span>
+                  ) : null}
+                </div>
+                {certNames.length > 0 ? (
+                  <ul className="mt-3 flex flex-col gap-1">
+                    {certNames.map((name) => (
+                      <li key={name} className="text-base font-medium text-ink-800">
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </Section>
+          ) : null}
+
           {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
           {tech.metrics.length > 0 ? (
-            <Section
-              id="metrics"
-              title="성능 지표"
-              tick={style.bar}
-              /* 인증은 이 사이트의 무기다 — 지표 셀 잔글씨에 묻지 않고 구간 머리에 세운다 */
-              aside={
-                <VerificationBadge level={tech.verification.level} body={tech.verification.body} />
-              }
-            >
+            <Section id="metrics" title="성능 지표" tick={style.bar}>
               <MetricStatGrid metrics={tech.metrics} />
             </Section>
           ) : restricted ? (
