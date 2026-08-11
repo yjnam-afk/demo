@@ -78,6 +78,33 @@ export function LoopVideo({
     return () => reduced.removeEventListener('change', onChange);
   }, []);
 
+  /*
+    내려받기는 화면에 들어오기 전에 미리 시작한다.
+
+    재생 시점에야 받기 시작하면(preload="none" 그대로) 카드가 보이고 나서
+    첫 프레임까지 빈 화면이 뜬다. 드라이브에 올린 영상은 서버 리다이렉트를
+    거쳐 구글에서 받아오므로 이 공백이 특히 길다. 화면 600px 앞에서 받기
+    시작하면 스크롤이 닿을 때쯤에는 이미 버퍼가 차 있다.
+
+    재생과는 별개다 — 받아 두는 것은 여유 있게, 트는 것은 화면 안에서만.
+  */
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || !allowed) return;
+
+    const preloader = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.preload = 'auto';
+          preloader.disconnect();
+        }
+      },
+      { rootMargin: '600px 0px' },
+    );
+    preloader.observe(video);
+    return () => preloader.disconnect();
+  }, [allowed]);
+
   useEffect(() => {
     const video = ref.current;
     if (!video || !allowed) return;
@@ -104,8 +131,9 @@ export function LoopVideo({
           stop();
         }
       },
-      // 미리 받아 두지 않는다. 여백을 크게 잡으면 화면 밖 영상까지 재생
-      // 대상이 되어 동시 재생 수가 불필요하게 늘어난다.
+      // 재생 판정에는 여백을 두지 않는다. 여백을 크게 잡으면 화면 밖
+      // 영상까지 재생 대상이 되어 동시 재생 자리를 헛되이 차지한다.
+      // (내려받기는 위의 preloader 가 미리 해 둔다.)
       { threshold: 0.25 },
     );
 
