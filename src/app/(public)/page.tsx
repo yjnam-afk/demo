@@ -3,7 +3,7 @@ import { ContactCta } from '@/components/site/ContactCta';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { Hero } from '@/components/site/Hero';
 import { TrustBar } from '@/components/site/TrustBar';
-import { TechRowList } from '@/components/tech/TechRow';
+import { TechCard } from '@/components/tech/TechCard';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
 import { toPublicTech } from '@/lib/domain/publicView';
@@ -105,9 +105,15 @@ export default async function HomePage() {
                 ) : null
               }
             />
-            {/* 행 목록 — 문제 문장을 자르지 않는다. 수치는 오른쪽 기둥에 선다. */}
-            <div className="mt-6">
-              <TechRowList techs={featured} />
+            {/*
+              랜딩만 카드 격자를 유지한다. 카탈로그는 문장을 자르지 않는 행
+              목록으로 갔지만, 랜딩의 대표 기술은 네 장이 나란히 서는 진열이
+              목적이라 카드가 맞다.
+            */}
+            <div className="mt-10 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {featured.map((tech) => (
+                <TechCard key={tech.id} tech={tech} />
+              ))}
             </div>
           </section>
         ) : null}
