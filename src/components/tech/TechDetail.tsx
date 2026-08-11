@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { DemoSlot } from '@/components/demo/DemoSlot';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
-import { MetricStat, MetricStatGrid } from './MetricDisplay';
+import { MetricStatGrid } from './MetricDisplay';
 import {
   DEV_TYPE_LABELS,
   MATURITY_LABELS,
   type Maturity,
 } from '@/lib/domain/enums';
-import { pickHeadlineMetric } from '@/lib/domain/metric';
 import type { PublicTech } from '@/lib/domain/types';
 import { BRAND } from '@/lib/brand';
 import { accentStyle, cn } from '@/lib/ui/domain';
@@ -97,11 +96,6 @@ export function TechDetail({
   const industries = tech.industries;
   const buyers = business.target_industries?.filter((buyer) => buyer.trim()) ?? [];
 
-  const headline = pickHeadlineMetric(
-    tech.metrics as never,
-    tech.demo.type === 'metric' ? tech.demo.highlight_metric : undefined,
-  );
-
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
   );
@@ -109,7 +103,7 @@ export function TechDetail({
 
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
-    { id: 'demo', label: '데모' },
+    tech.demo.type !== 'metric' ? { id: 'demo', label: '데모' } : null,
     tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
     { id: 'composition', label: '기술 구성' },
@@ -245,10 +239,16 @@ export function TechDetail({
             </section>
           ) : null}
 
-          {/* 3. 데모 슬롯 */}
-          <Section id="demo" title="데모" tick={style.bar}>
-            <DemoSlot tech={tech} />
-          </Section>
+          {/*
+            3. 데모 슬롯.
+            metric 타입은 여기서 내지 않는다 — 보여줄 것이 지표뿐이라, 바로
+            아래 성능 지표 블록과 같은 숫자가 두 번 서게 된다.
+          */}
+          {tech.demo.type !== 'metric' ? (
+            <Section id="demo" title="데모" tick={style.bar}>
+              <DemoSlot tech={tech} />
+            </Section>
+          ) : null}
 
           {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
           {tech.metrics.length > 0 ? (
@@ -530,20 +530,11 @@ export function TechDetail({
         */}
         <aside className="hidden lg:block">
           <div className="sticky top-24 flex flex-col gap-4">
-            {/* 대표 수치 — 숫자가 항상 보이는 자리에 선다. 조건 단서는 MetricStat 이 함께 낸다. */}
-            {headline ? (
-              <div className="rounded-lg border border-ink-200 bg-white p-5">
-                <MetricStat metric={headline as never} />
-                {tech.metrics.length > 1 ? (
-                  <a
-                    href="#metrics"
-                    className="mt-3 inline-block text-xs text-ink-500 hover:text-ink-900"
-                  >
-                    전체 지표 {tech.metrics.length}개 보기 ↓
-                  </a>
-                ) : null}
-              </div>
-            ) : null}
+            {/*
+              대표 수치 카드를 두지 않는다. 본문의 성능 지표 블록과 같은
+              숫자가 한 화면에 두 번 서서, 요약이 아니라 중복으로 읽혔다.
+              지표로 가는 길은 아래 바로가기가 맡는다.
+            */}
 
             <div className="rounded-lg border border-ink-200 bg-white p-5">
               <dl className="flex flex-col gap-3 text-sm">
