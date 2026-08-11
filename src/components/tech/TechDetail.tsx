@@ -29,7 +29,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 border-t border-ink-200 pt-8">
+    <section id={id} className="scroll-mt-40 border-t border-ink-200 pt-8">
       <div className="flex items-center gap-2.5">
         {tick ? <span className={cn('h-4 w-1 rounded-full', tick)} /> : null}
         <h2 className="text-lg font-semibold tracking-tight text-ink-900">{title}</h2>
@@ -171,7 +171,32 @@ export function TechDetail({
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
+      {/*
+        구간 바로가기 — 헤더 아래 붙어 따라온다.
+
+        전에는 오른쪽 고정 레일이 맡았는데, 담긴 것이 헤더 배지와 같은
+        요약(검증·데모·성숙도)과 링크 몇 개뿐이라 화면 4분의 1을 차지하고도
+        아무 정보도 주지 못했다. 요약은 이미 헤더에 있으므로 레일을 없애고,
+        이동 수단만 가로 막대로 남긴다. 본문이 전체 폭을 되찾는다.
+      */}
+      <nav
+        aria-label="구간 바로가기"
+        className="sticky top-20 z-10 border-b border-ink-200 bg-ink-50/95 backdrop-blur-none sm:top-24"
+      >
+        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
+          {jumps.map((jump) => (
+            <a
+              key={jump.id}
+              href={`#${jump.id}`}
+              className="flex shrink-0 items-center rounded border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
+            >
+              {jump.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      <div className="mx-auto max-w-5xl px-4 py-10">
         {/* 본문 — 블록 순서는 여기서만 정한다 */}
         <div className="flex min-w-0 flex-col gap-8">
           {/*
@@ -524,66 +549,6 @@ export function TechDetail({
           </section>
         </div>
 
-        {/*
-          요약 레일. 좁은 화면에서는 내지 않는다 — 본문에 이미 다 있는 내용이라
-          중복이고, 모바일에서 본문보다 먼저 서면 블록 순서 요구를 깬다.
-        */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 flex flex-col gap-4">
-            {/*
-              대표 수치 카드를 두지 않는다. 본문의 성능 지표 블록과 같은
-              숫자가 한 화면에 두 번 서서, 요약이 아니라 중복으로 읽혔다.
-              지표로 가는 길은 아래 바로가기가 맡는다.
-            */}
-
-            <div className="rounded-lg border border-ink-200 bg-white p-5">
-              <dl className="flex flex-col gap-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-ink-500">검증</dt>
-                  <dd>
-                    <VerificationBadge
-                      level={tech.verification.level}
-                      body={tech.verification.body}
-                    />
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-ink-500">데모</dt>
-                  <dd>
-                    <DemoTypeBadge type={tech.demo.type} />
-                  </dd>
-                </div>
-                {business.maturity ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <dt className="text-ink-500">성숙도</dt>
-                    <dd className="text-ink-900">
-                      {MATURITY_LABELS[business.maturity as Maturity]}
-                    </dd>
-                  </div>
-                ) : null}
-              </dl>
-
-              <nav className="mt-4 border-t border-ink-100 pt-4">
-                <ul className="flex flex-col gap-1.5">
-                  {jumps.map((jump) => (
-                    <li key={jump.id}>
-                      <a
-                        href={`#${jump.id}`}
-                        className="text-sm text-ink-600 hover:text-ink-900 hover:underline"
-                      >
-                        {jump.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-              {/*
-                여기에 도입 문의 버튼을 두지 않는다. GNB 와 본문 하단에 이미
-                있어서, 레일까지 얹으면 한 화면에 같은 버튼이 세 개 선다.
-              */}
-            </div>
-          </div>
-        </aside>
       </div>
     </article>
   );
