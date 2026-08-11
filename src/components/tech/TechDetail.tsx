@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DemoSlot } from '@/components/demo/DemoSlot';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
+import { JumpBar } from './JumpBar';
 import { MetricStatGrid } from './MetricDisplay';
 import {
   DEV_TYPE_LABELS,
@@ -144,14 +145,24 @@ export function TechDetail({
 
   const certified = tech.verification.level === 'third_party';
   /*
+    인증 수치와 자체 시험 수치를 가른다.
+
+    인증에서 받은 숫자는 인증 구간에, 자체 시험 숫자는 성능 지표 구간에
+    선다. 한 구간에 섞으면 무게가 다른 두 숫자가 같은 줄에 서고, 인증
+    정보가 지표 칸 잔글씨로 흩어진다 — 두 구간은 내용까지 겹치지 않는다.
+  */
+  const isCertMetric = (metric: PublicTech['metrics'][number]) =>
+    Boolean(metric.source && /인증/.test(metric.source));
+  const certMetrics = tech.metrics.filter(isCertMetric);
+  const fieldMetrics = tech.metrics.filter((metric) => !isCertMetric(metric));
+  /*
     인증 시험명은 별도 필드가 없어 인증 수치의 평가 데이터셋 이름에 실려
     있다("지능형 CCTV 성능시험인증(침입)" 등). 인증 출처가 붙은 지표의
     데이터셋을 모으면 인증 목록이 된다.
   */
   const certNames = [
     ...new Set(
-      tech.metrics
-        .filter((metric) => metric.source && /인증/.test(metric.source))
+      certMetrics
         .map((metric) => metric.dataset)
         .filter((name): name is string => Boolean(name?.trim())),
     ),
@@ -165,8 +176,8 @@ export function TechDetail({
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
     tech.demo.type !== 'metric' ? { id: 'demo', label: '데모' } : null,
+    fieldMetrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     certified ? { id: 'certification', label: '인증' } : null,
-    tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
     { id: 'composition', label: '기술 구성' },
     hasResources ? { id: 'resources', label: '관련 자료' } : null,
@@ -235,22 +246,7 @@ export function TechDetail({
         아무 정보도 주지 못했다. 요약은 이미 헤더에 있으므로 레일을 없애고,
         이동 수단만 가로 막대로 남긴다. 본문이 전체 폭을 되찾는다.
       */}
-      <nav
-        aria-label="구간 바로가기"
-        className="sticky top-20 z-10 border-b border-ink-200 bg-ink-50/95 backdrop-blur-none sm:top-24"
-      >
-        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
-          {jumps.map((jump) => (
-            <a
-              key={jump.id}
-              href={`#${jump.id}`}
-              className="flex shrink-0 items-center rounded border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-ink-500 hover:text-ink-900"
-            >
-              {jump.label}
-            </a>
-          ))}
-        </div>
-      </nav>
+      <JumpBar jumps={jumps} />
 
       <div className="mx-auto max-w-5xl px-4 py-10">
         {/* 본문 — 블록 순서는 여기서만 정한다 */}
@@ -336,36 +332,13 @@ export function TechDetail({
             지표 구간의 부속으로 두면 배지와 칩 사이에 묻힌다. 인증은 이
             사이트가 내세우는 신뢰 자산이라 제 이름의 자리를 갖는다.
           */}
-          {certified ? (
-            <Section id="certification" title="인증" tick={style.bar}>
-              <div className="rounded-lg border border-[var(--color-signal-ok)]/30 bg-[var(--color-signal-ok-soft)] p-6">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="text-xl font-semibold text-[var(--color-signal-ok)]">
-                    제3자 인증
-                  </span>
-                  {tech.verification.body ? (
-                    <span className="text-xl font-semibold text-ink-900">
-                      {tech.verification.body}
-                    </span>
-                  ) : null}
-                </div>
-                {certNames.length > 0 ? (
-                  <ul className="mt-3 flex flex-col gap-1">
-                    {certNames.map((name) => (
-                      <li key={name} className="text-base font-medium text-ink-800">
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </Section>
-          ) : null}
-
-          {/* 4. 성능 지표 — 지표가 없는 기술은 블록 자체를 생략한다 */}
-          {tech.metrics.length > 0 ? (
+          {/*
+            4. 성능 지표 — 자체 시험 수치만 선다. 인증 수치는 아래 인증 구간에
+            있고, 같은 숫자를 두 구간에 두 번 세우지 않는다.
+          */}
+          {fieldMetrics.length > 0 ? (
             <Section id="metrics" title="성능 지표" tick={style.bar}>
-              <MetricStatGrid metrics={tech.metrics} />
+              <MetricStatGrid metrics={fieldMetrics} />
             </Section>
           ) : restricted ? (
             /*
@@ -376,6 +349,71 @@ export function TechDetail({
               <p className="text-sm leading-relaxed text-ink-500">
                 과제 협약에 따라 공개하지 않습니다. 개별 미팅에서 안내해 드립니다.
               </p>
+            </Section>
+          ) : null}
+
+          {/*
+            5. 인증 — 자체 시험 수치 뒤에 온다. 공인 수치가 수치 흐름의
+            끝을 맺어야 "우리 측정 → 제3자 확인" 순서로 읽힌다.
+          */}
+          {certified ? (
+            <Section id="certification" title="인증" tick={style.bar}>
+              {/*
+                인증서 패널 — 머리(기관·시험명)와 인증 수치를 한 카드로 묶는다.
+                수치가 머리와 같은 틀 안에 붙어야 "이 숫자가 그 인증의 결과"
+                라는 관계가 설명 없이 읽힌다.
+              */}
+              <div className="overflow-hidden rounded-lg border border-[var(--color-signal-ok)]/30">
+                <div className="bg-[var(--color-signal-ok-soft)] px-6 py-5">
+                  <div className="flex items-start gap-3.5">
+                    <span
+                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-signal-ok)]"
+                      aria-hidden
+                    >
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 8.5 6.5 12 13 4.5" />
+                      </svg>
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-sm font-medium text-[var(--color-signal-ok)]">
+                        <span>제3자 인증</span>
+                        {tech.verification.body ? (
+                          <>
+                            <span aria-hidden className="opacity-50">
+                              ·
+                            </span>
+                            <span>인증기관 {tech.verification.body}</span>
+                          </>
+                        ) : null}
+                      </div>
+                      {certNames.length > 0 ? (
+                        <div className="mt-1.5 flex flex-col gap-0.5">
+                          {certNames.map((name) => (
+                            <p
+                              key={name}
+                              className="text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl"
+                            >
+                              {name}
+                            </p>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                {/* 인증에서 받은 수치 — 출처·시험명은 위 머리가 밝히므로 셀에서는 접는다 */}
+                {certMetrics.length > 0 ? (
+                  <MetricStatGrid metrics={certMetrics} flush certContext />
+                ) : null}
+              </div>
             </Section>
           ) : null}
 
