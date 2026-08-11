@@ -56,6 +56,41 @@ function ValueCell({ label, children }: { label: string; children: React.ReactNo
 }
 
 /**
+ * 드라이브 자료 미리보기.
+ *
+ * 드라이브가 만들어 주는 첫 페이지/첫 프레임 썸네일을 그림으로 펼친다.
+ * 원문 주소(alt=media)는 다운로드로 떨어져 인라인 뷰어에 걸 수 없고,
+ * 형식 표식(.pdf 등)이 안 붙은 링크도 있으므로 — 형식을 몰라도 이 방식은
+ * 동작한다. 누르면 드라이브 뷰어에서 원문이 열린다.
+ */
+function DriveResourceFigure({ id, label }: { id: string; label: string }) {
+  return (
+    <figure className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white">
+      <a href={driveViewUrl(id)} target="_blank" rel="noopener">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={driveThumbnailUrl(id)}
+          alt={label}
+          loading="lazy"
+          className="mx-auto max-h-[680px] w-auto bg-ink-50"
+        />
+      </a>
+      <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+        <span className="truncate">{label}</span>
+        <a
+          href={driveViewUrl(id)}
+          target="_blank"
+          rel="noopener"
+          className="shrink-0 text-ink-500 hover:text-ink-900"
+        >
+          원문 열기 ↗
+        </a>
+      </figcaption>
+    </figure>
+  );
+}
+
+/**
  * 모든 기술이 공유하는 단일 상세 템플릿.
  *
  * 블록 순서가 요구사항이다. 방문자는 사업 의사결정자이므로
@@ -414,33 +449,7 @@ export function TechDetail({
                 const driveId = driveIdFromPath(resource.url);
 
                 if (driveId) {
-                  return (
-                    <figure
-                      key={resource.url}
-                      className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
-                    >
-                      <a href={driveViewUrl(driveId)} target="_blank" rel="noopener">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={driveThumbnailUrl(driveId)}
-                          alt={resource.label}
-                          loading="lazy"
-                          className="mx-auto max-h-[680px] w-auto bg-ink-50"
-                        />
-                      </a>
-                      <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
-                        <span className="truncate">{resource.label}</span>
-                        <a
-                          href={driveViewUrl(driveId)}
-                          target="_blank"
-                          rel="noopener"
-                          className="shrink-0 text-ink-500 hover:text-ink-900"
-                        >
-                          원문 열기 ↗
-                        </a>
-                      </figcaption>
-                    </figure>
-                  );
+                  return <DriveResourceFigure key={resource.url} id={driveId} label={resource.label} />;
                 }
 
                 return (
@@ -482,13 +491,42 @@ export function TechDetail({
                 );
               })}
 
+              {/*
+                형식 표식이 안 붙은 드라이브 자료.
+                링크를 붙여넣을 때 형식 조회가 실패하면 확장자 없이 저장되는데,
+                그래도 드라이브 썸네일은 형식과 무관하게 나온다. 표식이 없다고
+                버튼으로 접어 두면 "미리보기가 안 된다" 가 된다.
+              */}
+              {tech.resources
+                .filter(
+                  (resource) =>
+                    !isImagePath(resource.url) &&
+                    !isPdfPath(resource.url) &&
+                    driveIdFromPath(resource.url),
+                )
+                .map((resource) => (
+                  <DriveResourceFigure
+                    key={resource.url}
+                    id={driveIdFromPath(resource.url) as string}
+                    label={resource.label}
+                  />
+                ))}
+
               {tech.resources.some(
-                (resource) => !isImagePath(resource.url) && !isPdfPath(resource.url),
+                (resource) =>
+                  !isImagePath(resource.url) &&
+                  !isPdfPath(resource.url) &&
+                  !driveIdFromPath(resource.url),
               ) ? (
                 /* 밑줄 글자는 본문에 묻힌다. 내려받을 수 있는 것은 눌리는 물건으로 보여야 한다. */
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {tech.resources
-                    .filter((resource) => !isImagePath(resource.url) && !isPdfPath(resource.url))
+                    .filter(
+                      (resource) =>
+                        !isImagePath(resource.url) &&
+                        !isPdfPath(resource.url) &&
+                        !driveIdFromPath(resource.url),
+                    )
                     .map((resource) => (
                       <li key={resource.url}>
                         <a
