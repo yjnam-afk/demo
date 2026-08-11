@@ -35,6 +35,14 @@ const JOBS = [
   { scene: 'loitering', out: 'public/videos/loitering.mp4', loop: true, poster: true },
   { scene: 'intrusion', out: 'public/videos/intrusion-detection.mp4', loop: true, poster: true },
   { scene: 'zoneReentry', out: 'public/videos/zone-reentry.mp4', loop: true, poster: true },
+  // 이상행동 인지 시리즈 — 행사장·경호 맥락의 공통 시각 언어를 쓴다
+  { scene: 'bagObject', out: 'public/videos/bag-object.mp4', loop: true, poster: true },
+  { scene: 'concealedHand', out: 'public/videos/concealed-hand.mp4', loop: true, poster: true },
+  { scene: 'falldown', out: 'public/videos/falldown.mp4', loop: true, poster: true },
+  { scene: 'sittingFloor', out: 'public/videos/sitting-floor.mp4', loop: true, poster: true },
+  { scene: 'peopleCounting', out: 'public/videos/people-counting.mp4', loop: true, poster: true },
+  { scene: 'cameraGaze', out: 'public/videos/camera-gaze.mp4', loop: true, poster: true },
+  { scene: 'venueFire', out: 'public/videos/venue-fire.mp4', loop: true, poster: true },
   { scene: 'twin', out: 'public/videos/digital-twin-plant.mp4', loop: true, poster: true },
   { scene: 'flood', out: 'public/videos/flood-simulation.mp4', loop: true, poster: true },
   // api 데모의 모델 입력 샘플 — 탐지 오버레이가 없는 원본 영상이어야 한다

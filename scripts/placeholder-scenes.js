@@ -105,13 +105,14 @@ function ground(ctx, W, H) {
  * 한 색 획으로 그리면 서로 합쳐져 볼링핀이 되므로 장면들이 공용으로 쓴다.
  *  tone: 'alert' | 'normal' | 'dim'
  */
+const FIG_TONES = {
+  alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)' },
+  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)' },
+  dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)' },
+};
+
 function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
-  const palettes = {
-    alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)' },
-    normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)' },
-    dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)' },
-  };
-  const c = palettes[tone] ?? palettes.normal;
+  const c = FIG_TONES[tone] ?? FIG_TONES.normal;
 
   ctx.save();
   ctx.lineCap = 'round';
@@ -164,6 +165,169 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.arc(x + facing * h * 0.03, shoulderY - h * 0.16, h * 0.088, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+}
+
+/** 바닥에 누운 자세 — 쓰러짐 장면. 머리가 오른쪽으로 눕는다. */
+function lyingFigure(ctx, { x, y, h, tone }) {
+  const c = FIG_TONES[tone] ?? FIG_TONES.normal;
+  const len = h * 0.8;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y, len * 0.58, h * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const by = y - h * 0.06;
+  ctx.fillStyle = c.pants;
+  ctx.fillRect(x - len * 0.46, by - h * 0.042, len * 0.46, h * 0.088);
+  ctx.fillStyle = c.jacket;
+  ctx.fillRect(x - len * 0.02, by - h * 0.05, len * 0.4, h * 0.105);
+  ctx.beginPath();
+  ctx.arc(x + len * 0.45, by, h * 0.085, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** 무릎을 세우고 바닥에 앉은 자세 — 주저앉음 장면 */
+function sittingFigure(ctx, { x, y, h, facing, tone }) {
+  const c = FIG_TONES[tone] ?? FIG_TONES.normal;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + h * 0.01, h * 0.24, h * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const hipY = y - h * 0.14;
+  const shoulderY = y - h * 0.46;
+  ctx.strokeStyle = c.pants;
+  ctx.lineWidth = h * 0.075;
+  ctx.beginPath();
+  ctx.moveTo(x - facing * h * 0.04, hipY);
+  ctx.lineTo(x + facing * h * 0.17, y - h * 0.3);
+  ctx.lineTo(x + facing * h * 0.21, y);
+  ctx.stroke();
+  ctx.strokeStyle = c.back;
+  ctx.beginPath();
+  ctx.moveTo(x - facing * h * 0.02, hipY);
+  ctx.lineTo(x + facing * h * 0.13, y - h * 0.26);
+  ctx.lineTo(x + facing * h * 0.16, y);
+  ctx.stroke();
+  ctx.fillStyle = c.jacket;
+  ctx.beginPath();
+  ctx.moveTo(x - h * 0.1 + facing * h * 0.02, shoulderY);
+  ctx.lineTo(x + h * 0.08 + facing * h * 0.04, shoulderY + h * 0.02);
+  ctx.lineTo(x + h * 0.06, hipY + h * 0.03);
+  ctx.lineTo(x - h * 0.08, hipY + h * 0.03);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = c.arm;
+  ctx.lineWidth = h * 0.05;
+  ctx.beginPath();
+  ctx.moveTo(x + facing * h * 0.02, shoulderY + h * 0.05);
+  ctx.quadraticCurveTo(x + facing * h * 0.14, y - h * 0.34, x + facing * h * 0.15, y - h * 0.27);
+  ctx.stroke();
+  ctx.fillStyle = c.jacket;
+  ctx.beginPath();
+  ctx.arc(x + facing * h * 0.03, shoulderY - h * 0.14, h * 0.088, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** 탐지 순간의 링 — 판정이 "지금" 섰음을 보인다 */
+function detectPulse(ctx, x, y, r, p, S, rgb = '224,150,92') {
+  if (p < 0 || p > 1) return;
+  ctx.lineWidth = 2.6 * S;
+  for (const rr of [1, 1.3]) {
+    ctx.strokeStyle = `rgba(${rgb},${0.7 * (1 - p)})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r * (rr + p * 0.6), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+/** 불꽃 — 겹친 세 장의 혀가 흔들리고 불티·연기가 오른다. size 는 불길 높이. */
+function flame(ctx, x, y, size, t) {
+  const glow = ctx.createRadialGradient(x, y - size * 0.3, 0, x, y - size * 0.3, size * 1.6);
+  glow.addColorStop(0, 'rgba(230,140,60,0.28)');
+  glow.addColorStop(1, 'rgba(230,140,60,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - size * 1.6, y - size * 1.9, size * 3.2, size * 2.4);
+  const layers = [
+    [1, 'rgba(214,110,46,0.9)'],
+    [0.66, 'rgba(236,168,84,0.92)'],
+    [0.38, 'rgba(248,222,150,0.95)'],
+  ];
+  for (let i = 0; i < layers.length; i++) {
+    const [k, color] = layers[i];
+    const hgt = size * k;
+    const sway = Math.sin(t * Math.PI * 2 * 9 + i * 2.1) * size * 0.09 * (1 + i * 0.4);
+    const wob = 1 + Math.sin(t * Math.PI * 2 * 13 + i * 1.3) * 0.08;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - size * 0.34 * k, y);
+    ctx.quadraticCurveTo(x - size * 0.38 * k, y - hgt * 0.55, x + sway, y - hgt * wob);
+    ctx.quadraticCurveTo(x + size * 0.38 * k, y - hgt * 0.55, x + size * 0.34 * k, y);
+    ctx.closePath();
+    ctx.fill();
+  }
+  for (let i = 0; i < 6; i++) {
+    const ph = (t * (1.4 + (i % 3) * 0.5) + i * 0.17) % 1;
+    const sx = x + Math.sin(i * 7.3 + t * Math.PI * 4) * size * 0.3;
+    ctx.fillStyle = `rgba(245,190,110,${0.7 * (1 - ph)})`;
+    ctx.beginPath();
+    ctx.arc(sx, y - size * (0.5 + ph * 1.1), size * 0.02 + 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  for (let i = 0; i < 4; i++) {
+    const ph = (t * 0.7 + i * 0.25) % 1;
+    ctx.fillStyle = `rgba(150,150,160,${0.12 * (1 - ph)})`;
+    ctx.beginPath();
+    ctx.arc(x + Math.sin(i * 3.1 + ph * 5) * size * 0.35, y - size * (1 + ph * 1.3), size * (0.18 + ph * 0.3), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+/** 실내 행사장 배경 — 이상행동 장면들이 공유한다 */
+function hallBg(ctx, W, H, S) {
+  ctx.fillStyle = '#151920';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1c222c';
+  ctx.fillRect(0, 0, W, H * 0.52);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 9; i++) {
+    const x = (W / 9) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, H * 0.07);
+    ctx.lineTo(x, H * 0.52);
+    ctx.stroke();
+  }
+  // 행사 현수막 띠
+  ctx.fillStyle = 'rgba(95,122,160,0.14)';
+  ctx.fillRect(0, H * 0.12, W, H * 0.055);
+  for (let i = 0; i < 3; i++) {
+    const lx = W * (0.18 + i * 0.32);
+    const g = ctx.createRadialGradient(lx, H * 0.05, 0, lx, H * 0.05, H * 0.5);
+    g.addColorStop(0, 'rgba(215,222,235,0.18)');
+    g.addColorStop(1, 'rgba(215,222,235,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(lx - H * 0.5, 0, H, H * 0.6);
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  ctx.fillRect(0, H * 0.515, W, 3 * S);
+  ctx.fillStyle = '#1a1f28';
+  ctx.fillRect(0, H * 0.52, W, H * 0.48);
+  ctx.strokeStyle = 'rgba(255,255,255,0.055)';
+  for (let i = 0; i < 6; i++) {
+    const y = H * 0.52 + (i * i * 6 + i * 14) * S;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+  for (let i = -5; i <= 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(W * 0.5 + i * 80 * S, H * 0.52);
+    ctx.lineTo(W * 0.5 + i * 240 * S, H);
+    ctx.stroke();
+  }
 }
 
 /** CCTV 질감 — 주사선·노이즈·비네트. 장면 마지막에 얹는다. */
@@ -882,6 +1046,579 @@ const SCENES = {
     cctvTexture(ctx, W, H, t);
     if (!opts?.compact) {
       cctvChrome(ctx, W, H, t, 'CAM 12 · 경호 구역 A', matched && visible, 'RE-ID', 'TRACKING');
+    }
+  },
+
+
+  /**
+   * 가방에서 미상의 물체를 꺼내는 인원.
+   * 걸어와 가방을 내려놓고 웅크려 뒤지다가, 물체를 꺼내 드는 순간 포착된다.
+   */
+  bagObject(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.4 : 1;
+    hallBg(ctx, W, H, S);
+
+    const y = H * 0.88;
+    const h = H * WALKER_H * z;
+    const cx = W * 0.44;
+    const bagX = cx + h * 0.34;
+    const DETECT = 0.58;
+    const detected = t >= DETECT;
+
+    // 가방 — 들고 오는 동안은 손 옆에서 흔들리고, 내려놓으면 바닥에 선다
+    const drawBag = (bx, by, sway) => {
+      ctx.fillStyle = '#2a303c';
+      ctx.beginPath();
+      ctx.roundRect(bx - h * 0.13, by - h * 0.17 + sway, h * 0.26, h * 0.17, 4 * S);
+      ctx.fill();
+      ctx.strokeStyle = '#3d4553';
+      ctx.lineWidth = 2.5 * S;
+      ctx.beginPath();
+      ctx.arc(bx, by - h * 0.17 + sway, h * 0.07, Math.PI, 0);
+      ctx.stroke();
+    };
+
+    if (t < 0.3) {
+      // 접근 — 가방을 들고 걷는다
+      const k = t / 0.3;
+      const x = W * 0.14 + k * (cx - W * 0.14);
+      walker(ctx, { x, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
+      drawBag(x + h * 0.2, y - h * 0.06, Math.sin(t * Math.PI * 24) * h * 0.02);
+    } else {
+      drawBag(bagX, y, 0);
+      const kneel = Math.min(1, Math.max(0, (t - 0.36) / 0.14));
+      const rise = Math.min(1, Math.max(0, (t - 0.78) / 0.16));
+      const bend = kneel * (1 - rise * 0.75);
+      // 웅크림 — 발을 축으로 몸을 숙이고 키를 줄인다
+      ctx.save();
+      ctx.translate(cx, y);
+      ctx.rotate(bend * 0.5);
+      ctx.translate(-cx, -y);
+      walker(ctx, {
+        x: cx,
+        y,
+        h: h * (1 - bend * 0.24),
+        phase: 0,
+        stride: 0.15,
+        facing: 1,
+        tone: detected ? 'alert' : 'normal',
+      });
+      ctx.restore();
+      // 가방을 향해 뻗는 팔
+      if (bend > 0.4 && !detected) {
+        ctx.strokeStyle = FIG_TONES.normal.arm;
+        ctx.lineWidth = h * 0.05;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx + h * 0.1, y - h * 0.5);
+        ctx.lineTo(bagX - h * 0.05, y - h * 0.14);
+        ctx.stroke();
+      }
+      // 꺼낸 물체 — 손에 들려 올라온다. 정체를 알 수 없는 어두운 막대.
+      if (detected) {
+        const lift = Math.min(1, (t - DETECT) / 0.12);
+        const ox = cx + h * 0.16;
+        const oy = y - h * (0.3 + lift * 0.26) + bend * h * 0.1;
+        ctx.strokeStyle = FIG_TONES.alert.arm;
+        ctx.lineWidth = h * 0.05;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx + h * 0.06, y - h * (0.52 - bend * 0.1));
+        ctx.lineTo(ox, oy + h * 0.05);
+        ctx.stroke();
+        ctx.fillStyle = '#161a20';
+        ctx.strokeStyle = ALERT;
+        ctx.lineWidth = 2 * S;
+        ctx.beginPath();
+        ctx.roundRect(ox - h * 0.025, oy - h * 0.13, h * 0.05, h * 0.18, 2 * S);
+        ctx.fill();
+        ctx.stroke();
+        detectPulse(ctx, ox, oy, h * 0.2, (t - DETECT) / 0.14, S * z);
+      }
+
+      if (detected) {
+        bbox(
+          ctx,
+          cx - h * 0.3,
+          y - h - h * 0.02,
+          h * 0.62,
+          h + h * 0.06,
+          ALERT,
+          'UNKNOWN OBJECT 0.91',
+          S * z * 0.9,
+        );
+      }
+    }
+
+    if (detected) {
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 21 · 소지품 검색대', detected, 'ALERT', 'MONITORING');
+    }
+  },
+
+  /**
+   * 옷에 손을 넣고 있는 인원.
+   * 걸어와 멈춘 뒤 손을 상의 안으로 넣는다 — 은닉 자세가 유지되는 순간 포착.
+   */
+  concealedHand(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.4 : 1;
+    hallBg(ctx, W, H, S);
+
+    const y = H * 0.88;
+    const h = H * WALKER_H * z;
+    const DETECT = 0.5;
+    const detected = t >= DETECT;
+
+    let x;
+    if (t < 0.35) {
+      const k = t / 0.35;
+      x = W * 0.82 - k * (W * 0.82 - W * 0.5);
+      walker(ctx, { x, y, h, phase: t * Math.PI * 22, stride: 0.85, facing: -1, tone: 'normal' });
+    } else {
+      x = W * 0.5;
+      // 멈춰 서서 — 좌우로 아주 조금 흔들린다
+      walker(ctx, {
+        x,
+        y,
+        h,
+        phase: 0,
+        stride: 0.12,
+        facing: -1,
+        tone: detected ? 'alert' : 'normal',
+      });
+      // 상의 안으로 들어가는 팔 — 손끝이 가슴에서 멈춘다
+      const reach = Math.min(1, (t - 0.35) / 0.15);
+      const chestX = x - h * 0.02;
+      const chestY = y - h * 0.6;
+      ctx.strokeStyle = detected ? FIG_TONES.alert.arm : FIG_TONES.normal.arm;
+      ctx.lineWidth = h * 0.055;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x - h * 0.09, y - h * 0.76);
+      ctx.quadraticCurveTo(
+        x - h * (0.2 - reach * 0.08),
+        y - h * (0.66 - reach * 0.02),
+        chestX - (1 - reach) * h * 0.16,
+        chestY + (1 - reach) * h * 0.1,
+      );
+      ctx.stroke();
+      // 은닉 지점 표식
+      if (detected) {
+        detectPulse(ctx, chestX, chestY, h * 0.14, (t - DETECT) / 0.14, S * z);
+        ctx.fillStyle = 'rgba(224,150,92,0.9)';
+        ctx.beginPath();
+        ctx.arc(chestX, chestY, 4 * S * z, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    if (detected) {
+      bbox(
+        ctx,
+        x - h * 0.28,
+        y - h - h * 0.06,
+        h * 0.56,
+        h + h * 0.1,
+        ALERT,
+        'HAND CONCEALED 0.89',
+        S * z * 0.9,
+      );
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 22 · 출입 게이트', detected, 'ALERT', 'MONITORING');
+    }
+  },
+
+  /**
+   * 쓰러지는 인원.
+   * 걷다가 무너지듯 앞으로 넘어지고, 바닥에 누운 순간 포착된다.
+   */
+  falldown(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.4 : 1;
+    hallBg(ctx, W, H, S);
+
+    const y = H * 0.88;
+    const h = H * WALKER_H * z;
+    const cx = W * 0.5;
+    const FALL = 0.4;
+    const DOWN = 0.52;
+    const detected = t >= DOWN;
+
+    if (t < FALL) {
+      const k = t / FALL;
+      const x = W * 0.16 + k * (cx - W * 0.16);
+      walker(ctx, { x, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
+    } else if (t < DOWN) {
+      // 발을 축으로 앞으로 넘어간다 — 가속(제곱)으로 무너지는 느낌을 만든다
+      const r = (t - FALL) / (DOWN - FALL);
+      ctx.save();
+      ctx.translate(cx, y);
+      ctx.rotate(r * r * Math.PI * 0.5);
+      ctx.translate(-cx, -y);
+      walker(ctx, { x: cx, y, h, phase: 0, stride: 0.3, facing: 1, tone: 'normal' });
+      ctx.restore();
+    } else {
+      lyingFigure(ctx, { x: cx + h * 0.4, y, h, tone: 'alert' });
+      detectPulse(ctx, cx + h * 0.4, y - h * 0.08, h * 0.3, (t - DOWN) / 0.14, S * z);
+      bbox(
+        ctx,
+        cx - h * 0.06,
+        y - h * 0.24,
+        h * 0.94,
+        h * 0.3,
+        ALERT,
+        'FALL DOWN 0.95',
+        S * z * 0.9,
+      );
+      if (!opts?.compact) {
+        const sec = String(Math.floor((t - DOWN) * 26)).padStart(2, '0');
+        label(ctx, `DOWN 00:${sec}`, 28 * S, H * 0.57, 'rgba(224,150,92,0.95)', 16 * S);
+      }
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 15 · 중앙 홀', detected, 'ALERT', 'MONITORING');
+    }
+  },
+
+  /**
+   * 바닥에 주저 앉는 인원.
+   * 천천히 내려앉아 무릎을 세우고 앉는다 — 일정 시간 지속되면 포착.
+   * 쓰러짐(순간·수평)과 다른 동작이다: 느리게, 앉은 채 유지.
+   */
+  sittingFloor(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.4 : 1;
+    hallBg(ctx, W, H, S);
+
+    const y = H * 0.88;
+    const h = H * WALKER_H * z;
+    const cx = W * 0.52;
+    const SIT = 0.5;
+    const DETECT = 0.66; // 앉은 지 잠시 지난 뒤 — 지속이 판정 조건이다
+    const detected = t >= DETECT;
+
+    if (t < 0.35) {
+      const k = t / 0.35;
+      const x = W * 0.84 - k * (W * 0.84 - cx);
+      walker(ctx, { x, y, h, phase: t * Math.PI * 20, stride: 0.75, facing: -1, tone: 'normal' });
+    } else if (t < SIT) {
+      // 내려앉는 중 — 키가 줄고 상체가 굽는다
+      const k = (t - 0.35) / (SIT - 0.35);
+      ctx.save();
+      ctx.translate(cx, y);
+      ctx.rotate(k * 0.18);
+      ctx.translate(-cx, -y);
+      walker(ctx, { x: cx, y, h: h * (1 - k * 0.3), phase: 0, stride: 0.2, facing: -1, tone: 'normal' });
+      ctx.restore();
+    } else {
+      sittingFigure(ctx, { x: cx, y, h, facing: -1, tone: detected ? 'alert' : 'normal' });
+      if (detected) {
+        detectPulse(ctx, cx, y - h * 0.3, h * 0.28, (t - DETECT) / 0.14, S * z);
+        bbox(
+          ctx,
+          cx - h * 0.3,
+          y - h * 0.66,
+          h * 0.6,
+          h * 0.72,
+          ALERT,
+          'SITTING 0.88',
+          S * z * 0.9,
+        );
+        ctx.fillStyle = 'rgba(212,118,60,0.06)';
+        ctx.fillRect(0, 0, W, H);
+      }
+      if (!opts?.compact) {
+        const sec = String(Math.floor((t - SIT) * 30)).padStart(2, '0');
+        label(
+          ctx,
+          `SIT 00:${sec}`,
+          28 * S,
+          H * 0.57,
+          detected ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.6)',
+          16 * S,
+        );
+      }
+    }
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 16 · 복도', detected, 'ALERT', 'MONITORING');
+    }
+  },
+
+  /**
+   * 행사장내 현재 인원 계수.
+   * 이벤트가 아니라 상시 계수다 — 화면 안의 인원마다 얇은 상자가 붙고,
+   * 프레임을 드나들 때마다 숫자가 변한다.
+   */
+  peopleCounting(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    hallBg(ctx, W, H, S);
+
+    const PEOPLE = [
+      { s: 0.02, v: 0.6, yy: 0.63, f: 1 },
+      { s: 0.55, v: -0.45, yy: 0.66, f: -1 },
+      { s: 0.3, v: 0.38, yy: 0.7, f: 1 },
+      { s: 0.85, v: -0.6, yy: 0.74, f: -1 },
+      { s: 0.15, v: 0.52, yy: 0.79, f: 1 },
+      { s: 0.7, v: 0.44, yy: 0.84, f: 1 },
+      { s: 0.45, v: -0.36, yy: 0.88, f: -1 },
+    ];
+
+    let count = 0;
+    for (const p of PEOPLE) {
+      // 1.3 주기로 순환 — 화면 밖 구간(0.15)을 거쳐 드나든다
+      const xf = ((((p.s + p.v * t) % 1.3) + 1.3) % 1.3) - 0.15;
+      if (xf < 0.03 || xf > 0.97) continue;
+      count += 1;
+      const x = xf * W;
+      const y = p.yy * H;
+      const scale = 0.5 + ((p.yy - 0.63) / 0.25) * 0.5;
+      const h = H * WALKER_H * scale;
+      walker(ctx, {
+        x,
+        y,
+        h,
+        phase: (t * 30 * Math.abs(p.v) + p.s * 20) * Math.PI,
+        stride: 0.85,
+        facing: p.f,
+        tone: 'normal',
+      });
+      // 계수 상자 — 라벨 없는 얇은 파란 상자. 세는 중이라는 표시다.
+      ctx.strokeStyle = 'rgba(123,163,208,0.75)';
+      ctx.lineWidth = 2 * S;
+      ctx.strokeRect(x - h * 0.26, y - h - h * 0.04, h * 0.52, h + h * 0.08);
+    }
+
+    // 계수 숫자 — 이 장면의 주인공. 카드에서도 보인다.
+    const nx = 28 * S;
+    const ny = opts?.compact ? 54 * S : H - 44 * S;
+    ctx.font = `600 ${Math.round((opts?.compact ? 44 : 54) * S)}px ui-monospace, monospace`;
+    ctx.fillStyle = '#fff';
+    ctx.fillText(String(count), nx, ny);
+    label(ctx, 'IN VIEW', nx, ny - (opts?.compact ? 34 : 44) * S, 'rgba(255,255,255,0.55)', 15 * S);
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 09 · 행사장 전경', false, 'ALERT', 'COUNTING');
+    }
+  },
+
+  /**
+   * CCTV를 여러번 응시하는 인원.
+   * 걷다 멈춰 카메라(시청자)를 정면으로 바라보기를 반복한다 — 세 번째
+   * 응시에서 포착된다. 응시는 머리에서 화면 쪽으로 퍼지는 시선 원뿔로 그린다.
+   */
+  cameraGaze(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.4 : 1;
+    hallBg(ctx, W, H, S);
+
+    const y = H * 0.88;
+    const h = H * WALKER_H * z;
+    /* 걷기와 응시 정지가 번갈아 온다. 세 번째 응시(0.62~)가 판정이다. */
+    const K = [
+      [0, 0.18], [0.1, 0.28], [0.2, 0.28], [0.36, 0.46], [0.5, 0.46],
+      [0.62, 0.62], [0.8, 0.62], [1, 0.86],
+    ];
+    const GAZES = [
+      [0.1, 0.2],
+      [0.36, 0.5],
+      [0.62, 0.8],
+    ];
+    function xAt(tt) {
+      for (let i = 1; i < K.length; i++) {
+        if (tt <= K[i][0]) {
+          const k = (tt - K[i - 1][0]) / (K[i][0] - K[i - 1][0]);
+          return (K[i - 1][1] + k * (K[i][1] - K[i - 1][1])) * W;
+        }
+      }
+      return K[K.length - 1][1] * W;
+    }
+
+    const x = xAt(t);
+    const gazeIndex = GAZES.findIndex(([a, b]) => t >= a && t < b);
+    const gazing = gazeIndex >= 0;
+    const gazeCount = GAZES.filter(([a]) => t >= a).length;
+    const DETECT = GAZES[2][0];
+    const detected = t >= DETECT;
+
+    // 시선 원뿔 — 머리에서 화면(카메라) 쪽으로 넓어진다
+    if (gazing) {
+      const hx = x + h * 0.01;
+      const hy = y - h * 0.9;
+      const grad = ctx.createLinearGradient(0, hy, 0, H);
+      const tone = detected ? '224,150,92' : '200,212,230';
+      grad.addColorStop(0, `rgba(${tone},${detected ? 0.22 : 0.14})`);
+      grad.addColorStop(1, `rgba(${tone},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(hx, hy);
+      ctx.lineTo(hx - h * 0.62, H);
+      ctx.lineTo(hx + h * 0.62, H);
+      ctx.closePath();
+      ctx.fill();
+      // 응시 시작 링
+      detectPulse(
+        ctx,
+        hx,
+        hy + h * 0.08,
+        h * 0.16,
+        (t - GAZES[gazeIndex][0]) / 0.1,
+        S * z,
+        detected ? '224,150,92' : '200,212,230',
+      );
+    }
+
+    walker(ctx, {
+      x,
+      y,
+      h,
+      // 응시 중에는 정면을 향해 선다 — 걸음을 멈추고 다리를 모은다
+      phase: gazing ? 0 : t * Math.PI * 22,
+      stride: gazing ? 0.06 : 0.85,
+      facing: 1,
+      tone: detected ? 'alert' : 'normal',
+    });
+
+    if (detected) {
+      bbox(
+        ctx,
+        x - h * 0.28,
+        y - h - h * 0.06,
+        h * 0.56,
+        h + h * 0.1,
+        ALERT,
+        'CAMERA GAZE 0.90',
+        S * z * 0.9,
+      );
+      ctx.fillStyle = 'rgba(212,118,60,0.06)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    if (!opts?.compact) {
+      label(
+        ctx,
+        `GAZE COUNT ${Math.min(gazeCount, 3)}/3`,
+        28 * S,
+        H * 0.57,
+        detected ? 'rgba(224,150,92,0.95)' : 'rgba(255,255,255,0.6)',
+        16 * S,
+      );
+    }
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 05 · 정문 게이트', detected, 'ALERT', 'TRACKING');
+    }
+  },
+
+  /**
+   * 행사장 주변 화재 발생.
+   * 야간 야외 부스 옆에서 불길이 자라고, 규모가 커지는 순간 포착된다.
+   */
+  venueFire(ctx, W, H, t, opts) {
+    const S = scaleOf(H);
+    const z = opts?.compact ? 1.25 : 1;
+
+    // 야간 야외 — 하늘·부스 실루엣·바닥
+    ctx.fillStyle = '#0e1116';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#12161d';
+    ctx.fillRect(0, 0, W, H * 0.5);
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(0, H * 0.495, W, 2 * S);
+    // 부스(천막) 실루엣 줄 — 지붕이 삼각형이다
+    ctx.fillStyle = '#161b23';
+    for (let i = 0; i < 4; i++) {
+      const bx = W * (0.08 + i * 0.24);
+      const bw = W * 0.17;
+      const by = H * 0.5;
+      const bh = H * 0.16;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx, by - bh * 0.6);
+      ctx.lineTo(bx + bw / 2, by - bh);
+      ctx.lineTo(bx + bw, by - bh * 0.6);
+      ctx.lineTo(bx + bw, by);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // 줄 조명 — 부스 사이에 걸린 점 전구
+    ctx.fillStyle = 'rgba(220,210,170,0.35)';
+    for (let i = 0; i < 14; i++) {
+      const lx = W * (0.06 + i * 0.066);
+      const ly = H * (0.36 + Math.sin(i * 1.1) * 0.012);
+      ctx.beginPath();
+      ctx.arc(lx, ly, 2.2 * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const yy = H * 0.54 + i * i * 10 * S + 14 * S;
+      ctx.beginPath();
+      ctx.moveTo(0, yy);
+      ctx.lineTo(W, yy - 16 * S);
+      ctx.stroke();
+    }
+
+    const DETECT = 0.4;
+    const detected = t >= DETECT;
+    const fx = W * 0.38;
+    const fy = H * 0.72;
+    // 불길 성장 — 초반에 자라고, 이후에는 숨쉬듯 흔들린다
+    const grow = Math.min(1, t / 0.35);
+    const size = H * 0.2 * z * (0.35 + 0.65 * grow) * (1 + Math.sin(t * Math.PI * 2 * 7) * 0.04);
+    flame(ctx, fx, fy, size, t);
+
+    // 대피하는 인원 — 불길 반대쪽으로 뛰어간다
+    if (t > 0.5) {
+      const k = (t - 0.5) / 0.5;
+      walker(ctx, {
+        x: fx + W * 0.12 + k * W * 0.34,
+        y: H * 0.86,
+        h: H * WALKER_H * z * 0.9,
+        phase: t * Math.PI * 40,
+        stride: 1.15,
+        facing: 1,
+        tone: 'normal',
+      });
+    }
+
+    if (detected) {
+      detectPulse(ctx, fx, fy - size * 0.5, size * 0.7, (t - DETECT) / 0.14, S * z);
+      bbox(
+        ctx,
+        fx - size * 0.62,
+        fy - size * 1.25,
+        size * 1.24,
+        size * 1.3,
+        ALERT,
+        'FIRE 0.97',
+        S * z * 0.9,
+      );
+      ctx.fillStyle = 'rgba(212,118,60,0.08)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    cctvTexture(ctx, W, H, t);
+    if (!opts?.compact) {
+      cctvChrome(ctx, W, H, t, 'CAM 30 · 외곽 부스', detected, 'FIRE', 'MONITORING');
     }
   },
 
