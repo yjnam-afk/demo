@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { TextInput } from './fields';
-import { MEDIA_EXTENSIONS, type MediaKind } from '@/lib/media';
+import { isImagePath, MEDIA_EXTENSIONS, type MediaKind } from '@/lib/media';
 import { normalizeMediaPath } from '@/lib/gdrive';
 
 /**
@@ -158,12 +158,17 @@ export function MediaUpload({
 
       {error ? <p className="text-xs text-[var(--color-signal-fail)]">{error}</p> : null}
 
-      {/* 올린 파일이 의도한 것인지 바로 확인할 수 있게 미리보기를 붙인다 */}
-      {value && kind === 'thumbnail' ? (
+      {/*
+        올린 파일이 의도한 것인지 바로 확인할 수 있게 미리보기를 붙인다.
+        값의 종류를 보고 고른다 — 슬롯만 보고 "썸네일 외에는 전부 영상"으로
+        가르면 관련 자료의 링크·PDF 까지 영상 플레이어로 그려져 검은 상자가
+        뜬다. 미리볼 수 없는 값(외부 링크·PDF·드라이브 경로)은 아무것도 내지
+        않는다 — 깨진 미리보기는 없는 것보다 나쁘다.
+      */}
+      {value && (kind === 'thumbnail' || isImagePath(value)) ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt="" className="h-24 w-auto rounded border border-ink-200" />
-      ) : null}
-      {value && kind !== 'thumbnail' ? (
+      ) : value && (kind === 'loop' || kind === 'video') ? (
         <video src={value} className="h-24 w-auto rounded border border-ink-200" muted controls />
       ) : null}
     </div>

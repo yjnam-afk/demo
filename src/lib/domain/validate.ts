@@ -138,6 +138,26 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     });
   }
 
+  /*
+   * 내부망 주소 보호.
+   *
+   * 관련 자료에 사내 위키 같은 내부망 주소가 들어올 수 있다. "내부 전용"을
+   * 끄는 순간 그 주소가 공개 화면에 그대로 나가므로, 사설 대역 주소는 내부
+   * 전용을 켜야만 발행되게 막는다. 실수 한 번이 내부망 구조를 밖에 알리는
+   * 사고가 되는 자리다.
+   */
+  const PRIVATE_HOST =
+    /^https?:\/\/(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|localhost|127\.)/i;
+  tech.resources.forEach((resource) => {
+    if (!resource.internal && PRIVATE_HOST.test(resource.url.trim())) {
+      issues.push({
+        field: 'resources',
+        label: `관련 자료 "${resource.label || resource.url}" 내부 전용 표시`,
+        message: '내부망 주소는 내부 전용으로 표시해야 외부 공개할 수 있습니다.',
+      });
+    }
+  });
+
   return issues;
 }
 
