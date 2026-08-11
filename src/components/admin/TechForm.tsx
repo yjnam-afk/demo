@@ -391,21 +391,12 @@ export function TechForm({
         </Field>
 
         {/*
-          산업군과 다른 값이다. 산업군은 "안전·보안" 같은 대분류고 여기는
-          "공항·항만" 처럼 실제로 쓰는 곳이다. 전에는 이름이 "적용 대상 산업"
-          이라 산업군과 같은 것으로 읽혔고, 화면에서도 이 값이 산업군 자리를
-          덮어써서 두 번 쓰는 것처럼 보였다.
+          주요 수요처(target_industries) 입력은 내렸다. 산업군과 결국 같은
+          이야기를 두 번 쓰게 만들었고, 구체 도입처는 "해결하는 문제" 문장에
+          녹이는 편이 낫다. 값 자체는 지우지 않는다 — 폼이 필드를 빼고
+          저장하면 기존 레코드의 값이 조용히 사라지므로, 입력 없이 원래
+          값을 그대로 실어 보낸다.
         */}
-        <Field
-          label="주요 수요처"
-          hint="산업군보다 좁은 단위. 완성차·지자체·석유화학처럼 실제 도입처를 적습니다. 비워도 됩니다."
-        >
-          <TagList
-            values={draft.business.target_industries ?? []}
-            placeholder="공항·항만"
-            onChange={(target_industries) => setBusiness({ target_industries })}
-          />
-        </Field>
 
         <Row>
           <Field label="입력 형식" required>

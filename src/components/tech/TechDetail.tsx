@@ -136,12 +136,7 @@ export function TechDetail({
 }) {
   const style = accentStyle(tech.domain_accent);
   const business = tech.business;
-  /*
-    두 값은 층위가 다르다. 산업군은 "안전·보안" 같은 대분류로 산업별 화면과
-    이어지고, 수요처는 "공항·항만" 처럼 실제 도입처다.
-  */
   const industries = tech.industries;
-  const buyers = business.target_industries?.filter((buyer) => buyer.trim()) ?? [];
 
   const certified = tech.verification.level === 'third_party';
   /*
@@ -264,27 +259,24 @@ export function TechDetail({
               {business.problem ?? tech.summary}
             </p>
 
-            {industries.length > 0 || buyers.length > 0 ? (
-              <div className="mt-6 flex flex-col gap-2">
-                {industries.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
-                      산업군
-                    </span>
-                    {industries.map((industry) => (
-                      <span
-                        key={industry}
-                        className="rounded bg-ink-100 px-2 py-0.5 text-sm text-ink-700"
-                      >
-                        {industry}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-                {/* 산업군보다 좁은 단위 — 글자로만 둔다. 여기서 갈라져 나가는 화면은 없다. */}
-                {buyers.length > 0 ? (
-                  <p className="text-sm text-ink-500">주요 수요처 · {buyers.join(', ')}</p>
-                ) : null}
+            {/*
+              산업 표시는 산업군 하나로 통일한다. 주요 수요처를 따로 세우면
+              방문자에게는 같은 이야기가 두 줄로 반복되는 것으로 읽혔다 —
+              구체 도입처가 중요하면 위 문제 문장에 녹여 쓴다.
+            */}
+            {industries.length > 0 ? (
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+                  산업군
+                </span>
+                {industries.map((industry) => (
+                  <span
+                    key={industry}
+                    className="rounded bg-ink-100 px-2 py-0.5 text-sm text-ink-700"
+                  >
+                    {industry}
+                  </span>
+                ))}
               </div>
             ) : null}
           </section>
