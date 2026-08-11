@@ -5,6 +5,14 @@ import { getRepo } from '@/lib/data';
 import { toPublicTech } from '@/lib/domain/publicView';
 import { loadPublicMaps } from '@/lib/domain/publicMaps';
 
+/*
+ * 매 요청 렌더한다 — 다른 공개 화면과 같다.
+ * 이 한 줄이 빠져 있어서 Vercel 이 상세 화면을 첫 렌더 상태로 캐시에 굳혔고,
+ * 관리자가 무엇을 고쳐도 화면에 반영되지 않았다. 목록·랜딩은 바뀌는데 상세만
+ * 안 바뀌는 증상이 여기서 나온다.
+ */
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({
   params,
 }: {

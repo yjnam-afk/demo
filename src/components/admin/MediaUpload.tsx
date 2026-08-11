@@ -25,6 +25,11 @@ export function MediaUpload({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState(false);
+  /*
+    진행률이 없으면 수십 MB 영상 업로드가 멈춘 것과 구분되지 않는다.
+    "업로드 중…" 만 몇 분 돌면 사용자는 무한 로딩으로 읽고 새로고침한다.
+  */
+  const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   /** 파일 환경 — 서버가 public/uploads 디스크에 쓴다. */
@@ -64,6 +69,7 @@ export function MediaUpload({
       access,
       handleUploadUrl: '/api/admin/upload/blob',
       contentType: file.type,
+      onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
     });
     onChange(`/api/media/${result.pathname}`);
   }
@@ -75,6 +81,7 @@ export function MediaUpload({
     }
 
     setPending(true);
+    setProgress(null);
     setError(null);
     try {
       // 배포 환경에 따라 업로드 경로가 다르다. 서버가 판단해 알려 준다.
@@ -94,6 +101,7 @@ export function MediaUpload({
       setError(message ? `업로드하지 못했습니다. (${message.slice(0, 200)})` : '업로드 중 오류가 발생했습니다.');
     } finally {
       setPending(false);
+      setProgress(null);
       if (fileRef.current) fileRef.current.value = '';
     }
   }
@@ -127,7 +135,7 @@ export function MediaUpload({
           onClick={() => fileRef.current?.click()}
           className="rounded border border-ink-300 px-3 py-2 text-sm text-ink-700 hover:border-ink-500 disabled:opacity-60"
         >
-          {pending ? '업로드 중…' : '업로드'}
+          {pending ? (progress !== null ? `업로드 ${progress}%` : '업로드 중…') : '업로드'}
         </button>
         {value ? (
           <button
