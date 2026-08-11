@@ -1405,8 +1405,9 @@ const SCENES = {
     }
 
     // 계수 숫자 — 이 장면의 주인공. 카드에서도 보인다.
+    // 전체 화면에서는 하단 타임스탬프와 겹치지 않게 한 줄 위에 둔다.
     const nx = 28 * S;
-    const ny = opts?.compact ? 54 * S : H - 44 * S;
+    const ny = opts?.compact ? 54 * S : H - 78 * S;
     ctx.font = `600 ${Math.round((opts?.compact ? 44 : 54) * S)}px ui-monospace, monospace`;
     ctx.fillStyle = '#fff';
     ctx.fillText(String(count), nx, ny);
