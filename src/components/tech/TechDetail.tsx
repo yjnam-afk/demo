@@ -179,17 +179,23 @@ export function TechDetail({
       <div className="mx-auto max-w-6xl px-4 py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
         {/* 본문 — 블록 순서는 여기서만 정한다 */}
         <div className="flex min-w-0 flex-col gap-8">
-          {/* 2. 해결하는 문제 / 적용 대상 산업 — 지표보다 먼저 온다 */}
-          <section className={cn('rounded-lg border-l-4 bg-white p-6', style.border)}>
+          {/*
+            2. 해결하는 문제 — 지표보다 먼저 온다.
+
+            카드에 담지 않는다. 이 페이지의 다른 모든 정보는 상자 안에 있으므로,
+            이 문장만 상자 없이 큰 글자로 세우면 그 대비가 곧 강조가 된다.
+            이 기술이 존재하는 이유라서 본문에서 가장 큰 글자를 가져간다.
+          */}
+          <section className={cn('border-l-4 py-1 pl-5 sm:pl-6', style.border)}>
             <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
               해결하는 문제
             </h2>
-            <p className="mt-2 text-lg leading-relaxed text-ink-900 sm:text-xl">
+            <p className="mt-3 max-w-3xl text-2xl leading-snug font-semibold tracking-tight text-ink-900 sm:text-3xl">
               {business.problem ?? tech.summary}
             </p>
 
             {industries.length > 0 || buyers.length > 0 ? (
-              <div className="mt-5 flex flex-col gap-2 border-t border-ink-100 pt-4">
+              <div className="mt-6 flex flex-col gap-2">
                 {industries.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
