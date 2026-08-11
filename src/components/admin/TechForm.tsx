@@ -668,7 +668,7 @@ export function TechForm({
       >
         <Field
           label="관련 자료"
-          hint="이미지(jpg/png/webp)와 PDF는 상세 화면에 바로 펼쳐지고, 그 외 파일과 링크는 버튼으로 나갑니다. 드라이브 링크는 확장자가 없어 버튼으로 나갑니다."
+          hint="이미지와 PDF는 상세 화면에 바로 펼쳐지고, 그 외 파일과 링크는 버튼으로 나갑니다. 업로드가 막힌 망에서는 드라이브에 올리고 공유 링크를 붙여넣으세요 — 형식은 자동으로 알아냅니다."
         >
           <div className="flex flex-col gap-2">
             {draft.resources.map((resource, index) => {

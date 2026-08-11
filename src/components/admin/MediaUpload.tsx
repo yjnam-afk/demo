@@ -24,6 +24,38 @@ export function MediaUpload({
   accept: string;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * 드라이브 경로에 형식 표식 붙이기.
+   *
+   * 드라이브 링크에는 확장자가 없어 화면이 이미지·PDF·영상을 구분하지
+   * 못한다. 링크가 정규화되면 서버에 파일 형식을 물어(관리자 라우트가
+   * 드라이브 메타데이터를 조회한다) 경로 뒤에 이름.확장자를 붙인다.
+   * 조회가 실패해도 링크는 그대로 동작한다 — 표식만 없는 상태가 된다.
+   */
+  async function enrichDrivePath(path: string) {
+    const match = /^\/api\/media\/gdrive\/([A-Za-z0-9_-]{10,})$/.exec(path);
+    if (!match) return;
+
+    try {
+      const response = await fetch(`/api/admin/gdrive-meta?id=${match[1]}`);
+      const meta = (await response.json().catch(() => ({}))) as {
+        name?: string;
+        extension?: string | null;
+      };
+      if (!response.ok || !meta.extension) return;
+
+      const slug =
+        (meta.name ?? '')
+          .replace(/\.[A-Za-z0-9]+$/, '')
+          .replace(/[^A-Za-z0-9_-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 40) || 'file';
+      onChange(`${path}/${slug}.${meta.extension}`);
+    } catch {
+      // 표식 없이도 재생·다운로드는 된다. 조용히 넘어간다.
+    }
+  }
   const [pending, setPending] = useState(false);
   /*
     진행률이 없으면 수십 MB 영상 업로드가 멈춘 것과 구분되지 않는다.
@@ -123,7 +155,11 @@ export function MediaUpload({
             드라이브 공유 링크는 붙여넣는 즉시 재생 가능한 내부 경로로 바뀐다.
             서버 저장 시점에도 같은 정규화를 거치므로 화면을 우회해도 결과는 같다.
           */
-          onChange={(event) => onChange(normalizeMediaPath(event.target.value))}
+          onChange={(event) => {
+            const normalized = normalizeMediaPath(event.target.value);
+            onChange(normalized);
+            void enrichDrivePath(normalized);
+          }}
           className="flex-1"
         />
         <input
@@ -159,17 +195,13 @@ export function MediaUpload({
       {error ? <p className="text-xs text-[var(--color-signal-fail)]">{error}</p> : null}
 
       {/*
-        올린 파일이 의도한 것인지 바로 확인할 수 있게 미리보기를 붙인다.
-        값의 종류를 보고 고른다 — 슬롯만 보고 "썸네일 외에는 전부 영상"으로
-        가르면 관련 자료의 링크·PDF 까지 영상 플레이어로 그려져 검은 상자가
-        뜬다. 미리볼 수 없는 값(외부 링크·PDF·드라이브 경로)은 아무것도 내지
-        않는다 — 깨진 미리보기는 없는 것보다 나쁘다.
+        미리보기는 이미지에만 붙인다. 영상 미리보기는 정보 없이 자리만 차지했고
+        (재생해 보기 전에는 검은 상자다), 링크·PDF·드라이브 경로는 애초에
+        미리볼 수 없다. 영상 확인은 공개 화면에서 한다.
       */}
       {value && (kind === 'thumbnail' || isImagePath(value)) ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt="" className="h-24 w-auto rounded border border-ink-200" />
-      ) : value && (kind === 'loop' || kind === 'video') ? (
-        <video src={value} className="h-24 w-auto rounded border border-ink-200" muted controls />
       ) : null}
     </div>
   );
