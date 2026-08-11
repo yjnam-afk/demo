@@ -145,35 +145,26 @@ export function TechDetail({
 
   const certified = tech.verification.level === 'third_party';
   /*
-    인증 수치와 자체 시험 수치를 가른다.
+    지표는 가르지 않는다. 평가는 목표 기준까지 포함해 한 몸이고, 그 기준
+    자체가 인증 시험과 이어져 있어 인증 수치와 자체 수치를 다른 구간에
+    세우면 관계가 끊긴다. 수치는 전부 성능 지표에 서고, 어떤 수치가 인증
+    시험 항목인지는 셀 안의 출처 칩이 가른다. 인증 구간은 숫자를 다시
+    세우지 않고 그 평가를 공인한 기관·시험명을 밝힌다.
 
-    인증에서 받은 숫자는 인증 구간에, 자체 시험 숫자는 성능 지표 구간에
-    선다. 한 구간에 섞으면 무게가 다른 두 숫자가 같은 줄에 서고, 인증
-    정보가 지표 칸 잔글씨로 흩어진다 — 두 구간은 내용까지 겹치지 않는다.
-  */
-  const isCertMetric = (metric: PublicTech['metrics'][number]) =>
-    Boolean(metric.source && /인증/.test(metric.source));
-  /*
-    인증 구간은 검증 수준이 제3자 인증일 때만 선다. 그 구간이 없는데
-    출처가 "…인증" 이라는 이유로 지표를 빼돌리면 숫자가 화면에서 통째로
-    사라진다 — 인증 구간이 없으면 모든 지표는 성능 지표에 남는다.
-  */
-  const certMetrics = certified ? tech.metrics.filter(isCertMetric) : [];
-  const fieldMetrics = certified
-    ? tech.metrics.filter((metric) => !isCertMetric(metric))
-    : tech.metrics;
-  /*
     인증 시험명은 별도 필드가 없어 인증 수치의 평가 데이터셋 이름에 실려
     있다("지능형 CCTV 성능시험인증(침입)" 등). 인증 출처가 붙은 지표의
     데이터셋을 모으면 인증 목록이 된다.
   */
-  const certNames = [
-    ...new Set(
-      certMetrics
-        .map((metric) => metric.dataset)
-        .filter((name): name is string => Boolean(name?.trim())),
-    ),
-  ];
+  const certNames = certified
+    ? [
+        ...new Set(
+          tech.metrics
+            .filter((metric) => metric.source && /인증/.test(metric.source))
+            .map((metric) => metric.dataset)
+            .filter((name): name is string => Boolean(name?.trim())),
+        ),
+      ]
+    : [];
 
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
@@ -183,7 +174,7 @@ export function TechDetail({
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
     tech.demo.type !== 'metric' ? { id: 'demo', label: '데모' } : null,
-    fieldMetrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
+    tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     certified ? { id: 'certification', label: '인증' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
     { id: 'composition', label: '기술 구성' },
@@ -339,13 +330,10 @@ export function TechDetail({
             지표 구간의 부속으로 두면 배지와 칩 사이에 묻힌다. 인증은 이
             사이트가 내세우는 신뢰 자산이라 제 이름의 자리를 갖는다.
           */}
-          {/*
-            4. 성능 지표 — 자체 시험 수치만 선다. 인증 수치는 아래 인증 구간에
-            있고, 같은 숫자를 두 구간에 두 번 세우지 않는다.
-          */}
-          {fieldMetrics.length > 0 ? (
+          {/* 4. 성능 지표 — 모든 수치가 여기 선다. 지표가 없는 기술은 블록 자체를 생략한다 */}
+          {tech.metrics.length > 0 ? (
             <Section id="metrics" title="성능 지표" tick={style.bar}>
-              <MetricStatGrid metrics={fieldMetrics} />
+              <MetricStatGrid metrics={tech.metrics} />
             </Section>
           ) : restricted ? (
             /*
@@ -360,66 +348,62 @@ export function TechDetail({
           ) : null}
 
           {/*
-            5. 인증 — 자체 시험 수치 뒤에 온다. 공인 수치가 수치 흐름의
-            끝을 맺어야 "우리 측정 → 제3자 확인" 순서로 읽힌다.
+            5. 인증 — 성능 지표 뒤에 온다. 위 평가를 공인한 제3자가 누구인지
+            밝히는 블록이라 "우리 측정 → 제3자 확인" 순서로 읽힌다.
+            숫자는 다시 세우지 않는다 — 수치는 전부 성능 지표에 있다.
           */}
           {certified ? (
             <Section id="certification" title="인증" tick={style.bar}>
-              {/*
-                인증서 패널 — 머리(기관·시험명)와 인증 수치를 한 카드로 묶는다.
-                수치가 머리와 같은 틀 안에 붙어야 "이 숫자가 그 인증의 결과"
-                라는 관계가 설명 없이 읽힌다.
-              */}
-              <div className="overflow-hidden rounded-lg border border-[var(--color-signal-ok)]/30">
-                <div className="bg-[var(--color-signal-ok-soft)] px-6 py-5">
-                  <div className="flex items-start gap-3.5">
-                    <span
-                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-signal-ok)]"
-                      aria-hidden
+              <div className="rounded-lg border border-[var(--color-signal-ok)]/30 bg-[var(--color-signal-ok-soft)] px-6 py-5">
+                <div className="flex items-start gap-3.5">
+                  <span
+                    className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-signal-ok)]"
+                    aria-hidden
+                  >
+                    <svg
+                      viewBox="0 0 16 16"
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
-                      <svg
-                        viewBox="0 0 16 16"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M3 8.5 6.5 12 13 4.5" />
-                      </svg>
-                    </span>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-sm font-medium text-[var(--color-signal-ok)]">
-                        <span>제3자 인증</span>
-                        {tech.verification.body ? (
-                          <>
-                            <span aria-hidden className="opacity-50">
-                              ·
-                            </span>
-                            <span>인증기관 {tech.verification.body}</span>
-                          </>
-                        ) : null}
-                      </div>
-                      {certNames.length > 0 ? (
-                        <div className="mt-1.5 flex flex-col gap-0.5">
-                          {certNames.map((name) => (
-                            <p
-                              key={name}
-                              className="text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl"
-                            >
-                              {name}
-                            </p>
-                          ))}
-                        </div>
+                      <path d="M3 8.5 6.5 12 13 4.5" />
+                    </svg>
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-sm font-medium text-[var(--color-signal-ok)]">
+                      <span>제3자 인증</span>
+                      {tech.verification.body ? (
+                        <>
+                          <span aria-hidden className="opacity-50">
+                            ·
+                          </span>
+                          <span>인증기관 {tech.verification.body}</span>
+                        </>
                       ) : null}
                     </div>
+                    {certNames.length > 0 ? (
+                      <div className="mt-1.5 flex flex-col gap-0.5">
+                        {certNames.map((name) => (
+                          <p
+                            key={name}
+                            className="text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl"
+                          >
+                            {name}
+                          </p>
+                        ))}
+                      </div>
+                    ) : null}
+                    {certNames.length > 0 ? (
+                      <p className="mt-2 text-sm text-ink-600">
+                        위 성능 지표 중 <span className="font-medium">인증</span> 표시가 붙은
+                        수치가 이 시험의 결과입니다.
+                      </p>
+                    ) : null}
                   </div>
                 </div>
-                {/* 인증에서 받은 수치 — 출처·시험명은 위 머리가 밝히므로 셀에서는 접는다 */}
-                {certMetrics.length > 0 ? (
-                  <MetricStatGrid metrics={certMetrics} flush certContext />
-                ) : null}
               </div>
             </Section>
           ) : null}

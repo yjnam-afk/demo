@@ -71,27 +71,12 @@ export function MetricStat({
  * 표가 담던 정보(목표·달성·달성률·판정·조건·데이터셋·출처)는 전부 셀 안에
  * 남는다. 특히 조건 단서는 값 바로 옆이다 — 떼어 놓으면 과장이 된다.
  */
-export function MetricStatGrid({
-  metrics,
-  flush = false,
-  certContext = false,
-}: {
-  metrics: AnyMetric[];
-  /** 다른 카드 안에 끼워 넣는 자리 — 바깥 테두리와 모서리를 카드에 맡긴다. */
-  flush?: boolean;
-  /**
-   * 인증 패널 안에서 렌더링될 때. 출처 칩과 데이터셋(=인증 시험명)은
-   * 패널 머리가 이미 밝히고 있으므로 셀에서 접는다. 조건 단서는 값의
-   * 전제라 어디서든 접지 않는다.
-   */
-  certContext?: boolean;
-}) {
+export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
   return (
     <div
       className={cn(
         // 셀 사이 실선은 gap-px 밑으로 비치는 배경으로 만든다. 선을 따로 긋지 않는다.
-        'grid gap-px bg-white/10',
-        flush ? '' : 'overflow-hidden rounded-lg border border-white/10',
+        'grid gap-px overflow-hidden rounded-lg border border-white/10 bg-white/10',
         metrics.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2',
       )}
     >
@@ -122,7 +107,7 @@ export function MetricStatGrid({
                 데이터셋 이름에 묻힌다 — 인증 수치와 자체 시험 수치는 무게가
                 다르고, 그 차이가 이 셀에서 읽혀야 한다.
               */}
-              {!certContext && metric.source?.trim() ? (
+              {metric.source?.trim() ? (
                 <span
                   className={cn(
                     'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
@@ -140,7 +125,7 @@ export function MetricStatGrid({
               ) : null}
             </div>
 
-            {!certContext && metric.dataset ? (
+            {metric.dataset ? (
               <div className="mt-3 border-t border-white/10 pt-2.5 text-xs text-ink-500">
                 데이터셋 · {metric.dataset}
               </div>
