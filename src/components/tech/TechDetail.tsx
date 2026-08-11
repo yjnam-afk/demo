@@ -12,6 +12,7 @@ import type { PublicTech } from '@/lib/domain/types';
 import { BRAND } from '@/lib/brand';
 import { accentStyle, cn } from '@/lib/ui/domain';
 import { isImagePath, isPdfPath } from '@/lib/media';
+import { driveIdFromPath, driveThumbnailUrl, driveViewUrl } from '@/lib/gdrive';
 
 function Section({
   id,
@@ -376,44 +377,85 @@ export function TechDetail({
                 </div>
               ) : null}
 
-              {/* 결과보고서 PDF — 브라우저 뷰어로 펼친다. A4 문서라 전체 폭을 쓴다. */}
-              {tech.resources.filter((resource) => isPdfPath(resource.url)).map((resource) => (
-                <figure
-                  key={resource.url}
-                  className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
-                >
-                  <object
-                    data={resource.url}
-                    type="application/pdf"
-                    className="block h-[560px] w-full sm:h-[680px]"
-                    aria-label={resource.label}
+              {/*
+                결과보고서 PDF.
+
+                드라이브 PDF 는 원문 주소가 다운로드로 떨어져 인라인 뷰어(object)에
+                걸 수 없다. 대신 드라이브가 만들어 주는 첫 페이지 썸네일을 그림으로
+                펼치고, 누르면 드라이브 뷰어에서 원문이 열린다. 업로드된 PDF 는
+                브라우저 내장 뷰어로 그대로 펼친다.
+              */}
+              {tech.resources.filter((resource) => isPdfPath(resource.url)).map((resource) => {
+                const driveId = driveIdFromPath(resource.url);
+
+                if (driveId) {
+                  return (
+                    <figure
+                      key={resource.url}
+                      className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
+                    >
+                      <a href={driveViewUrl(driveId)} target="_blank" rel="noopener">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={driveThumbnailUrl(driveId)}
+                          alt={resource.label}
+                          loading="lazy"
+                          className="mx-auto max-h-[680px] w-auto bg-ink-50"
+                        />
+                      </a>
+                      <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                        <span className="truncate">{resource.label}</span>
+                        <a
+                          href={driveViewUrl(driveId)}
+                          target="_blank"
+                          rel="noopener"
+                          className="shrink-0 text-ink-500 hover:text-ink-900"
+                        >
+                          원문 열기 ↗
+                        </a>
+                      </figcaption>
+                    </figure>
+                  );
+                }
+
+                return (
+                  <figure
+                    key={resource.url}
+                    className="mb-4 overflow-hidden rounded-lg border border-ink-200 bg-white"
                   >
-                    {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
-                    <div className="p-4">
+                    <object
+                      data={resource.url}
+                      type="application/pdf"
+                      className="block h-[560px] w-full sm:h-[680px]"
+                      aria-label={resource.label}
+                    >
+                      {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
+                      <div className="p-4">
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener"
+                          className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                        >
+                          <span className="truncate">{resource.label}</span>
+                          <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
+                        </a>
+                      </div>
+                    </object>
+                    <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                      <span className="truncate">{resource.label}</span>
                       <a
                         href={resource.url}
                         target="_blank"
                         rel="noopener"
-                        className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                        className="shrink-0 text-ink-500 hover:text-ink-900"
                       >
-                        <span className="truncate">{resource.label}</span>
-                        <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
+                        새 창에서 열기 ↗
                       </a>
-                    </div>
-                  </object>
-                  <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
-                    <span className="truncate">{resource.label}</span>
-                    <a
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener"
-                      className="shrink-0 text-ink-500 hover:text-ink-900"
-                    >
-                      새 창에서 열기 ↗
-                    </a>
-                  </figcaption>
-                </figure>
-              ))}
+                    </figcaption>
+                  </figure>
+                );
+              })}
 
               {tech.resources.some(
                 (resource) => !isImagePath(resource.url) && !isPdfPath(resource.url),
