@@ -41,10 +41,15 @@ export function DomainPillars({
         const isSelected = selected === domain;
 
         return (
+          {/*
+            scroll={false} 를 쓰지 않는다. 이 카드는 랜딩에도 서는데, 스크롤을
+            내린 채 누르면 카탈로그가 그 위치를 물려받아 중간부터 열린다.
+            페이지를 건너가는 이동은 꼭대기에서 시작해야 한다. (카탈로그 안
+            필터 칩들은 별개 컴포넌트라 계속 위치를 유지한다)
+          */}
           <Link
             key={domain}
             href={isSelected ? '/tech' : `/tech?domain=${domain}`}
-            scroll={false}
             className={cn(
               'group flex flex-col rounded-lg border bg-white p-5 transition-colors',
               isSelected ? style.border : 'border-ink-200 hover:border-ink-400',
