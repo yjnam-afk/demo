@@ -12,12 +12,14 @@ export const MEDIA_EXTENSIONS: Record<string, string> = {
   'image/svg+xml': 'svg',
   'video/mp4': 'mp4',
   'video/webm': 'webm',
+  // 관련 자료용 — 성능시험 결과서 같은 문서가 여기로 올라온다.
+  'application/pdf': 'pdf',
 };
 
 export const MEDIA_MAX_BYTES = 300 * 1024 * 1024;
 
 /** 업로드 대상 슬롯. 임의 경로에 쓰지 못하게 목록으로 묶는다. */
-export const MEDIA_KINDS = ['thumbnail', 'loop', 'video'] as const;
+export const MEDIA_KINDS = ['thumbnail', 'loop', 'video', 'resource'] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
 /**
@@ -25,4 +27,14 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
  * 서버가 토큰을 내주기 전에 이 규칙으로 경로를 검증한다 — 클라이언트가
  * data/ 같은 문서 경로에 쓰는 것을 막는 마지막 벽이다.
  */
-export const BLOB_UPLOAD_PATH = /^uploads\/[a-z0-9][a-z0-9-]{1,63}\/(thumbnail|loop|video)-\d+\.[a-z0-9]+$/;
+export const BLOB_UPLOAD_PATH = /^uploads\/[a-z0-9][a-z0-9-]{1,63}\/(thumbnail|loop|video|resource)-\d+\.[a-z0-9]+$/;
+
+/**
+ * 화면에 바로 펼쳐 보여줄 수 있는 이미지 경로인지.
+ *
+ * 관련 자료 중 이미지는 링크로 접어 두지 않고 상세 화면에 그대로 펼친다.
+ * 확장자로만 판별하므로 확장자 없는 경로(드라이브 링크 등)는 파일 취급된다.
+ */
+export function isImagePath(path: string): boolean {
+  return /\.(jpe?g|png|webp|svg|gif)(\?|#|$)/i.test(path);
+}

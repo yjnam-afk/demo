@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { TextInput } from './fields';
-import { MEDIA_EXTENSIONS } from '@/lib/media';
+import { MEDIA_EXTENSIONS, type MediaKind } from '@/lib/media';
 import { normalizeMediaPath } from '@/lib/gdrive';
 
 /**
@@ -18,7 +18,7 @@ export function MediaUpload({
   accept,
 }: {
   techId: string;
-  kind: 'thumbnail' | 'loop' | 'video';
+  kind: MediaKind;
   value: string;
   onChange: (path: string) => void;
   accept: string;

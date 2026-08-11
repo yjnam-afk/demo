@@ -11,6 +11,7 @@ import { pickHeadlineMetric } from '@/lib/domain/metric';
 import type { PublicTech } from '@/lib/domain/types';
 import { BRAND } from '@/lib/brand';
 import { accentStyle, cn } from '@/lib/ui/domain';
+import { isImagePath } from '@/lib/media';
 
 function Section({
   id,
@@ -338,22 +339,55 @@ export function TechDetail({
           {/* 7. 관련 자료 및 함께 쓰는 기술 */}
           {hasResources ? (
             <Section id="resources" title="관련 자료" tick={style.bar}>
-              {tech.resources.length > 0 ? (
+              {/*
+                이미지는 링크로 접어 두지 않고 그대로 펼친다 — 시험 성적서나
+                구성도는 열어 보게 하는 것보다 보여 주는 쪽이 빠르다.
+                파일과 외부 링크는 눌리는 버튼으로 남는다.
+              */}
+              {tech.resources.some((resource) => isImagePath(resource.url)) ? (
+                <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                  {tech.resources
+                    .filter((resource) => isImagePath(resource.url))
+                    .map((resource) => (
+                      <figure
+                        key={resource.url}
+                        className="overflow-hidden rounded-lg border border-ink-200 bg-white"
+                      >
+                        <a href={resource.url} target="_blank" rel="noreferrer noopener">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={resource.url}
+                            alt={resource.label}
+                            loading="lazy"
+                            className="w-full bg-ink-50"
+                          />
+                        </a>
+                        <figcaption className="border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
+                          {resource.label}
+                        </figcaption>
+                      </figure>
+                    ))}
+                </div>
+              ) : null}
+
+              {tech.resources.some((resource) => !isImagePath(resource.url)) ? (
                 /* 밑줄 글자는 본문에 묻힌다. 내려받을 수 있는 것은 눌리는 물건으로 보여야 한다. */
                 <ul className="grid gap-2 sm:grid-cols-2">
-                  {tech.resources.map((resource) => (
-                    <li key={resource.url}>
-                      <a
-                        href={resource.url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
-                      >
-                        <span className="truncate">{resource.label}</span>
-                        <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
-                      </a>
-                    </li>
-                  ))}
+                  {tech.resources
+                    .filter((resource) => !isImagePath(resource.url))
+                    .map((resource) => (
+                      <li key={resource.url}>
+                        <a
+                          href={resource.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                        >
+                          <span className="truncate">{resource.label}</span>
+                          <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
+                        </a>
+                      </li>
+                    ))}
                 </ul>
               ) : null}
 

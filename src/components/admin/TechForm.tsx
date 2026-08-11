@@ -666,7 +666,10 @@ export function TechForm({
         title="관련 자료 및 연계 기술"
         description="상세 화면의 '관련 자료' 블록에 표시됩니다. 자료와 연계 기술이 모두 비면 블록이 생략됩니다."
       >
-        <Field label="관련 자료">
+        <Field
+          label="관련 자료"
+          hint="이미지(jpg/png/webp)는 상세 화면에 바로 펼쳐지고, 그 외 파일과 링크는 버튼으로 나갑니다."
+        >
           <div className="flex flex-col gap-2">
             {draft.resources.map((resource, index) => {
               const update = (patch: Partial<typeof resource>) => {
@@ -682,12 +685,16 @@ export function TechForm({
                     onChange={(event) => update({ label: event.target.value })}
                     className="min-w-40 flex-1"
                   />
-                  <TextInput
-                    value={resource.url}
-                    placeholder="https://..."
-                    onChange={(event) => update({ url: event.target.value })}
-                    className="min-w-52 flex-1"
-                  />
+                  {/* 주소 입력과 파일 업로드를 겸한다. 이미지를 올리면 상세 화면에 펼쳐진다. */}
+                  <div className="min-w-52 flex-[2]">
+                    <MediaUpload
+                      techId={draft.id}
+                      kind="resource"
+                      accept="image/*,application/pdf"
+                      value={resource.url}
+                      onChange={(url) => update({ url })}
+                    />
+                  </div>
                   <label className="flex items-center gap-1.5 text-sm text-ink-600">
                     <input
                       type="checkbox"
