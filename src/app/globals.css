@@ -30,13 +30,17 @@
   --color-brand: #003c7f;
   --color-brand-bright: #6f9fd8;
 
-  /* 3축 구분색 — 밝은 배경용 */
+  /* 축 구분색 — 밝은 배경용 */
   /*
     축 강조색 팔레트. 축 자체는 관리자에서 만들지만 색은 이 목록에서만
     고른다 — 임의 hex 를 허용하면 채도 높은 색이 들어와 화면이 무너진다.
+
+    청색이 기준이다(인피닉 대표색이 파란색). 청색 계열을 셋(청·남·하늘)
+    두고 나머지는 그 채도 수준에 맞춰 억제한다. 목록을 늘릴 때는
+    lib/ui/domain.ts 와 lib/domain/enums.ts 를 함께 늘린다.
   */
-  --color-accent-blue: #3d5a80;
-  --color-accent-blue-soft: #eaeff5;
+  --color-accent-blue: #315e97;
+  --color-accent-blue-soft: #e9eff7;
   --color-accent-teal: #2f6f66;
   --color-accent-teal-soft: #e6f0ee;
   --color-accent-bronze: #7a5c3e;
@@ -45,13 +49,28 @@
   --color-accent-plum-soft: #f1ebef;
   --color-accent-slate: #4a5a67;
   --color-accent-slate-soft: #ecf0f3;
+  --color-accent-navy: #2f3f66;
+  --color-accent-navy-soft: #eaecf3;
+  --color-accent-sky: #2b7196;
+  --color-accent-sky-soft: #e6f0f5;
+  --color-accent-green: #40704a;
+  --color-accent-green-soft: #e9f1eb;
+  --color-accent-wine: #813c47;
+  --color-accent-wine-soft: #f5eaec;
+  --color-accent-indigo: #514b86;
+  --color-accent-indigo-soft: #edecf4;
 
-  /* 3축 구분색 — 어두운 배경용. 같은 색을 그대로 쓰면 대비가 무너진다. */
+  /* 축 구분색 — 어두운 배경용. 같은 색을 그대로 쓰면 대비가 무너진다. */
   --color-accent-blue-bright: #7ba3d0;
   --color-accent-teal-bright: #5faa9d;
   --color-accent-bronze-bright: #bf9a6a;
   --color-accent-plum-bright: #b089a6;
   --color-accent-slate-bright: #8fa3b3;
+  --color-accent-navy-bright: #8b9ccb;
+  --color-accent-sky-bright: #6fb4d4;
+  --color-accent-green-bright: #7fb98d;
+  --color-accent-wine-bright: #cc8b96;
+  --color-accent-indigo-bright: #a09ad2;
 
   --color-signal-ok: #2f6b4f;
   --color-signal-ok-soft: #e7f0eb;

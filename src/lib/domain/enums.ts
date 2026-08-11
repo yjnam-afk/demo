@@ -24,7 +24,23 @@ export type Domain = string;
  * 채도 높은 색이 들어와 화면이 무너진다. 값은 globals.css 의 CSS 변수와
  * 1:1 로 대응한다.
  */
-export const ACCENTS = ['blue', 'teal', 'bronze', 'plum', 'slate'] as const;
+/*
+ * 순서 규칙: 앞 다섯은 기존 축이 이미 쓰는 색이라 자리를 바꾸지 않는다
+ * (새 축의 기본색이 순서에서 나오므로, 순서가 바뀌면 기본 배정이 흔들린다).
+ * 첫 색이 청색인 것은 의도다 — 인피닉 대표색이 파란색이라 기본이 청색이 된다.
+ */
+export const ACCENTS = [
+  'blue',
+  'teal',
+  'bronze',
+  'plum',
+  'slate',
+  'navy',
+  'sky',
+  'green',
+  'wine',
+  'indigo',
+] as const;
 export type Accent = (typeof ACCENTS)[number];
 
 export const ACCENT_LABELS: Record<Accent, string> = {
@@ -33,6 +49,11 @@ export const ACCENT_LABELS: Record<Accent, string> = {
   bronze: '갈색',
   plum: '자주',
   slate: '회청',
+  navy: '남색',
+  sky: '하늘색',
+  green: '녹색',
+  wine: '와인',
+  indigo: '남보라',
 };
 
 export const VERIFICATION_LEVELS = ['third_party', 'self_test', 'in_development'] as const;
