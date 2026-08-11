@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { TechCard } from '@/components/tech/TechCard';
+import { TechRowList } from '@/components/tech/TechRow';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
@@ -143,10 +143,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
         {techs.length > 0 ? (
           <section className="border-t border-ink-200 py-14">
             <h2 className="text-xl font-semibold tracking-tight text-ink-900">기술</h2>
-            <div className="mt-6 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {techs.map((tech) => (
-                <TechCard key={tech.id} tech={tech} />
-              ))}
+            <div className="mt-2">
+              <TechRowList techs={techs} />
             </div>
           </section>
         ) : null}

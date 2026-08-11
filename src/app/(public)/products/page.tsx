@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ProductCard } from '@/components/site/ProductCard';
+import { ProductRow } from '@/components/site/ProductCard';
 import { BRAND } from '@/lib/brand';
 import { listPublicOfferings } from '@/lib/data/offerings';
 
@@ -38,10 +38,10 @@ export default async function ProductsPage() {
             공개된 제품이 없습니다.
           </div>
         ) : (
-          /* 열 수는 화면 폭으로만 정한다 — 제품 수가 늘어도 격자가 무너지지 않는다. */
-          <div className="grid auto-rows-fr grid-cols-1 gap-4 py-10 md:grid-cols-2 lg:grid-cols-3">
+          /* 행 목록 — 요약을 자르지 않는다. 기술 목록과 같은 리듬이다. */
+          <div className="py-6">
             {products.map((item) => (
-              <ProductCard key={item.offering.id} item={item} />
+              <ProductRow key={item.offering.id} item={item} />
             ))}
           </div>
         )}

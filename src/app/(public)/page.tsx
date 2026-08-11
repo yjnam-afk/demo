@@ -3,7 +3,7 @@ import { ContactCta } from '@/components/site/ContactCta';
 import { DomainPillars } from '@/components/site/DomainPillars';
 import { Hero } from '@/components/site/Hero';
 import { TrustBar } from '@/components/site/TrustBar';
-import { TechCard } from '@/components/tech/TechCard';
+import { TechRowList } from '@/components/tech/TechRow';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
 import { toPublicTech } from '@/lib/domain/publicView';
@@ -105,11 +105,9 @@ export default async function HomePage() {
                 ) : null
               }
             />
-            {/* 열 수는 화면 폭으로만 정한다. 대표 수가 3개든 4개든 무너지지 않는다. */}
-            <div className="mt-10 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {featured.map((tech) => (
-                <TechCard key={tech.id} tech={tech} />
-              ))}
+            {/* 행 목록 — 문제 문장을 자르지 않는다. 수치는 오른쪽 기둥에 선다. */}
+            <div className="mt-6">
+              <TechRowList techs={featured} />
             </div>
           </section>
         ) : null}

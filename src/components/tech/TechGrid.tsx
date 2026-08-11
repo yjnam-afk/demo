@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { TechCard } from './TechCard';
+import { TechRowList } from './TechRow';
 import type { PublicTech } from '@/lib/domain/types';
 
 /**
- * 카드 그리드.
+ * 기술 목록.
  *
- * 열 수는 화면 폭으로만 정하고 항목 수는 보지 않는다. 4건이든 80건이든
- * 같은 규칙으로 배치되므로 기술이 늘어도 레이아웃을 손댈 일이 없다.
+ * 행 목록이다. 카드 격자는 높이를 맞추려고 문제 문장을 잘랐는데, 그 문장이
+ * 이 사이트에서 가장 공들인 글이라 자르지 않는 쪽을 택했다. 항목 수와
+ * 무관하게 같은 규칙으로 쌓인다.
  */
 export function TechGrid({
   initialItems,
@@ -61,11 +62,7 @@ export function TechGrid({
 
   return (
     <div>
-      <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {items.map((tech) => (
-          <TechCard key={tech.id} tech={tech} />
-        ))}
-      </div>
+      <TechRowList techs={items} />
 
       <div className="mt-8 flex flex-col items-center gap-2">
         <p className="numeric text-xs text-ink-400">

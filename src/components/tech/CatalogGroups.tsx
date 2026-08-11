@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { TechCard } from './TechCard';
+import { TechRowList } from './TechRow';
 import type { ResolvedOffering } from '@/components/site/OfferingSection';
 import type { Industry, PublicTech } from '@/lib/domain/types';
 
@@ -93,10 +93,8 @@ export function IndustryGroup({
       ) : null}
 
       {techs.length > 0 ? (
-        <div className="mt-5 grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {techs.map((tech) => (
-            <TechCard key={tech.id} tech={tech} />
-          ))}
+        <div className="mt-2">
+          <TechRowList techs={techs} />
         </div>
       ) : (
         <p className="mt-5 text-sm text-ink-400">공개된 기술이 아직 없습니다.</p>
