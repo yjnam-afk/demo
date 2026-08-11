@@ -359,7 +359,7 @@ export function TechDetail({
                         key={resource.url}
                         className="overflow-hidden rounded-lg border border-ink-200 bg-white"
                       >
-                        <a href={resource.url} target="_blank" rel="noreferrer noopener">
+                        <a href={resource.url} target="_blank" rel="noopener">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={resource.url}
@@ -393,7 +393,7 @@ export function TechDetail({
                       <a
                         href={resource.url}
                         target="_blank"
-                        rel="noreferrer noopener"
+                        rel="noopener"
                         className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
                       >
                         <span className="truncate">{resource.label}</span>
@@ -406,7 +406,7 @@ export function TechDetail({
                     <a
                       href={resource.url}
                       target="_blank"
-                      rel="noreferrer noopener"
+                      rel="noopener"
                       className="shrink-0 text-ink-500 hover:text-ink-900"
                     >
                       새 창에서 열기 ↗
@@ -427,7 +427,7 @@ export function TechDetail({
                         <a
                           href={resource.url}
                           target="_blank"
-                          rel="noreferrer noopener"
+                          rel="noopener"
                           className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
                         >
                           <span className="truncate">{resource.label}</span>

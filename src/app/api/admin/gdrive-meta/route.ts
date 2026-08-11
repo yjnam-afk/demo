@@ -30,9 +30,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    /*
+      리퍼러를 실어 보낸다. 키에 HTTP 리퍼러 제한을 걸도록 안내했으므로,
+      서버발 요청도 사이트 주소를 리퍼러로 달아야 통과한다 — 없으면
+      "Requests from referer <empty> are blocked" 로 막힌다.
+    */
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files/${id}?fields=name,mimeType&key=${encodeURIComponent(key)}`,
-      { signal: AbortSignal.timeout(5_000), cache: 'no-store' },
+      {
+        signal: AbortSignal.timeout(5_000),
+        cache: 'no-store',
+        headers: { Referer: `${new URL(request.url).origin}/` },
+      },
     );
     if (!response.ok) {
       return NextResponse.json(
