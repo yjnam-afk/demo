@@ -33,7 +33,7 @@ type MetricDraft = {
   value: string;
   target: string;
   direction: MetricDirection | '';
-  condition: string;
+  conditions: string[];
   dataset: string;
   source: string;
   dataset_url: string;
@@ -93,7 +93,7 @@ function toDraft(tech: Tech): Draft {
       value: String(metric.value),
       target: metric.target === undefined ? '' : String(metric.target),
       direction: metric.direction,
-      condition: metric.condition ?? '',
+      conditions: metric.conditions ?? [],
       dataset: metric.dataset ?? '',
       source: metric.source ?? '',
       dataset_url: metric.dataset_url ?? '',
@@ -116,7 +116,7 @@ function toTech(draft: Draft): Tech {
       // 목표값은 선택 항목 — 비우면 지어내지 않고 없음으로 저장한다
       target: metric.target.trim() === '' ? undefined : Number(metric.target),
       direction: metric.direction as MetricDirection,
-      condition: metric.condition,
+      conditions: metric.conditions.map((c) => c.trim()).filter(Boolean),
       dataset: metric.dataset,
       source: metric.source,
       dataset_url: metric.dataset_url,
@@ -525,12 +525,12 @@ export function TechForm({
 
                 <Field
                   label="조건 단서"
-                  hint="목표치에 전제가 있으면 반드시 적으세요. 화면에서 값과 함께 노출됩니다."
+                  hint="값에 전제가 있으면 반드시 적으세요. 화면에서 값과 함께 노출됩니다. 시간대·카메라·날씨처럼 축이 다르면 한 줄씩 나누세요."
                 >
-                  <TextInput
-                    value={metric.condition}
+                  <TagList
+                    values={metric.conditions}
                     placeholder="40px 이상 객체 한정"
-                    onChange={(event) => update({ condition: event.target.value })}
+                    onChange={(conditions) => update({ conditions })}
                   />
                 </Field>
 
@@ -571,7 +571,7 @@ export function TechForm({
                   value: '',
                   target: '',
                   direction: '',
-                  condition: '',
+                  conditions: [],
                   dataset: '',
                   source: '',
                   dataset_url: '',

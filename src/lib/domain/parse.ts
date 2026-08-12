@@ -108,7 +108,12 @@ function parseMetrics(value: unknown): Metric[] {
           : undefined,
       // 방향은 기본값을 두지 않는다. 누락되면 저장을 막아 관리자가 반드시 고르게 한다.
       direction: pick(METRIC_DIRECTIONS, raw.direction, `지표 "${label}" 의 방향`),
-      condition: str(raw.condition) || undefined,
+      // 과거 데이터는 condition 단수 문자열이다. 첫 항목으로 흡수한다.
+      conditions: strList(raw.conditions).length
+        ? strList(raw.conditions)
+        : str(raw.condition)
+          ? [str(raw.condition)]
+          : [],
       dataset: str(raw.dataset) || undefined,
       source: str(raw.source) || undefined,
       dataset_url: str(raw.dataset_url) || undefined,

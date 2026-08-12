@@ -71,8 +71,8 @@ export function CompositionFlow({
                       {formatNumber(headline.value)}
                     </span>
                     {/* 조건 단서는 값과 떨어지지 않는다 */}
-                    {headline.condition?.trim() ? (
-                      <span className="text-ink-400">· {headline.condition}</span>
+                    {headline.conditions.length > 0 ? (
+                      <span className="text-ink-400">· {headline.conditions.join(' · ')}</span>
                     ) : null}
                   </span>
                 ) : null}

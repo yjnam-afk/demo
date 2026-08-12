@@ -18,19 +18,21 @@
         "value": 97,
         "target": 90,
         "direction": "higher",
-        "condition": "",
         "dataset": "지능형 CCTV 성능시험인증(침입)",
         "source": "KISA 인증",
-        "dataset_url": "http://10.100.110.20/datasets/kisa-intrusion"
+        "dataset_url": "http://10.100.110.20/datasets/kisa-intrusion",
+        "conditions": []
       },
       {
         "label": "미탐률",
         "value": 2.1,
         "target": 5,
         "direction": "lower",
-        "condition": "40px 이상 객체 한정",
         "dataset": "자체 수집 실외 통제선 데이터셋",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "40px 이상 객체 한정"
+        ]
       }
     ],
     "business": {
@@ -121,18 +123,22 @@
         "value": 5.8,
         "target": 7,
         "direction": "lower",
-        "condition": "500px 이상 객체 한정",
         "dataset": "ShanghaiTech Part A + 자체 수집",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "500px 이상 객체 한정"
+        ]
       },
       {
         "label": "처리 속도",
         "value": 32,
         "target": 30,
         "direction": "higher",
-        "condition": "FHD 입력, GPU 1장 기준",
         "dataset": "자체 벤치마크",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "FHD 입력, GPU 1장 기준"
+        ]
       }
     ],
     "business": {
@@ -266,9 +272,11 @@
         "value": 0.11,
         "target": 0.15,
         "direction": "lower",
-        "condition": "실측 관측점 32개소 기준",
         "dataset": "2024 호우 실측 데이터",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "실측 관측점 32개소 기준"
+        ]
       }
     ],
     "business": {
@@ -342,10 +350,10 @@
         "value": 15.42,
         "target": 17.6,
         "direction": "lower",
-        "condition": "",
         "dataset": "자체 구축 합성-실사 쌍 데이터셋",
         "source": "자체 시험",
-        "dataset_url": "http://10.100.110.20/datasets/photoreal"
+        "dataset_url": "http://10.100.110.20/datasets/photoreal",
+        "conditions": []
       }
     ],
     "business": {
@@ -405,18 +413,22 @@
         "value": 96.4,
         "target": 95,
         "direction": "higher",
-        "condition": "주간 실외 FHD 기준",
         "dataset": "자체 수집 관제 영상 120시간",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "주간 실외 FHD 기준"
+        ]
       },
       {
         "label": "요약 처리 시간",
         "value": 4.2,
         "target": 6,
         "direction": "lower",
-        "condition": "1시간 분량 입력, GPU 1장 기준",
         "dataset": "자체 벤치마크",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "1시간 분량 입력, GPU 1장 기준"
+        ]
       }
     ],
     "business": {
@@ -477,18 +489,22 @@
         "value": 99.2,
         "target": 99,
         "direction": "higher",
-        "condition": "30px 이상 얼굴 한정",
         "dataset": "자체 구축 주행 영상 비식별화 셋",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "30px 이상 얼굴 한정"
+        ]
       },
       {
         "label": "미검출률",
         "value": 0.8,
         "target": 1,
         "direction": "lower",
-        "condition": "30px 이상 얼굴 한정",
         "dataset": "자체 구축 주행 영상 비식별화 셋",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "30px 이상 얼굴 한정"
+        ]
       }
     ],
     "business": {
@@ -547,18 +563,22 @@
         "value": 94.7,
         "target": 90,
         "direction": "higher",
-        "condition": "주야간·강우·강설 4종 분류",
         "dataset": "자체 수집 기상 조건별 영상",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "주야간·강우·강설 4종 분류"
+        ]
       },
       {
         "label": "전환 지연",
         "value": 1.8,
         "target": 3,
         "direction": "lower",
-        "condition": "판정 시점부터 신규 모델 첫 추론까지",
         "dataset": "자체 벤치마크",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "판정 시점부터 신규 모델 첫 추론까지"
+        ]
       }
     ],
     "business": {
@@ -618,9 +638,11 @@
         "value": 3.6,
         "target": 3,
         "direction": "lower",
-        "condition": "합성 30% 혼합 학습, mAP 기준",
         "dataset": "자체 구축 주행 데이터셋",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "합성 30% 혼합 학습, mAP 기준"
+        ]
       }
     ],
     "business": {
@@ -679,9 +701,11 @@
         "value": 88.1,
         "target": 90,
         "direction": "higher",
-        "condition": "인쇄 문서 스캔본 기준",
         "dataset": "자체 구축 정비 문서 셋",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "인쇄 문서 스캔본 기준"
+        ]
       }
     ],
     "business": {
@@ -738,18 +762,22 @@
         "value": 87.5,
         "target": 85,
         "direction": "higher",
-        "condition": "회전기기 대상, 7일 전 경보 기준",
         "dataset": "고객사 2개소 운전 이력 3년",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "회전기기 대상, 7일 전 경보 기준"
+        ]
       },
       {
         "label": "오경보율",
         "value": 6.2,
         "target": 10,
         "direction": "lower",
-        "condition": "회전기기 대상",
         "dataset": "고객사 2개소 운전 이력 3년",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "회전기기 대상"
+        ]
       }
     ],
     "business": {
@@ -859,18 +887,22 @@
         "value": 93.8,
         "target": 90,
         "direction": "higher",
-        "condition": "주간 주행, 표지판·신호등 대상",
         "dataset": "자체 수집 주행 데이터 1,200km",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "주간 주행, 표지판·신호등 대상"
+        ]
       },
       {
         "label": "위치 오차",
         "value": 0.24,
         "target": 0.3,
         "direction": "lower",
-        "condition": "RTK 보정 적용 구간",
         "dataset": "자체 수집 주행 데이터 1,200km",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "RTK 보정 적용 구간"
+        ]
       }
     ],
     "business": {
@@ -930,9 +962,11 @@
         "value": 82.4,
         "target": 85,
         "direction": "higher",
-        "condition": "상위 20% 위험 등급 구간 기준",
         "dataset": "2019~2024 산사태 발생 이력",
-        "source": "자체 시험"
+        "source": "자체 시험",
+        "conditions": [
+          "상위 20% 위험 등급 구간 기준"
+        ]
       }
     ],
     "business": {

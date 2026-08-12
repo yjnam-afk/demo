@@ -27,8 +27,12 @@ export interface Metric {
    * 낮을수록 좋은 지표를 'higher' 로 잘못 판정하면 초과 달성이 미달로 표시된다.
    */
   direction: MetricDirection;
-  /** "40px 이상 객체 한정" 같은 목표치의 전제. 값 옆에 항상 함께 노출한다. */
-  condition?: string;
+  /**
+   * "40px 이상 객체 한정" 같은 값의 전제들. 값 옆에 항상 함께 노출한다.
+   * 시험 조건이 여러 축(시간대·카메라·날씨…)이면 한 줄씩 나눠 담는다 —
+   * 한 문자열에 구분자로 이어 붙이면 화면이 줄바꿈 단위를 정할 수 없다.
+   */
+  conditions: string[];
   dataset?: string;
   source?: string;
   /** 평가 데이터 원본 링크 — 내부 전용. 외부 뷰에서 제거된다. */

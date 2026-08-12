@@ -103,9 +103,11 @@ export function TechRow({ tech }: { tech: PublicTech }) {
                 <span className="text-xs text-ink-500">목표 {evaluated.targetText}</span>
               ) : null}
             </div>
-            {/* 조건 단서 — 값과 떨어지지 않는다 */}
-            {headline.condition?.trim() ? (
-              <div className="mt-0.5 text-xs text-ink-400">{headline.condition}</div>
+            {/* 조건 단서 — 값과 떨어지지 않는다. 좁은 기둥이라 한 줄로 잇는다 */}
+            {headline.conditions.length > 0 ? (
+              <div className="mt-0.5 text-xs text-ink-400">
+                {headline.conditions.join(' · ')}
+              </div>
             ) : null}
           </>
         ) : (

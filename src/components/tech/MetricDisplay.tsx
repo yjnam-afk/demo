@@ -24,9 +24,18 @@ function AchievementMark({ achieved }: { achieved: boolean }) {
  * 지표 값을 렌더링하는 모든 경로가 이 컴포넌트를 함께 부르도록 배치한다.
  * "목표 90 이상"만 떼어 보여주면 "40px 이상 객체 한정" 같은 전제가 빠져 과장이 된다.
  */
-function Condition({ text }: { text?: string }) {
-  if (!text?.trim()) return null;
-  return <span className="text-xs text-ink-500">· {text}</span>;
+function Condition({ items }: { items: string[] }) {
+  const kept = items.filter((t) => t.trim());
+  if (kept.length === 0) return null;
+  return (
+    <>
+      {kept.map((text) => (
+        <span key={text} className="text-xs text-ink-500">
+          · {text}
+        </span>
+      ))}
+    </>
+  );
 }
 
 /** 카드·랜딩에서 크게 노출하는 대표 수치. 숫자가 화면에서 가장 먼저 읽혀야 한다. */
@@ -56,7 +65,7 @@ export function MetricStat({
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
         {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
-        <Condition text={metric.condition} />
+        <Condition items={metric.conditions} />
       </div>
     </div>
   );
@@ -121,10 +130,17 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   {metric.source}
                 </span>
               ) : null}
-              {/* 조건 단서 — 값과 떨어지지 않는다. 어두운 판이라 밝은 회색으로 올린다. */}
-              {metric.condition?.trim() ? (
-                <span className="text-xs text-ink-400">· {metric.condition}</span>
-              ) : null}
+              {/*
+                조건 단서 — 값과 떨어지지 않는다. 어두운 판이라 밝은 회색으로
+                올린다. 단서가 여러 개면 각각이 한 덩어리로 줄바꿈된다.
+              */}
+              {metric.conditions
+                .filter((c) => c.trim())
+                .map((c) => (
+                  <span key={c} className="text-xs text-ink-400">
+                    · {c}
+                  </span>
+                ))}
             </div>
 
             {metric.dataset ? (
