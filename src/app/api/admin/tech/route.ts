@@ -59,6 +59,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `이미 존재하는 id 입니다: ${incomingId}` }, { status: 409 });
     }
 
+    /*
+     * 생성 시 id 가 비어 있으면 서버가 만든다.
+     *
+     * 국문 기술명으로는 슬러그를 만들 수 없어 관리자가 매번 영문 id 를
+     * 지어야 했다. 영문명이 있으면 그 슬러그를 쓰고(겹치면 -2, -3…),
+     * 없으면 빈 순번(tech-N)을 찾는다. 옛 id 목록(previous_ids)과도
+     * 겹치지 않게 한다 — 겹치면 예전 링크가 엉뚱한 기술로 넘어간다.
+     */
+    if (body.mode === 'create' && !incomingId) {
+      const taken = async (id: string) =>
+        Boolean((await repo.get(id)) ?? (await repo.findByPreviousId(id)));
+
+      const nameEn = (body.tech as { name_en?: unknown } | undefined)?.name_en;
+      const base =
+        typeof nameEn === 'string'
+          ? nameEn
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .slice(0, 40)
+              .replace(/-+$/g, '')
+          : '';
+
+      let generated = '';
+      if (base && /^[a-z0-9][a-z0-9-]{1,63}$/.test(base)) {
+        generated = base;
+        for (let n = 2; await taken(generated); n += 1) generated = `${base}-${n}`;
+      } else {
+        let n = 1;
+        while (await taken(`tech-${n}`)) n += 1;
+        generated = `tech-${n}`;
+      }
+      (body.tech as { id?: string }).id = generated;
+    }
+
     // 대분류는 마스터 데이터라 parse 가 혼자 검증할 수 없다. 등록된 축
     // 목록을 넘겨 임의 문자열이 들어오는 것을 막는다.
     const allowedDomains = (await repo.listDomains()).map((d) => d.id);

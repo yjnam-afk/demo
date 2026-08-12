@@ -276,18 +276,18 @@ export function TechForm({
         <Row>
           <Field
             label="기술 id"
-            required
+            required={Boolean(existing)}
             hint={
               existing
                 ? draft.id !== existing.id
                   ? `주소가 /tech/${draft.id} 로 바뀝니다. 제품 구성과 연계 기술은 함께 옮겨지고, 예전 주소 /tech/${existing.id} 로 들어와도 새 주소로 연결됩니다.`
                   : '바꾸면 주소가 함께 바뀝니다. 예전 주소로 들어온 방문자는 새 주소로 연결됩니다.'
-                : '영문 소문자·숫자·하이픈 (URL 에 쓰입니다)'
+                : '비우면 저장할 때 자동으로 부여됩니다(영문명 슬러그 또는 순번). 파일 업로드 버튼을 쓰려면 id 가 필요하니, 직접 정하거나 저장 후 이어서 올리세요.'
             }
           >
             <TextInput
               value={draft.id}
-              placeholder="intrusion-detection"
+              placeholder="비워 두면 자동 부여"
               onChange={(event) => set({ id: event.target.value })}
             />
           </Field>
