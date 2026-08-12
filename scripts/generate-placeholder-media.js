@@ -69,7 +69,8 @@ async function renderFrames(page, scene, variant, dir) {
       ([s, t, compact]) => {
         const c = document.getElementById('c');
         const ctx = c.getContext('2d');
-        window.SCENES[s](ctx, c.width, c.height, t, { compact });
+        // 카메라 장면은 광학 파이프라인(블러·그레인·블룸)을 거친다
+        window.renderScene(s, ctx, c.width, c.height, t, { compact });
         return c.toDataURL('image/png').slice('data:image/png;base64,'.length);
       },
       [scene, i / total, variant.compact],

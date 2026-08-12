@@ -698,7 +698,7 @@ function cctvTexture(ctx, W, H, t) {
   }
   const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H * 0.95);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.4)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.26)');
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, W, H);
 }
@@ -2213,4 +2213,96 @@ const SCENES = {
   },
 };
 
-if (typeof window !== 'undefined') window.SCENES = SCENES;
+/* ── 카메라 광학 파이프라인 ──────────────────────────────────────────
+   벡터 그림이 "그림" 으로 읽히는 첫 번째 이유는 픽셀까지 쨍한 윤곽선이다.
+   실제 카메라 영상은 렌즈 소프트닝·센서 노이즈·압축이 그 선을 뭉갠다.
+   장면을 오프스크린에 그린 뒤 이 파이프라인을 통과시켜 "촬영된 화면" 으로
+   바꾼다. 도식 장면(디지털 트윈·침수 시뮬레이션)은 카메라가 아니므로 제외. */
+
+const CAMERA_SCENES = new Set([
+  'intrusion', 'loitering', 'zoneReentry', 'bagObject', 'concealedHand',
+  'falldown', 'sittingFloor', 'peopleCounting', 'cameraGaze', 'venueFire',
+  'intrusionRawA', 'intrusionRawB',
+]);
+
+/** 센서 그레인 — 매 프레임 다른 자리에 밝고 어두운 점을 흩뿌린다. */
+function sensorGrain(ctx, W, H, t) {
+  const S = scaleOf(H);
+  const rand = (i) => {
+    const v = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  const seed = Math.floor(t * 150) * 97;
+  for (let i = 0; i < 650; i++) {
+    const a = 0.02 + 0.055 * rand(seed + i * 3.7);
+    ctx.fillStyle = rand(seed + i * 1.3) > 0.5
+      ? `rgba(255,255,255,${a.toFixed(3)})`
+      : `rgba(0,0,0,${a.toFixed(3)})`;
+    const sz = (0.9 + rand(seed + i * 2.1) * 1.7) * S;
+    ctx.fillRect(rand(seed + i) * W, rand(seed + i * 7.7) * H, sz, sz);
+  }
+  // 간헐적 수평 노이즈 밴드 — 아날로그 전송 흔적
+  if (rand(seed * 1.7) > 0.85) {
+    ctx.fillStyle = 'rgba(255,255,255,0.045)';
+    ctx.fillRect(0, rand(seed * 2.3) * H, W, 2.4 * S);
+  }
+}
+
+function renderScene(name, ctx, W, H, t, opts) {
+  const sceneFn = SCENES[name];
+  if (!CAMERA_SCENES.has(name) || typeof document === 'undefined') {
+    sceneFn(ctx, W, H, t, opts);
+    return;
+  }
+
+  if (!renderScene._os) renderScene._os = document.createElement('canvas');
+  const os = renderScene._os;
+  const c = ctx.canvas;
+  if (os.width !== c.width || os.height !== c.height) {
+    os.width = c.width;
+    os.height = c.height;
+  }
+  const octx = os.getContext('2d');
+  octx.save();
+  sceneFn(octx, W, H, t, opts);
+  octx.restore();
+
+  const S = scaleOf(H);
+
+  // 1) 렌즈+노출 — 미세 블러가 벡터 윤곽을 죽이고, 올린 노출이 야간 CCTV 의
+  //    "밝게 끌어올린 중간 회색" 을 만든다. 어두운 원장면을 그대로 두면
+  //    실사가 아니라 그냥 어두운 그림으로 읽힌다.
+  ctx.save();
+  ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.42) brightness(1.45) contrast(0.87)`;
+  ctx.drawImage(os, 0, 0);
+  ctx.restore();
+  ctx.filter = 'none';
+
+  // 2) 블랙 리프트 — 실제 카메라 영상에 순수한 검정은 없다
+  ctx.fillStyle = 'rgba(152,162,174,0.10)';
+  ctx.fillRect(0, 0, W, H);
+
+  // 3) 하이라이트 블룸 — 조명·밝은 면이 번진다
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha = 0.15;
+  ctx.filter = `blur(${(6 * S).toFixed(1)}px) brightness(1.3) saturate(0.7)`;
+  ctx.drawImage(os, 0, 0);
+  ctx.restore();
+  ctx.filter = 'none';
+
+  // 4) 센서 그레인
+  sensorGrain(ctx, W, H, t);
+
+  // 5) 노출 흔들림 — 자동 노출이 미세하게 출렁인다
+  const flick = Math.sin(t * 47.1) * 0.5 + Math.sin(t * 89.3) * 0.5;
+  ctx.fillStyle = flick > 0
+    ? `rgba(255,255,255,${(0.012 * flick).toFixed(4)})`
+    : `rgba(0,0,0,${(-0.015 * flick).toFixed(4)})`;
+  ctx.fillRect(0, 0, W, H);
+}
+
+if (typeof window !== 'undefined') {
+  window.SCENES = SCENES;
+  window.renderScene = renderScene;
+}
