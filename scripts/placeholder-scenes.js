@@ -117,9 +117,9 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   /*
     인체 비례(약 7.5등신) 실루엣.
      - 엉덩이-무릎-발목 / 어깨-팔꿈치-손 2관절 사슬: 걸을 때 무릎·팔꿈치가 굽는다
-     - 허벅지보다 정강이가 가늘고, 발에는 신발이 있고, 팔 끝에는 손이 있다
-     - 머리는 머리카락 층 + 살색 얼굴: "사람" 으로 읽히는 가장 큰 단서다
-     - 보행 바운스: 다리가 벌어진 순간 몸이 내려간다 — 미끄러지는 느낌을 없앤다
+     - 골반 블록이 상체와 다리를 잇고, 상체는 가슴 쪽이 앞으로 나온 옆모습이다
+     - 머리는 머리카락 + 얼굴 + 코: 옆얼굴로 읽히는 최소 구성
+     - 보행 바운스와 상체 앞기울임: 걷는 몸의 리듬
      - 먼 쪽 팔다리는 어두운 톤(원근), 상체에는 좌우 명암(부피)
   */
   ctx.save();
@@ -132,7 +132,10 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.ellipse(x, y + h * 0.012, h * 0.2, h * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const drop = Math.abs(Math.sin(phase)) * h * 0.018 * Math.min(1, stride);
+  const walkAmount = Math.min(1, stride);
+  const drop = Math.abs(Math.sin(phase)) * h * 0.018 * walkAmount;
+  // 걸을 때 상체가 진행 방향으로 살짝 기운다 — 어깨 높이 좌표를 앞으로 민다
+  const leanX = facing * h * 0.026 * walkAmount;
   const hipY = y - h * 0.5 + drop;
   const shoulderY = y - h * 0.79 + drop;
   const thigh = h * 0.25;
@@ -171,7 +174,7 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   const arm = (p, color, width, handColor) => {
     const swing = Math.sin(p) * 0.42 * stride;
-    const sx = x + facing * h * 0.005;
+    const sx = x + leanX + facing * h * 0.005;
     const sy = shoulderY + h * 0.02;
     const ex = sx + facing * Math.sin(swing) * upperArm;
     const ey = sy + Math.cos(swing) * upperArm;
@@ -182,12 +185,16 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
     ctx.beginPath();
     ctx.moveTo(sx, sy);
     ctx.lineTo(ex, ey);
+    ctx.stroke();
+    // 팔뚝은 위팔보다 가늘다
+    ctx.lineWidth = width * 0.82;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
     ctx.lineTo(hx, hy);
     ctx.stroke();
-    // 손
     ctx.fillStyle = handColor;
     ctx.beginPath();
-    ctx.arc(hx, hy + h * 0.012, h * 0.024, 0, Math.PI * 2);
+    ctx.arc(hx, hy + h * 0.012, h * 0.023, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -196,23 +203,35 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   leg(phase + Math.PI, -h * 0.016, c.back);
   leg(phase, h * 0.016, c.pants);
 
-  /* 몸통 — 어깨가 넓고 허리로 좁아진다. 같은 경로에 명암을 겹쳐 부피를 만든다. */
+  // 골반 — 상체와 다리를 잇는 엉덩이 블록. 없으면 다리가 판에서 돋아난다.
+  ctx.fillStyle = c.pants;
+  ctx.beginPath();
+  ctx.roundRect(x - h * 0.062, hipY - h * 0.032, h * 0.124, h * 0.078, h * 0.03);
+  ctx.fill();
+
+  /* 상체 — 어깨는 승모근 경사, 가슴 쪽이 등보다 앞으로 나온 옆모습.
+     같은 경로에 명암을 겹쳐 부피를 만든다. */
+  const front = facing;
   const torso = () => {
-    // 어깨는 목에서 바깥으로 흘러내린다(승모근 경사). 어깨 끝이 목보다
-    // 높거나 각지면 뽕 들어간 정장처럼 읽힌다.
     ctx.beginPath();
-    ctx.moveTo(x - h * 0.086, shoulderY + h * 0.012);
-    ctx.quadraticCurveTo(x - h * 0.04, shoulderY - h * 0.018, x, shoulderY - h * 0.02);
-    ctx.quadraticCurveTo(x + h * 0.04, shoulderY - h * 0.018, x + h * 0.086, shoulderY + h * 0.012);
-    ctx.quadraticCurveTo(x + h * 0.084, hipY - h * 0.14, x + h * 0.064, hipY + h * 0.02);
-    ctx.lineTo(x - h * 0.064, hipY + h * 0.02);
-    ctx.quadraticCurveTo(x - h * 0.084, hipY - h * 0.14, x - h * 0.086, shoulderY + h * 0.012);
+    ctx.moveTo(x + leanX - h * 0.084, shoulderY + h * 0.012);
+    ctx.quadraticCurveTo(x + leanX - h * 0.04, shoulderY - h * 0.018, x + leanX, shoulderY - h * 0.02);
+    ctx.quadraticCurveTo(x + leanX + h * 0.04, shoulderY - h * 0.018, x + leanX + h * 0.084, shoulderY + h * 0.012);
+    // 앞면(진행 방향) — 가슴이 등보다 조금 더 나온다
+    ctx.quadraticCurveTo(
+      x + leanX * 0.5 + h * 0.09 + front * h * 0.012,
+      shoulderY + h * 0.12,
+      x + h * 0.058,
+      hipY - h * 0.015,
+    );
+    ctx.lineTo(x - h * 0.058, hipY - h * 0.015);
+    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.09, shoulderY + h * 0.12, x + leanX - h * 0.084, shoulderY + h * 0.012);
     ctx.closePath();
   };
   torso();
   ctx.fillStyle = c.jacket;
   ctx.fill();
-  const shade = ctx.createLinearGradient(x - facing * h * 0.086, 0, x + facing * h * 0.086, 0);
+  const shade = ctx.createLinearGradient(x - facing * h * 0.084, 0, x + facing * h * 0.084, 0);
   shade.addColorStop(0, 'rgba(0,0,0,0.16)');
   shade.addColorStop(0.55, 'rgba(0,0,0,0)');
   shade.addColorStop(1, 'rgba(255,255,255,0.1)');
@@ -222,18 +241,15 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   // 목
   ctx.strokeStyle = c.head;
-  ctx.lineWidth = h * 0.04;
+  ctx.lineWidth = h * 0.038;
   ctx.beginPath();
-  ctx.moveTo(x + facing * h * 0.012, shoulderY + h * 0.004);
-  ctx.lineTo(x + facing * h * 0.022, shoulderY - h * 0.042);
+  ctx.moveTo(x + leanX + facing * h * 0.012, shoulderY + h * 0.004);
+  ctx.lineTo(x + leanX + facing * h * 0.024, shoulderY - h * 0.042);
   ctx.stroke();
 
-  /* 머리 — 머리카락 층 위에 얼굴을 진행 방향으로 조금 치우쳐 얹는다.
-     뒤통수·정수리에 머리카락 띠가 남아 옆얼굴로 읽힌다. */
-  const hx = x + facing * h * 0.026;
+  /* 머리 — 머리카락 층 + 앞아래 얼굴 + 코끝. */
+  const hx = x + leanX + facing * h * 0.028;
   const hy = shoulderY - h * 0.103 + drop * 0.3;
-  // 머리 전체를 머리카락색으로 깔고, 얼굴은 앞아래 사분면에만 얹는다.
-  // 얼굴이 머리를 다 덮으면 머리카락이 사라져 마네킹이 된다.
   ctx.fillStyle = c.hair;
   ctx.beginPath();
   ctx.ellipse(hx, hy, h * 0.06, h * 0.071, facing * 0.06, 0, Math.PI * 2);
@@ -245,6 +261,10 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.fillStyle = c.head;
   ctx.beginPath();
   ctx.ellipse(hx + facing * h * 0.03, hy + h * 0.026, h * 0.034, h * 0.044, facing * 0.1, 0, Math.PI * 2);
+  ctx.fill();
+  // 코끝 — 옆얼굴을 만드는 작은 돌출
+  ctx.beginPath();
+  ctx.arc(hx + facing * h * 0.063, hy + h * 0.026, h * 0.012, 0, Math.PI * 2);
   ctx.fill();
 
   // 가까운 팔 — 몸통 위에 얹힌다
@@ -277,51 +297,197 @@ function lyingFigure(ctx, { x, y, h, tone }) {
 }
 
 /** 무릎을 세우고 바닥에 앉은 자세 — 주저앉음 장면 */
-function sittingFigure(ctx, { x, y, h, facing, tone }) {
+function sittingFigure(ctx, { x, y, h, facing, tone, k = 1 }) {
+  /*
+    바닥에 앉은/앉는 중인 자세. k 0 = 서 있음 → 1 = 완전히 앉음.
+    키를 줄여 앉히면 사람이 작아지는 것으로 읽히므로, 서 있는 관절에서
+    앉은 관절로 보간해 엉덩이가 내려가고 무릎이 앞으로 올라오게 그린다.
+    머리·골반·신발 구성은 걷는 인물(walker)과 같다.
+  */
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
+  const f = facing;
+  const L = (a, b) => a + (b - a) * k;
+
   ctx.save();
   ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath();
-  ctx.ellipse(x, y + h * 0.01, h * 0.24, h * 0.05, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + f * h * 0.05 * k, y + h * 0.01, h * (0.2 + 0.06 * k), h * 0.05, 0, 0, Math.PI * 2);
   ctx.fill();
-  const hipY = y - h * 0.14;
-  const shoulderY = y - h * 0.46;
-  ctx.strokeStyle = c.pants;
-  ctx.lineWidth = h * 0.075;
+
+  const hip = { x: x - f * h * L(0, 0.05), y: y - h * L(0.5, 0.08) };
+  const sho = { x: x - f * h * L(-0.01, 0.03), y: y - h * L(0.79, 0.47) };
+
+  const leg = (off, color) => {
+    const knee = { x: x + f * h * (L(0.02, 0.12) + off), y: y - h * L(0.26, 0.29) };
+    const ank = { x: x + f * h * (L(0.02, 0.22) + off), y: y - h * 0.025 };
+    ctx.strokeStyle = color;
+    ctx.lineWidth = h * 0.075;
+    ctx.beginPath();
+    ctx.moveTo(hip.x, hip.y);
+    ctx.lineTo(knee.x, knee.y);
+    ctx.stroke();
+    ctx.lineWidth = h * 0.052;
+    ctx.beginPath();
+    ctx.moveTo(knee.x, knee.y);
+    ctx.lineTo(ank.x, ank.y);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(ank.x - (f > 0 ? h * 0.02 : h * 0.075), ank.y - h * 0.014, h * 0.095, h * 0.028, h * 0.012);
+    ctx.fill();
+    return knee;
+  };
+  leg(-0.03, c.back);
+  const kneeN = leg(0, c.pants);
+
+  // 골반
+  ctx.fillStyle = c.pants;
   ctx.beginPath();
-  ctx.moveTo(x - facing * h * 0.04, hipY);
-  ctx.lineTo(x + facing * h * 0.17, y - h * 0.3);
-  ctx.lineTo(x + facing * h * 0.21, y);
-  ctx.stroke();
-  ctx.strokeStyle = c.back;
-  ctx.beginPath();
-  ctx.moveTo(x - facing * h * 0.02, hipY);
-  ctx.lineTo(x + facing * h * 0.13, y - h * 0.26);
-  ctx.lineTo(x + facing * h * 0.16, y);
-  ctx.stroke();
+  ctx.roundRect(hip.x - h * 0.062, hip.y - h * 0.035, h * 0.124, h * 0.08, h * 0.03);
+  ctx.fill();
+
+  // 상체 — 엉덩이→어깨 방향을 따라 세운 사다리꼴
+  const dx = sho.x - hip.x;
+  const dy = sho.y - hip.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const wTop = h * 0.082;
+  const wBot = h * 0.064;
   ctx.fillStyle = c.jacket;
   ctx.beginPath();
-  ctx.moveTo(x - h * 0.1 + facing * h * 0.02, shoulderY);
-  ctx.lineTo(x + h * 0.08 + facing * h * 0.04, shoulderY + h * 0.02);
-  ctx.lineTo(x + h * 0.06, hipY + h * 0.03);
-  ctx.lineTo(x - h * 0.08, hipY + h * 0.03);
+  ctx.moveTo(hip.x + nx * wBot, hip.y + ny * wBot);
+  ctx.lineTo(sho.x + nx * wTop, sho.y + ny * wTop);
+  ctx.quadraticCurveTo(sho.x + f * h * 0.004, sho.y - h * 0.024, sho.x - nx * wTop, sho.y - ny * wTop);
+  ctx.lineTo(hip.x - nx * wBot, hip.y - ny * wBot);
   ctx.closePath();
   ctx.fill();
+
+  // 팔 — 손이 무릎으로 내려간다
+  const elb = { x: L(sho.x + f * h * 0.015, x + f * h * 0.06), y: y - h * L(0.62, 0.33) };
+  const hand = { x: L(sho.x + f * h * 0.02, kneeN.x), y: y - h * L(0.46, 0.3) };
   ctx.strokeStyle = c.arm;
-  ctx.lineWidth = h * 0.05;
+  ctx.lineWidth = h * 0.048;
   ctx.beginPath();
-  ctx.moveTo(x + facing * h * 0.02, shoulderY + h * 0.05);
-  ctx.quadraticCurveTo(x + facing * h * 0.14, y - h * 0.34, x + facing * h * 0.15, y - h * 0.27);
+  ctx.moveTo(sho.x + f * h * 0.005, sho.y + h * 0.02);
+  ctx.lineTo(elb.x, elb.y);
+  ctx.lineTo(hand.x, hand.y);
   ctx.stroke();
+  ctx.fillStyle = c.head;
+  ctx.beginPath();
+  ctx.arc(hand.x, hand.y + h * 0.01, h * 0.023, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 목 + 머리 — 걷는 인물과 같은 구성 (머리카락 + 얼굴 + 코)
+  ctx.strokeStyle = c.head;
+  ctx.lineWidth = h * 0.038;
+  ctx.beginPath();
+  ctx.moveTo(sho.x + f * h * 0.01, sho.y + h * 0.005);
+  ctx.lineTo(sho.x + f * h * 0.022, sho.y - h * 0.04);
+  ctx.stroke();
+  const hx = sho.x + f * h * 0.028;
+  const hy = sho.y - h * 0.1;
   ctx.fillStyle = c.hair;
   ctx.beginPath();
-  ctx.arc(x + facing * h * 0.026, shoulderY - h * 0.145, h * 0.078, 0, Math.PI * 2);
+  ctx.ellipse(hx, hy, h * 0.06, h * 0.071, f * 0.06, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(hx - f * h * 0.038, hy + h * 0.05, h * 0.024, h * 0.035, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = c.head;
   ctx.beginPath();
-  ctx.arc(x + facing * h * 0.047, shoulderY - h * 0.125, h * 0.057, 0, Math.PI * 2);
+  ctx.ellipse(hx + f * h * 0.03, hy + h * 0.026, h * 0.034, h * 0.044, f * 0.1, 0, Math.PI * 2);
   ctx.fill();
+  ctx.beginPath();
+  ctx.arc(hx + f * h * 0.063, hy + h * 0.026, h * 0.012, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/** 정면(카메라 쪽)을 바라보는 자세 — 응시 장면 전용. 눈이 카메라를 본다. */
+function frontFigure(ctx, { x, y, h, tone }) {
+  const c = FIG_TONES[tone] ?? FIG_TONES.normal;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + h * 0.012, h * 0.17, h * 0.045, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const hipY = y - h * 0.5;
+  const shoulderY = y - h * 0.79;
+  // 다리 — 정면이라 두 기둥, 발은 좌우로 벌어진다
+  for (const d of [-1, 1]) {
+    const color = d === 1 ? c.pants : c.back;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = h * 0.07;
+    ctx.beginPath();
+    ctx.moveTo(x + d * h * 0.032, hipY);
+    ctx.lineTo(x + d * h * 0.042, y - h * 0.02);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(x + d * h * 0.042 - h * 0.033, y - h * 0.03, h * 0.066, h * 0.03, h * 0.012);
+    ctx.fill();
+  }
+  // 골반
+  ctx.fillStyle = c.pants;
+  ctx.beginPath();
+  ctx.roundRect(x - h * 0.066, hipY - h * 0.032, h * 0.132, h * 0.075, h * 0.03);
+  ctx.fill();
+  // 몸통 — 좌우 대칭, 어깨 경사
+  ctx.fillStyle = c.jacket;
+  ctx.beginPath();
+  ctx.moveTo(x - h * 0.09, shoulderY + h * 0.014);
+  ctx.quadraticCurveTo(x - h * 0.045, shoulderY - h * 0.02, x, shoulderY - h * 0.022);
+  ctx.quadraticCurveTo(x + h * 0.045, shoulderY - h * 0.02, x + h * 0.09, shoulderY + h * 0.014);
+  ctx.quadraticCurveTo(x + h * 0.095, shoulderY + h * 0.12, x + h * 0.062, hipY - h * 0.015);
+  ctx.lineTo(x - h * 0.062, hipY - h * 0.015);
+  ctx.quadraticCurveTo(x - h * 0.095, shoulderY + h * 0.12, x - h * 0.09, shoulderY + h * 0.014);
+  ctx.closePath();
+  ctx.fill();
+  // 팔 — 양옆으로 늘어뜨린다
+  for (const d of [-1, 1]) {
+    ctx.strokeStyle = d === 1 ? c.arm : c.back;
+    ctx.lineWidth = h * 0.046;
+    ctx.beginPath();
+    ctx.moveTo(x + d * h * 0.085, shoulderY + h * 0.025);
+    ctx.lineTo(x + d * h * 0.105, y - h * 0.51);
+    ctx.lineTo(x + d * h * 0.095, y - h * 0.38);
+    ctx.stroke();
+    ctx.fillStyle = c.head;
+    ctx.beginPath();
+    ctx.arc(x + d * h * 0.095, y - h * 0.365, h * 0.022, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // 목
+  ctx.strokeStyle = c.head;
+  ctx.lineWidth = h * 0.04;
+  ctx.beginPath();
+  ctx.moveTo(x, shoulderY + h * 0.004);
+  ctx.lineTo(x, shoulderY - h * 0.04);
+  ctx.stroke();
+  // 머리 — 정면. 머리카락이 위·옆을 두르고 얼굴이 가운데에 온다.
+  const hy = shoulderY - h * 0.105;
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
+  ctx.ellipse(x, hy, h * 0.058, h * 0.07, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = c.head;
+  ctx.beginPath();
+  ctx.ellipse(x, hy + h * 0.012, h * 0.043, h * 0.052, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 눈 — 카메라(시청자)를 본다. 이 두 점이 "응시" 다.
+  ctx.fillStyle = 'rgba(20,24,30,0.85)';
+  for (const d of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(x + d * h * 0.018, hy + h * 0.004, h * 0.0068, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -1147,7 +1313,9 @@ const SCENES = {
 
   /**
    * 가방에서 미상의 물체를 꺼내는 인원.
-   * 걸어와 가방을 내려놓고 웅크려 뒤지다가, 물체를 꺼내 드는 순간 포착된다.
+   * 가방을 들고 걸어와 → 바닥에 내려놓고 → 웅크려 안을 뒤지다 →
+   * 가방 입구에서 물체가 나오는 순간 포착된다. 가방이 장면의 두 번째
+   * 주인공이므로 바닥보다 밝은 몸통·지퍼선·손잡이로 뚜렷하게 그린다.
    */
   bagObject(ctx, W, H, t, opts) {
     const S = scaleOf(H);
@@ -1157,87 +1325,122 @@ const SCENES = {
     const y = H * 0.88;
     const h = H * WALKER_H * z;
     const cx = W * 0.44;
-    const bagX = cx + h * 0.34;
-    const DETECT = 0.58;
+    const bagX = cx + h * 0.4;
+    const DETECT = 0.62;
     const detected = t >= DETECT;
 
-    // 가방 — 들고 오는 동안은 손 옆에서 흔들리고, 내려놓으면 바닥에 선다
-    const drawBag = (bx, by, sway) => {
-      ctx.fillStyle = '#2a303c';
+    const drawBag = (bx, by, wob) => {
+      const bw = h * 0.36;
+      const bh = h * 0.2;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.roundRect(bx - h * 0.13, by - h * 0.17 + sway, h * 0.26, h * 0.17, 4 * S);
+      ctx.ellipse(bx, by + 2 * S, bw * 0.55, h * 0.03, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#3d4553';
-      ctx.lineWidth = 2.5 * S;
+      ctx.save();
+      ctx.translate(bx, by);
+      ctx.rotate(wob);
+      ctx.fillStyle = '#3b4454';
       ctx.beginPath();
-      ctx.arc(bx, by - h * 0.17 + sway, h * 0.07, Math.PI, 0);
+      ctx.roundRect(-bw / 2, -bh, bw, bh, h * 0.045);
+      ctx.fill();
+      // 윗면 지퍼선
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 1.6 * S;
+      ctx.beginPath();
+      ctx.moveTo(-bw * 0.36, -bh * 0.82);
+      ctx.lineTo(bw * 0.36, -bh * 0.82);
       ctx.stroke();
+      // 손잡이 두 짝
+      ctx.strokeStyle = '#525c6e';
+      ctx.lineWidth = 2.6 * S;
+      for (const hx of [-bw * 0.18, bw * 0.18]) {
+        ctx.beginPath();
+        ctx.arc(hx, -bh, bw * 0.13, Math.PI, 0);
+        ctx.stroke();
+      }
+      ctx.restore();
     };
 
-    if (t < 0.3) {
-      // 접근 — 가방을 들고 걷는다
-      const k = t / 0.3;
-      const x = W * 0.14 + k * (cx - W * 0.14);
+    const kneel = Math.min(1, Math.max(0, (t - 0.34) / 0.14));
+    const rise = Math.min(1, Math.max(0, (t - 0.68) / 0.16));
+    const bend = kneel * (1 - rise * 0.8);
+
+    if (t < 0.26) {
+      // 접근 — 가방을 들고 걷는다. 가방이 손에 매달려 흔들린다.
+      const k = t / 0.26;
+      const x = W * 0.12 + k * (cx - W * 0.12);
       walker(ctx, { x, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
-      drawBag(x + h * 0.2, y - h * 0.06, Math.sin(t * Math.PI * 24) * h * 0.02);
+      drawBag(x + h * 0.26, y - h * 0.2, Math.sin(t * Math.PI * 24) * 0.05);
     } else {
-      drawBag(bagX, y, 0);
-      const kneel = Math.min(1, Math.max(0, (t - 0.36) / 0.14));
-      const rise = Math.min(1, Math.max(0, (t - 0.78) / 0.16));
-      const bend = kneel * (1 - rise * 0.75);
-      // 웅크림 — 발을 축으로 몸을 숙이고 키를 줄인다
+      // 가방 내려놓기 — 손에서 바닥으로 옮겨 놓는다
+      const put = Math.min(1, (t - 0.26) / 0.08);
+      drawBag(
+        cx + h * 0.26 + (bagX - cx - h * 0.26) * put,
+        y - h * 0.2 * (1 - put),
+        Math.sin(t * Math.PI * 4) * 0.015 * (t > 0.48 && t < DETECT ? 1 : 0),
+      );
+
       ctx.save();
       ctx.translate(cx, y);
-      ctx.rotate(bend * 0.5);
+      ctx.rotate(bend * 0.55);
       ctx.translate(-cx, -y);
       walker(ctx, {
         x: cx,
         y,
-        h: h * (1 - bend * 0.24),
+        h: h * (1 - bend * 0.26),
         phase: 0,
-        stride: 0.15,
+        stride: 0.14,
         facing: 1,
         tone: detected ? 'alert' : 'normal',
       });
       ctx.restore();
-      // 가방을 향해 뻗는 팔
-      if (bend > 0.4 && !detected) {
+
+      // 가방 속으로 뻗는 팔 — 손이 가방 입구에 붙는다
+      if (bend > 0.5 && t < DETECT) {
         ctx.strokeStyle = FIG_TONES.normal.arm;
-        ctx.lineWidth = h * 0.05;
+        ctx.lineWidth = h * 0.048;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(cx + h * 0.1, y - h * 0.5);
-        ctx.lineTo(bagX - h * 0.05, y - h * 0.14);
+        ctx.moveTo(cx + h * 0.12, y - h * 0.44);
+        ctx.lineTo(bagX - h * 0.08, y - h * 0.22);
         ctx.stroke();
+        ctx.fillStyle = FIG_TONES.normal.head;
+        ctx.beginPath();
+        ctx.arc(bagX - h * 0.07, y - h * 0.21, h * 0.024, 0, Math.PI * 2);
+        ctx.fill();
       }
-      // 꺼낸 물체 — 손에 들려 올라온다. 정체를 알 수 없는 어두운 막대.
+
+      // 물체 — 가방 입구에서 나와 손에 들려 올라간다
       if (detected) {
-        const lift = Math.min(1, (t - DETECT) / 0.12);
-        const ox = cx + h * 0.16;
-        const oy = y - h * (0.3 + lift * 0.26) + bend * h * 0.1;
+        const lift = Math.min(1, (t - DETECT) / 0.14);
+        const ox = bagX - h * 0.07 + (cx + h * 0.18 - (bagX - h * 0.07)) * lift;
+        const oy = y - h * 0.24 - h * 0.4 * (1 - bend * 0.35) * lift;
         ctx.strokeStyle = FIG_TONES.alert.arm;
-        ctx.lineWidth = h * 0.05;
+        ctx.lineWidth = h * 0.048;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(cx + h * 0.06, y - h * (0.52 - bend * 0.1));
-        ctx.lineTo(ox, oy + h * 0.05);
+        ctx.moveTo(cx + h * 0.1, y - h * (0.5 - bend * 0.08));
+        ctx.lineTo(ox, oy + h * 0.06);
         ctx.stroke();
-        ctx.fillStyle = '#161a20';
+        // 미상의 물체 — 어두운 막대. 경보 테두리가 정체 불명을 강조한다.
+        ctx.fillStyle = '#141920';
         ctx.strokeStyle = ALERT;
         ctx.lineWidth = 2 * S;
         ctx.beginPath();
-        ctx.roundRect(ox - h * 0.025, oy - h * 0.13, h * 0.05, h * 0.18, 2 * S);
+        ctx.roundRect(ox - h * 0.026, oy - h * 0.15, h * 0.052, h * 0.2, 2.5 * S);
         ctx.fill();
         ctx.stroke();
-        detectPulse(ctx, ox, oy, h * 0.2, (t - DETECT) / 0.14, S * z);
-      }
-
-      if (detected) {
+        // 물체를 쥔 손
+        ctx.fillStyle = FIG_TONES.alert.head;
+        ctx.beginPath();
+        ctx.arc(ox, oy + h * 0.045, h * 0.026, 0, Math.PI * 2);
+        ctx.fill();
+        detectPulse(ctx, ox, oy, h * 0.2, (t - DETECT) / 0.16, S * z);
         bbox(
           ctx,
-          cx - h * 0.3,
+          cx - h * 0.32,
           y - h - h * 0.02,
-          h * 0.62,
+          h * 0.78,
           h + h * 0.06,
           ALERT,
           'UNKNOWN OBJECT 0.91',
@@ -1255,6 +1458,7 @@ const SCENES = {
       cctvChrome(ctx, W, H, t, 'CAM 21 · 소지품 검색대', detected, 'ALERT', 'MONITORING');
     }
   },
+
 
   /**
    * 옷에 손을 넣고 있는 인원.
@@ -1354,16 +1558,46 @@ const SCENES = {
       const x = W * 0.16 + k * (cx - W * 0.16);
       walker(ctx, { x, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
     } else if (t < DOWN) {
-      // 발을 축으로 앞으로 넘어간다 — 가속(제곱)으로 무너지는 느낌을 만든다
-      const r = (t - FALL) / (DOWN - FALL);
+      /*
+        통나무처럼 발목만 축으로 돌면 사람이 넘어지는 걸로 보이지 않는다.
+        실제 실신은 무릎이 먼저 꺾이고(주저앉듯 낮아짐) 그 다음 상체가
+        앞으로 무너진다 — 꺾임과 회전을 겹치고, 팔은 허우적거린다.
+      */
+      const k = (t - FALL) / (DOWN - FALL);
+      const buckle = Math.min(1, k * 1.7);
+      const pitch = Math.max(0, (k - 0.3) / 0.7);
       ctx.save();
       ctx.translate(cx, y);
-      ctx.rotate(r * r * Math.PI * 0.5);
+      ctx.rotate(pitch * pitch * 1.45);
       ctx.translate(-cx, -y);
-      walker(ctx, { x: cx, y, h, phase: 0, stride: 0.3, facing: 1, tone: 'normal' });
+      walker(ctx, {
+        x: cx,
+        y,
+        h: h * (1 - buckle * 0.2 - pitch * 0.2),
+        phase: t * Math.PI * 44,
+        stride: 0.5,
+        facing: 1,
+        tone: 'normal',
+      });
       ctx.restore();
     } else {
       lyingFigure(ctx, { x: cx + h * 0.4, y, h, tone: 'alert' });
+      // 착지 먼지 — 무너짐과 눕기 사이를 잇는 완충
+      if (t < DOWN + 0.12) {
+        const p = (t - DOWN) / 0.12;
+        for (let i = 0; i < 5; i++) {
+          ctx.fillStyle = `rgba(170,175,185,${0.2 * (1 - p)})`;
+          ctx.beginPath();
+          ctx.arc(
+            cx + (i - 2) * h * 0.2,
+            y - h * 0.03 - p * h * 0.06 * (1 + (i % 2)),
+            h * (0.03 + p * 0.05),
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+      }
       detectPulse(ctx, cx + h * 0.4, y - h * 0.08, h * 0.3, (t - DOWN) / 0.14, S * z);
       bbox(
         ctx,
@@ -1410,17 +1644,15 @@ const SCENES = {
       const k = t / 0.35;
       const x = W * 0.84 - k * (W * 0.84 - cx);
       walker(ctx, { x, y, h, phase: t * Math.PI * 20, stride: 0.75, facing: -1, tone: 'normal' });
-    } else if (t < SIT) {
-      // 내려앉는 중 — 키가 줄고 상체가 굽는다
-      const k = (t - 0.35) / (SIT - 0.35);
-      ctx.save();
-      ctx.translate(cx, y);
-      ctx.rotate(k * 0.18);
-      ctx.translate(-cx, -y);
-      walker(ctx, { x: cx, y, h: h * (1 - k * 0.3), phase: 0, stride: 0.2, facing: -1, tone: 'normal' });
-      ctx.restore();
     } else {
-      sittingFigure(ctx, { x: cx, y, h, facing: -1, tone: detected ? 'alert' : 'normal' });
+      /*
+        앉는 동작은 인물을 축소하는 것이 아니라 관절 보간으로 그린다 —
+        키를 줄이면 사람이 작아지는 것으로 읽힌다. 서 있는 관절에서
+        앉은 관절로 이동하며 엉덩이가 내려가고 무릎이 올라온다.
+      */
+      const kRaw = Math.min(1, (t - 0.35) / (SIT - 0.35));
+      const k = kRaw * kRaw * (3 - 2 * kRaw);
+      sittingFigure(ctx, { x: cx, y, h, facing: -1, tone: detected ? 'alert' : 'normal', k });
       if (detected) {
         detectPulse(ctx, cx, y - h * 0.3, h * 0.28, (t - DETECT) / 0.14, S * z);
         bbox(
@@ -1436,7 +1668,7 @@ const SCENES = {
         ctx.fillStyle = 'rgba(212,118,60,0.06)';
         ctx.fillRect(0, 0, W, H);
       }
-      if (!opts?.compact) {
+      if (!opts?.compact && t >= SIT) {
         const sec = String(Math.floor((t - SIT) * 30)).padStart(2, '0');
         label(
           ctx,
@@ -1553,19 +1785,19 @@ const SCENES = {
     const DETECT = GAZES[2][0];
     const detected = t >= DETECT;
 
-    // 시선 원뿔 — 머리에서 화면(카메라) 쪽으로 넓어진다
+    // 시선 원뿔 — CCTV 는 높이 달려 있으므로 시선이 위로 향한다
     if (gazing) {
-      const hx = x + h * 0.01;
+      const hx = x;
       const hy = y - h * 0.9;
-      const grad = ctx.createLinearGradient(0, hy, 0, H);
+      const grad = ctx.createLinearGradient(0, hy, 0, 0);
       const tone = detected ? '224,150,92' : '200,212,230';
-      grad.addColorStop(0, `rgba(${tone},${detected ? 0.22 : 0.14})`);
+      grad.addColorStop(0, `rgba(${tone},${detected ? 0.24 : 0.15})`);
       grad.addColorStop(1, `rgba(${tone},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.moveTo(hx, hy);
-      ctx.lineTo(hx - h * 0.62, H);
-      ctx.lineTo(hx + h * 0.62, H);
+      ctx.lineTo(hx - h * 0.42, 0);
+      ctx.lineTo(hx + h * 0.42, 0);
       ctx.closePath();
       ctx.fill();
       // 응시 시작 링
@@ -1580,16 +1812,20 @@ const SCENES = {
       );
     }
 
-    walker(ctx, {
-      x,
-      y,
-      h,
-      // 응시 중에는 정면을 향해 선다 — 걸음을 멈추고 다리를 모은다
-      phase: gazing ? 0 : t * Math.PI * 22,
-      stride: gazing ? 0.06 : 0.85,
-      facing: 1,
-      tone: detected ? 'alert' : 'normal',
-    });
+    // 응시 중에는 몸을 돌려 카메라를 정면으로 본다 — 눈이 있는 정면 자세
+    if (gazing) {
+      frontFigure(ctx, { x, y, h, tone: detected ? 'alert' : 'normal' });
+    } else {
+      walker(ctx, {
+        x,
+        y,
+        h,
+        phase: t * Math.PI * 22,
+        stride: 0.85,
+        facing: 1,
+        tone: detected ? 'alert' : 'normal',
+      });
+    }
 
     if (detected) {
       bbox(
