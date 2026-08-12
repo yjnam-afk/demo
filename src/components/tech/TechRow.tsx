@@ -30,8 +30,13 @@ export function TechRow({ tech }: { tech: PublicTech }) {
       href={`/tech/${tech.id}`}
       className="group grid grid-cols-1 items-start gap-x-6 gap-y-3 border-t border-ink-200 py-6 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_11rem] lg:grid-cols-[13rem_minmax(0,1fr)_11rem]"
     >
-      {/* 비주얼 — 넓은 화면에서만. 없으면 축 색 판으로 자리를 지켜 행 시작선을 맞춘다 */}
-      <div className="hidden lg:block">
+      {/*
+        비주얼. 넓은 화면에서는 왼쪽 열, 좁은 화면에서는 행 상단 전체 폭이다 —
+        모바일에서 숨기면 루프 영상과 썸네일이 통째로 사라진다. 미디어가 없는
+        기술은 좁은 화면에서 생략하고, 넓은 화면에서만 축 색 판으로 자리를
+        지켜 행 시작선을 맞춘다.
+      */}
+      <div className={hasVisual ? 'block' : 'hidden lg:block'}>
         <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-ink-200 bg-ink-950">
           {tech.media.loop ? (
             <LoopVideo
