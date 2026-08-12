@@ -1,9 +1,16 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 import { requireAdminApi } from '@/lib/auth/guard';
-import { blobTokenName, resolveBlobAccess } from '@/lib/data/store';
+import { blobToken, blobTokenName, resolveBlobAccess } from '@/lib/data/store';
 import { MEDIA_EXTENSIONS, MEDIA_KINDS, MEDIA_MAX_BYTES } from '@/lib/media';
+
+/**
+ * 서버 경유 업로드의 상한.
+ * Vercel 함수의 요청 크기 제한(약 4.5MB)보다 한 걸음 안쪽이다.
+ */
+const SERVER_PROXY_MAX = 4 * 1024 * 1024;
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -63,9 +70,37 @@ export async function POST(request: Request) {
   }
 
   // 파일명은 서버가 만든다. 사용자 입력을 경로에 넣지 않으므로 경로 이탈이 불가능하다.
+  const filename = `${kind}-${Date.now()}.${extension}`;
+
+  /*
+    Blob 환경의 서버 경유 업로드 — 작은 파일 전용.
+
+    사내망 중에는 Blob 저장소 도메인(*.blob.vercel-storage.com)을 막아
+    브라우저 직접 업로드가 중간에 끊기는 곳이 있다. 같은 origin 인 이
+    함수는 그 차단을 지나므로, 함수 요청 크기 제한 안쪽의 파일은 서버가
+    대신 올린다. 큰 파일은 여전히 브라우저 직접 업로드이고, 그것도 막힌
+    망에서는 드라이브 링크가 길이다.
+  */
+  if (blobTokenName()) {
+    if (file.size > SERVER_PROXY_MAX) {
+      return NextResponse.json(
+        { error: '4MB 를 넘는 파일은 서버를 거쳐 올릴 수 없습니다.' },
+        { status: 413 },
+      );
+    }
+    const access = await resolveBlobAccess().catch(() => 'private' as const);
+    const pathname = `uploads/${techId}/${filename}`;
+    await put(pathname, Buffer.from(await file.arrayBuffer()), {
+      // SDK 타입은 public 만 선언하지만 private 저장소도 같은 인자로 동작한다
+      access: access as 'public',
+      token: blobToken(),
+      contentType: file.type,
+    });
+    return NextResponse.json({ path: `/api/media/${pathname}` });
+  }
+
   const dir = path.join(UPLOAD_ROOT, techId);
   await fs.mkdir(dir, { recursive: true });
-  const filename = `${kind}-${Date.now()}.${extension}`;
   await fs.writeFile(path.join(dir, filename), Buffer.from(await file.arrayBuffer()));
 
   return NextResponse.json({ path: `/uploads/${techId}/${filename}` });

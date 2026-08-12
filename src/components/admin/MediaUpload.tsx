@@ -96,21 +96,50 @@ export function MediaUpload({
       return;
     }
 
-    const { upload: blobUpload } = await import('@vercel/blob/client');
-    const result = await blobUpload(`uploads/${techId}/${kind}-${Date.now()}.${extension}`, file, {
-      access,
-      handleUploadUrl: '/api/admin/upload/blob',
-      contentType: file.type,
-      /*
-        큰 파일은 조각으로 나눠 올린다. 한 덩어리 PUT 은 수십 MB 전송 중
-        연결이 한 번만 흔들려도 전체가 멈추는데, 조각 업로드는 조각별로
-        재시도하므로 중간에 끊겨도 이어서 간다. 작은 이미지까지 조각내면
-        요청 수만 늘어나므로 경계를 둔다.
-      */
-      multipart: file.size > 8 * 1024 * 1024,
-      onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
-    });
-    onChange(`/api/media/${result.pathname}`);
+    /*
+      정체 감시. 사내망 중에는 Blob 저장소 도메인을 막는 곳이 있는데,
+      그 환경에서는 업로드가 실패하는 것이 아니라 68% 같은 지점에서
+      영원히 멈춘다. 진행이 한동안 없으면 끊고, 어디로 가야 하는지 말한다.
+    */
+    const controller = new AbortController();
+    let stallTimer: ReturnType<typeof setTimeout> | null = null;
+    const armStallTimer = () => {
+      if (stallTimer) clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => controller.abort(), 25_000);
+    };
+    armStallTimer();
+
+    try {
+      const { upload: blobUpload } = await import('@vercel/blob/client');
+      const result = await blobUpload(`uploads/${techId}/${kind}-${Date.now()}.${extension}`, file, {
+        access,
+        handleUploadUrl: '/api/admin/upload/blob',
+        contentType: file.type,
+        abortSignal: controller.signal,
+        /*
+          큰 파일은 조각으로 나눠 올린다. 한 덩어리 PUT 은 수십 MB 전송 중
+          연결이 한 번만 흔들려도 전체가 멈추는데, 조각 업로드는 조각별로
+          재시도하므로 중간에 끊겨도 이어서 간다. 작은 이미지까지 조각내면
+          요청 수만 늘어나므로 경계를 둔다.
+        */
+        multipart: file.size > 8 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => {
+          armStallTimer();
+          setProgress(Math.round(percentage));
+        },
+      });
+      onChange(`/api/media/${result.pathname}`);
+    } catch (err) {
+      if (controller.signal.aborted) {
+        setError(
+          '업로드가 진행되지 않아 중단했습니다. 지금 계신 네트워크가 저장소 접근을 막고 있을 가능성이 큽니다 — 파일을 구글 드라이브에 올리고 공유 링크를 경로 칸에 붙여넣으세요.',
+        );
+        return;
+      }
+      throw err;
+    } finally {
+      if (stallTimer) clearTimeout(stallTimer);
+    }
   }
 
   async function upload(file: File) {
@@ -130,7 +159,12 @@ export function MediaUpload({
         access?: 'public' | 'private';
       };
 
-      if (target.mode === 'blob') {
+      /*
+        Blob 환경에서도 작은 파일은 서버를 거쳐 올린다. 같은 origin 요청이라
+        저장소 도메인을 막는 사내망에서도 통과한다. 함수 요청 크기 제한
+        때문에 경계는 4MB — 그보다 크면 브라우저 직접 업로드로 간다.
+      */
+      if (target.mode === 'blob' && file.size > 4 * 1024 * 1024) {
         await uploadToBlob(file, target.access ?? 'public');
       } else {
         await uploadToServer(file);
@@ -198,10 +232,22 @@ export function MediaUpload({
         미리보기는 이미지에만 붙인다. 영상 미리보기는 정보 없이 자리만 차지했고
         (재생해 보기 전에는 검은 상자다), 링크·PDF·드라이브 경로는 애초에
         미리볼 수 없다. 영상 확인은 공개 화면에서 한다.
+
+        self-start 가 없으면 flex 컨테이너가 가로를 강제로 늘려 비율이
+        뭉개진다. 썸네일은 카드와 같은 16:9 상자에 cover 로 잘라 실제
+        노출 모습 그대로, 그 외 이미지는 상자 안에 통째로(contain) 보인다.
       */}
       {value && (kind === 'thumbnail' || isImagePath(value)) ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="" className="h-24 w-auto rounded border border-ink-200" />
+        <img
+          src={value}
+          alt=""
+          className={
+            kind === 'thumbnail'
+              ? 'aspect-video w-80 self-start rounded border border-ink-200 bg-ink-50 object-cover'
+              : 'h-44 w-80 self-start rounded border border-ink-200 bg-ink-50 object-contain'
+          }
+        />
       ) : null}
     </div>
   );
