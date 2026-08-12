@@ -33,18 +33,42 @@ export async function GET(
   }
 
   try {
-    const [access, { issueSignedToken, presignUrl }] = await Promise.all([
+    const [access, { issueSignedToken, presignUrl, list }] = await Promise.all([
       resolveBlobAccess(),
       import('@vercel/blob'),
     ]);
 
-    const issued = await issueSignedToken({
-      pathname,
-      operations: ['get'],
-      validUntil: Date.now() + TTL_MS,
-      token: blobToken(),
-    });
-    const { presignedUrl } = await presignUrl(issued, { operation: 'get', pathname, access });
+    const presignFor = async (target: string) => {
+      const issued = await issueSignedToken({
+        pathname: target,
+        operations: ['get'],
+        validUntil: Date.now() + TTL_MS,
+        token: blobToken(),
+      });
+      const { presignedUrl } = await presignUrl(issued, {
+        operation: 'get',
+        pathname: target,
+        access,
+      });
+      return presignedUrl;
+    };
+
+    /*
+     * 기록 경로와 저장 경로가 어긋난 파일의 치유.
+     *
+     * 서버 경유 업로드 초기에 저장은 무작위 접미사가 붙은 경로로 되고
+     * 기록은 접미사 없는 경로로 남은 파일들이 있다. 그 경로 그대로는
+     * 영원히 404 라, 같은 이름 줄기(확장자 앞부분)로 시작하는 실제
+     * 파일을 찾아 그쪽을 내준다.
+     */
+    const healPathname = async (): Promise<string | null> => {
+      const stem = pathname.replace(/\.[a-z0-9]+$/i, '');
+      const { blobs } = await list({ prefix: stem, token: blobToken() });
+      const found = blobs.find((b) => b.pathname !== pathname);
+      return found?.pathname ?? null;
+    };
+
+    const presignedUrl = await presignFor(pathname);
 
     /*
       문서와 이미지는 함수가 본문을 중계한다. 두 가지 이유다:
@@ -67,7 +91,11 @@ export async function GET(
     const extension = pathname.toLowerCase().split('.').pop() ?? '';
     const proxyType = PROXY_TYPES[extension];
     if (proxyType) {
-      const upstream = await fetch(presignedUrl);
+      let upstream = await fetch(presignedUrl);
+      if (upstream.status === 404) {
+        const healed = await healPathname();
+        if (healed) upstream = await fetch(await presignFor(healed));
+      }
       if (!upstream.ok || !upstream.body) throw new Error(`업스트림 ${upstream.status}`);
       return new Response(upstream.body, {
         headers: {
