@@ -66,8 +66,19 @@ export interface DemoSample {
   text?: string;
 }
 
+/** 결과 갤러리의 한 쌍 — 입력 샘플 이미지와 그 식별 결과 이미지 */
+export interface GalleryItem {
+  label: string;
+  /** 입력 샘플 이미지 경로 */
+  input: string;
+  /** 식별 결과 이미지 경로 */
+  output: string;
+  /** 결과에 붙이는 한 줄 설명 (선택) */
+  note?: string;
+}
+
 /**
- * 데모는 판별 유니온이다. 4종 외의 분기는 타입 레벨에서 불가능하다.
+ * 데모는 판별 유니온이다. 목록 외의 분기는 타입 레벨에서 불가능하다.
  * endpoint / embed_url 은 서버에서만 읽으며 공개 직렬화 과정에서 제거된다.
  */
 export type Demo =
@@ -96,6 +107,8 @@ export type Demo =
       /** 크게 보여줄 지표의 label. 없으면 첫 지표를 쓴다. */
       highlight_metric?: string;
     }
+  /** 미리 만든 입력→결과 쌍을 보여주는 갤러리 — 식별 모델용 */
+  | { type: 'gallery'; items: GalleryItem[] }
   /** 보여줄 데모가 없는 기술 — 상세 화면은 데모 블록을 생략한다. */
   | { type: 'none' };
 
@@ -206,6 +219,7 @@ export type PublicDemo =
   | { type: 'embed' }
   | { type: 'video'; src: string; src_webm?: string; poster?: string }
   | { type: 'metric'; highlight_metric?: string }
+  | { type: 'gallery'; items: GalleryItem[] }
   | { type: 'none' };
 
 export type PublicMetric = Omit<Metric, 'dataset_url'>;

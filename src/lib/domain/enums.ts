@@ -76,7 +76,7 @@ export const DEV_TYPE_LABELS: Record<DevType, string> = {
 
 // 'none' — 보여줄 데모가 아직 없는 기술. 데모를 필수로 강제하면 지표만
 // 있는 기술을 등록할 수 없어, 없음도 정식 선택지로 둔다.
-export const DEMO_TYPES = ['api', 'embed', 'video', 'metric', 'none'] as const;
+export const DEMO_TYPES = ['api', 'embed', 'video', 'metric', 'gallery', 'none'] as const;
 export type DemoType = (typeof DEMO_TYPES)[number];
 
 export const DEMO_TYPE_LABELS: Record<DemoType, string> = {
@@ -84,6 +84,13 @@ export const DEMO_TYPE_LABELS: Record<DemoType, string> = {
   embed: '웹 데모',
   video: '데모 영상',
   metric: '성능 지표',
+  /*
+    결과 갤러리 — 식별 모델처럼 "입력 → 결과" 를 보여줘야 하는 기술용.
+    라이브 호출이 아니라 미리 만든 결과 쌍이다. 지금 인프라(Vercel)에서는
+    내부망 모델에 닿을 수 없고, 전시장에서는 미리 만든 결과가 라이브보다
+    안전하다. 온프레미스 전환 후 같은 화면 뒤에 실호출을 붙일 수 있다.
+  */
+  gallery: '결과 갤러리',
   none: '데모 없음',
 };
 

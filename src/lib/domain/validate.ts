@@ -128,6 +128,17 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     });
   }
 
+  if (
+    tech.demo.type === 'gallery' &&
+    !tech.demo.items.some((item) => item.input.trim() && item.output.trim())
+  ) {
+    issues.push({
+      field: 'demo.items',
+      label: '결과 갤러리',
+      message: '입력과 결과 이미지가 모두 있는 샘플이 최소 1개 필요합니다.',
+    });
+  }
+
   if (tech.demo.type === 'metric' && tech.metrics.length === 0) {
     issues.push({
       field: 'metrics',

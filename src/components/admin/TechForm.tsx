@@ -957,6 +957,8 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
               set({ demo: { type, embed_url: '' } });
             } else if (type === 'video') {
               set({ demo: { type, src: draft.media.video ?? '' } });
+            } else if (type === 'gallery') {
+              set({ demo: { type, items: [] } });
             } else {
               set({ demo: { type } });
             }
@@ -1087,6 +1089,90 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
               .map((metric) => ({ value: metric.label, label: metric.label }))}
             onChange={(highlight_metric) => set({ demo: { ...demo, highlight_metric } })}
           />
+        </Field>
+      ) : null}
+
+      {demo.type === 'gallery' ? (
+        <Field
+          label="입력 → 결과 샘플"
+          required
+          hint="입력 이미지와 식별 결과 이미지를 쌍으로 올립니다. 최소 1쌍. 쉬운 케이스만이 아니라 까다로운 케이스(가림·역광 등)를 섞으면 설득력이 커집니다."
+        >
+          <div className="flex flex-col gap-4">
+            {demo.items.map((item, index) => {
+              const update = (patch: Partial<typeof item>) => {
+                const next = [...demo.items];
+                next[index] = { ...next[index], ...patch };
+                set({ demo: { ...demo, items: next } });
+              };
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col gap-2 rounded border border-ink-200 p-3"
+                >
+                  <div className="flex gap-2">
+                    <TextInput
+                      value={item.label}
+                      placeholder={`샘플 이름 (예: 야간 · 부분 가림)`}
+                      onChange={(event) => update({ label: event.target.value })}
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        set({ demo: { ...demo, items: demo.items.filter((_, i) => i !== index) } })
+                      }
+                      className="rounded border border-ink-300 px-2.5 text-sm text-ink-500 hover:border-ink-500"
+                      aria-label="샘플 삭제"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div>
+                      <div className="mb-1 text-xs text-ink-500">입력 이미지</div>
+                      <MediaUpload
+                        techId={draft.id}
+                        kind="sample"
+                        value={item.input}
+                        onChange={(input) => update({ input })}
+                        accept="image/*"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-1 text-xs text-ink-500">식별 결과 이미지</div>
+                      <MediaUpload
+                        techId={draft.id}
+                        kind="sample"
+                        value={item.output}
+                        onChange={(output) => update({ output })}
+                        accept="image/*"
+                      />
+                    </div>
+                  </div>
+                  <TextInput
+                    value={item.note ?? ''}
+                    placeholder="결과 한 줄 설명 (선택)"
+                    onChange={(event) => update({ note: event.target.value })}
+                  />
+                </div>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() =>
+                set({
+                  demo: {
+                    ...demo,
+                    items: [...demo.items, { label: '', input: '', output: '' }],
+                  },
+                })
+              }
+              className="w-fit rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-600 hover:border-ink-500"
+            >
+              + 샘플 추가
+            </button>
+          </div>
         </Field>
       ) : null}
     </Section>

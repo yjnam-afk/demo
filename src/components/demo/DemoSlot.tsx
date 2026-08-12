@@ -1,5 +1,6 @@
 import { ApiDemo } from './ApiDemo';
 import { EmbedDemo } from './EmbedDemo';
+import { GalleryDemo } from './GalleryDemo';
 import { MetricDemo } from './MetricDemo';
 import { VideoDemo } from './VideoDemo';
 import type { FallbackContent } from './DemoFallback';
@@ -46,5 +47,10 @@ export function DemoSlot({ tech }: { tech: PublicTech }) {
       );
     case 'metric':
       return <MetricDemo metrics={tech.metrics} highlight={tech.demo.highlight_metric} />;
+    case 'gallery':
+      return <GalleryDemo items={tech.demo.items} />;
+    // 'none' 은 상세 페이지가 데모 블록 자체를 생략하므로 여기 오지 않는다
+    case 'none':
+      return null;
   }
 }

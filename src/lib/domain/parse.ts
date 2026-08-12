@@ -178,6 +178,24 @@ function parseDemo(value: unknown): Demo {
       };
     case 'metric':
       return { type, highlight_metric: str(raw.highlight_metric) || undefined };
+    case 'gallery':
+      return {
+        type,
+        items: Array.isArray(raw.items)
+          ? raw.items
+              .map((item) => {
+                const r = asRecord(item, '갤러리 샘플');
+                return {
+                  label: str(r.label),
+                  input: mediaStr(r.input),
+                  output: mediaStr(r.output),
+                  note: str(r.note) || undefined,
+                };
+              })
+              // 이미지가 하나도 없는 빈 줄은 저장하지 않는다
+              .filter((item) => item.input || item.output)
+          : [],
+      };
     case 'none':
       return { type };
   }

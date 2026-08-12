@@ -18,6 +18,9 @@ function toPublicDemo(demo: Demo): PublicDemo {
       return { type: 'video', src: demo.src, src_webm: demo.src_webm, poster: demo.poster };
     case 'metric':
       return { type: 'metric', highlight_metric: demo.highlight_metric };
+    case 'gallery':
+      // 이미지 경로뿐이라 가릴 것이 없다 — 그대로 내보낸다
+      return { type: 'gallery', items: demo.items };
     case 'none':
       return { type: 'none' };
   }

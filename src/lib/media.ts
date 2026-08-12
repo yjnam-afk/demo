@@ -19,7 +19,7 @@ export const MEDIA_EXTENSIONS: Record<string, string> = {
 export const MEDIA_MAX_BYTES = 300 * 1024 * 1024;
 
 /** 업로드 대상 슬롯. 임의 경로에 쓰지 못하게 목록으로 묶는다. */
-export const MEDIA_KINDS = ['thumbnail', 'loop', 'video', 'resource'] as const;
+export const MEDIA_KINDS = ['thumbnail', 'loop', 'video', 'resource', 'sample'] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
 /**
@@ -27,7 +27,7 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
  * 서버가 토큰을 내주기 전에 이 규칙으로 경로를 검증한다 — 클라이언트가
  * data/ 같은 문서 경로에 쓰는 것을 막는 마지막 벽이다.
  */
-export const BLOB_UPLOAD_PATH = /^uploads\/[a-z0-9][a-z0-9-]{1,63}\/(thumbnail|loop|video|resource)-\d+\.[a-z0-9]+$/;
+export const BLOB_UPLOAD_PATH = /^uploads\/[a-z0-9][a-z0-9-]{1,63}\/(thumbnail|loop|video|resource|sample)-\d+\.[a-z0-9]+$/;
 
 /**
  * 화면에 바로 펼쳐 보여줄 수 있는 이미지 경로인지.
