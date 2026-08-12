@@ -47,16 +47,31 @@ export async function GET(
     const { presignedUrl } = await presignUrl(issued, { operation: 'get', pathname, access });
 
     /*
-      PDF 는 함수가 본문을 중계한다. 상세 화면의 내장 뷰어(<object>)는
-      302 를 따라가지 않아, 리다이렉트 방식으로는 미리보기가 빈 칸이 된다.
-      문서는 수 MB 수준이라 중계 비용이 작다 — 큰 영상은 계속 리다이렉트다.
+      문서와 이미지는 함수가 본문을 중계한다. 두 가지 이유다:
+       - 내장 뷰어(<object>)는 302 를 따라가지 않아 리다이렉트로는 빈 칸이 된다
+       - 사내망 중에는 Blob 저장소 도메인을 막는 곳이 있어, 리다이렉트를
+         받은 브라우저가 최종 주소에 닿지 못한다. 같은 origin 인 이 함수가
+         본문을 내주면 그 차단을 지난다.
+      문서·이미지는 수 MB 수준이라 중계 비용이 작다 — 큰 영상만 리다이렉트로
+      남긴다 (영상은 함수 실행 시간 제한에 걸린다. 막힌 망에서는 드라이브가 길이다).
     */
-    if (pathname.toLowerCase().endsWith('.pdf')) {
+    const PROXY_TYPES: Record<string, string> = {
+      pdf: 'application/pdf',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+      gif: 'image/gif',
+    };
+    const extension = pathname.toLowerCase().split('.').pop() ?? '';
+    const proxyType = PROXY_TYPES[extension];
+    if (proxyType) {
       const upstream = await fetch(presignedUrl);
       if (!upstream.ok || !upstream.body) throw new Error(`업스트림 ${upstream.status}`);
       return new Response(upstream.body, {
         headers: {
-          'Content-Type': 'application/pdf',
+          'Content-Type': upstream.headers.get('content-type') ?? proxyType,
           'Content-Disposition': 'inline',
           'Cache-Control': 'public, max-age=1800',
         },
