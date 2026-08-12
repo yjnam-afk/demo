@@ -28,5 +28,35 @@
     "id": "energy_plant",
     "label": "제조·에너지",
     "description": "설비 상태를 원격에서 확인하고 이상을 조기에 특정합니다."
+  },
+  {
+    "id": "transport_rail",
+    "label": "교통·철도",
+    "description": "역사·승강장·터널의 이상 상황을 관제 인력 증원 없이 실시간으로 포착합니다."
+  },
+  {
+    "id": "event_security",
+    "label": "행사·경호",
+    "description": "행사장 출입과 군중 흐름, 경호 구역의 이상행동을 한 화면에서 감시합니다."
+  },
+  {
+    "id": "logistics_retail",
+    "label": "물류·유통",
+    "description": "물류센터와 매장의 안전사고·도난 징후를 영상으로 조기에 잡아냅니다."
+  },
+  {
+    "id": "healthcare",
+    "label": "의료·요양",
+    "description": "병동·요양 시설의 쓰러짐과 낙상을 즉시 감지해 대응 시간을 지킵니다."
+  },
+  {
+    "id": "construction",
+    "label": "건설",
+    "description": "작업 현장의 위험 구역 접근과 안전장구 미착용을 자동 감시합니다."
+  },
+  {
+    "id": "finance",
+    "label": "금융",
+    "description": "점포·ATM 주변의 이상행동을 감지해 사고를 예방합니다."
   }
 ]

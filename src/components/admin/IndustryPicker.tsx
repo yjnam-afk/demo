@@ -26,11 +26,14 @@ export function IndustryPicker({
   async function add() {
     const label = prompt('추가할 산업군 이름')?.trim();
     if (!label) return;
+    // 설명이 비면 산업별 페이지 머리가 빈 채로 선다. 여기서 함께 받는다.
+    const description =
+      prompt('산업군 한 줄 설명 (산업별 페이지에 표시됩니다. 비워도 됩니다)')?.trim() || undefined;
 
     const response = await fetch('/api/admin/industries', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ label }),
+      body: JSON.stringify({ label, description }),
     });
     const body = (await response.json().catch(() => ({}))) as {
       industries?: Industry[];
