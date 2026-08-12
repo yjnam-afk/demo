@@ -126,10 +126,14 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  // 그림자 — 넓고 옅은 층 위에 좁고 진한 접지가 겹친다. 한 겹이면 스티커처럼 뜬다
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
   ctx.beginPath();
-  ctx.ellipse(x, y + h * 0.012, h * 0.2, h * 0.045, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + h * 0.014, h * 0.27, h * 0.06, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.38)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + h * 0.012, h * 0.17, h * 0.04, 0, 0, Math.PI * 2);
   ctx.fill();
 
   const walkAmount = Math.min(1, stride);
@@ -161,6 +165,13 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
     ctx.moveTo(kx, ky);
     ctx.lineTo(ax, ay);
     ctx.stroke();
+    // 원통 하이라이트 — 위왼쪽 광원. 평면 획이 다리 부피로 읽히게 한다
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+    ctx.lineWidth = h * 0.024;
+    ctx.beginPath();
+    ctx.moveTo(x + facing * rest * 0.3 - h * 0.011, hipY - h * 0.008);
+    ctx.lineTo(kx - h * 0.011, ky - h * 0.008);
+    ctx.stroke();
     // 신발 — 앞으로 나갈 때 발끝이 들리고, 뒤로 밀 때 발끝이 처진다
     ctx.save();
     ctx.translate(ax, ay);
@@ -191,6 +202,13 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
     ctx.beginPath();
     ctx.moveTo(ex, ey);
     ctx.lineTo(hx, hy);
+    ctx.stroke();
+    // 소매 하이라이트 — 위팔 위쪽 모서리에 가는 빛
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = width * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(sx - h * 0.008, sy - h * 0.006);
+    ctx.lineTo(ex - h * 0.008, ey - h * 0.006);
     ctx.stroke();
     ctx.fillStyle = handColor;
     ctx.beginPath();
@@ -258,6 +276,12 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.beginPath();
   ctx.ellipse(hx - facing * h * 0.038, hy + h * 0.05, h * 0.024, h * 0.035, 0, 0, Math.PI * 2);
   ctx.fill();
+  // 머리카락 하이라이트 — 정수리에 도는 빛이 공 모양의 부피를 만든다
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = h * 0.014;
+  ctx.beginPath();
+  ctx.ellipse(hx - facing * h * 0.006, hy - h * 0.022, h * 0.042, h * 0.036, facing * 0.2, Math.PI * 1.15, Math.PI * 1.85);
+  ctx.stroke();
   ctx.fillStyle = c.head;
   ctx.beginPath();
   ctx.ellipse(hx + facing * h * 0.03, hy + h * 0.026, h * 0.034, h * 0.044, facing * 0.1, 0, Math.PI * 2);
@@ -265,6 +289,11 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   // 코끝 — 옆얼굴을 만드는 작은 돌출
   ctx.beginPath();
   ctx.arc(hx + facing * h * 0.063, hy + h * 0.026, h * 0.012, 0, Math.PI * 2);
+  ctx.fill();
+  // 귀 — 머리 옆면 중심에 살빛 점. 옆얼굴 방향을 잡아 준다
+  ctx.fillStyle = c.head;
+  ctx.beginPath();
+  ctx.ellipse(hx - facing * h * 0.002, hy + h * 0.03, h * 0.011, h * 0.016, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // 가까운 팔 — 몸통 위에 얹힌다
@@ -637,38 +666,176 @@ function flame(ctx, x, y, size, t) {
 }
 
 /** 실내 행사장 배경 — 이상행동 장면들이 공유한다 */
-function hallBg(ctx, W, H, S) {
-  ctx.fillStyle = '#151920';
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#1c222c';
-  ctx.fillRect(0, 0, W, H * 0.52);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 1;
-  for (let i = 1; i < 9; i++) {
-    const x = (W / 9) * i;
+/** 자리 고정 난수 — 프레임(t)과 무관하게 자리마다 같은 값. 바닥 얼룩처럼
+    프레임마다 바뀌면 번쩍이는 질감에 쓴다. */
+function staticRand(i) {
+  const v = Math.sin(i * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/** 바닥 질감 — 타일별 명암 얼룩 + 광택 바닥의 조명 반사 스트릭.
+    실내 바닥이 "면" 이 아니라 "재질" 로 읽히게 만드는 두 요소다. */
+function floorTexture(ctx, W, H, S, horizon, lights) {
+  for (let row = 0; row < 6; row++) {
+    const y0 = horizon + (row * row * 6 + row * 14) * S;
+    const y1 = horizon + ((row + 1) ** 2 * 6 + (row + 1) * 14) * S;
+    if (y0 > H) break;
+    const cols = Math.max(6, Math.round(14 - row * 1.5));
+    for (let col = 0; col < cols; col++) {
+      const r = staticRand(row * 131 + col * 17.7);
+      if (r < 0.5) continue;
+      const a = (r - 0.5) * 0.05;
+      ctx.fillStyle = r > 0.8
+        ? `rgba(255,255,255,${a.toFixed(3)})`
+        : `rgba(0,0,0,${(a * 1.5).toFixed(3)})`;
+      ctx.fillRect((W / cols) * col, y0, W / cols - 2 * S, Math.min(y1, H) - y0);
+    }
+  }
+  for (const lx of lights) {
+    const g = ctx.createLinearGradient(0, horizon, 0, H);
+    g.addColorStop(0, 'rgba(210,222,240,0.11)');
+    g.addColorStop(0.5, 'rgba(210,222,240,0.04)');
+    g.addColorStop(1, 'rgba(210,222,240,0)');
+    ctx.fillStyle = g;
+    const wgt = W * 0.045;
     ctx.beginPath();
-    ctx.moveTo(x, H * 0.07);
-    ctx.lineTo(x, H * 0.52);
+    ctx.moveTo(lx - wgt * 0.4, horizon);
+    ctx.lineTo(lx + wgt * 0.4, horizon);
+    ctx.lineTo(lx + wgt * 1.7, H);
+    ctx.lineTo(lx - wgt * 1.7, H);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+/** 벤치 — 배경 소품. 알아볼 수 있는 실물이 하나 있으면 공간이 장소가 된다. */
+function bench(ctx, x, y, w, S) {
+  const h2 = w * 0.16;
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h2 * 1.5, w * 0.55, h2 * 0.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(52,48,44,0.95)';
+  for (const lx of [x + w * 0.08, x + w * 0.85]) ctx.fillRect(lx, y + h2 * 0.4, w * 0.055, h2);
+  const seat = ctx.createLinearGradient(0, y, 0, y + h2 * 0.5);
+  seat.addColorStop(0, 'rgba(128,110,90,0.95)');
+  seat.addColorStop(1, 'rgba(86,72,58,0.95)');
+  ctx.fillStyle = seat;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h2 * 0.45, 3 * S);
+  ctx.fill();
+}
+
+/** 입간판 — A자 스탠드 안내판. */
+function signboard(ctx, x, y, hgt, S) {
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(x, y, hgt * 0.34, hgt * 0.07, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(206,212,222,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(x - hgt * 0.29, y);
+  ctx.lineTo(x - hgt * 0.19, y - hgt);
+  ctx.lineTo(x + hgt * 0.19, y - hgt);
+  ctx.lineTo(x + hgt * 0.29, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(66,82,110,0.85)';
+  ctx.fillRect(x - hgt * 0.16, y - hgt * 0.86, hgt * 0.32, hgt * 0.15);
+  ctx.fillStyle = 'rgba(96,104,118,0.55)';
+  for (let i = 0; i < 3; i++) {
+    ctx.fillRect(x - hgt * 0.14, y - hgt * (0.58 - i * 0.14), hgt * (0.28 - i * 0.06), hgt * 0.05);
+  }
+}
+
+function hallBg(ctx, W, H, S) {
+  const horizon = H * 0.52;
+
+  // 공기 원근 — 벽 중단이 가장 밝고 앞바닥으로 오며 가라앉는다
+  const air = ctx.createLinearGradient(0, 0, 0, H);
+  air.addColorStop(0, '#242a33');
+  air.addColorStop(0.5, '#2a303a');
+  air.addColorStop(0.53, '#232830');
+  air.addColorStop(1, '#191d24');
+  ctx.fillStyle = air;
+  ctx.fillRect(0, 0, W, H);
+
+  // 벽 패널 — 이음매 사이 패널마다 명암이 조금씩 다르다(고정 난수)
+  const panels = 9;
+  for (let i = 0; i < panels; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${(0.01 + staticRand(i * 3.13) * 0.028).toFixed(3)})`;
+    ctx.fillRect((W / panels) * i + 1.5 * S, H * 0.055, W / panels - 3 * S, horizon - H * 0.055 - 8 * S);
+  }
+  ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+  ctx.lineWidth = 1.5 * S;
+  for (let i = 1; i < panels; i++) {
+    const x = (W / panels) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, H * 0.05);
+    ctx.lineTo(x, horizon - 8 * S);
     ctx.stroke();
   }
-  // 행사 현수막 띠
-  ctx.fillStyle = 'rgba(95,122,160,0.14)';
-  ctx.fillRect(0, H * 0.12, W, H * 0.055);
-  for (let i = 0; i < 3; i++) {
-    const lx = W * (0.18 + i * 0.32);
-    const g = ctx.createRadialGradient(lx, H * 0.05, 0, lx, H * 0.05, H * 0.5);
-    g.addColorStop(0, 'rgba(215,222,235,0.18)');
+
+  // 문 — 좌우 벽에 하나씩. 문틀 그늘 + 문짝 명암 + 손잡이
+  const door = (dx, dw) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.34)';
+    ctx.fillRect(dx - 3 * S, H * 0.24, dw + 6 * S, horizon - H * 0.24 - 8 * S);
+    const leaf = ctx.createLinearGradient(dx, 0, dx + dw, 0);
+    leaf.addColorStop(0, '#2e3540');
+    leaf.addColorStop(0.5, '#39414e');
+    leaf.addColorStop(1, '#2b323c');
+    ctx.fillStyle = leaf;
+    ctx.fillRect(dx, H * 0.25, dw, horizon - H * 0.25 - 9 * S);
+    ctx.fillStyle = 'rgba(210,220,235,0.5)';
+    ctx.fillRect(dx + dw * 0.72, H * 0.38, 3.5 * S, 14 * S);
+  };
+  door(W * 0.088, W * 0.052);
+  door(W * 0.862, W * 0.05);
+
+  // 비상구 표지 — 오른쪽 문 위. 녹색 발광이 야간 실내의 표식이다
+  const ex = W * 0.887;
+  const ey = H * 0.205;
+  const glow = ctx.createRadialGradient(ex, ey, 0, ex, ey, 40 * S);
+  glow.addColorStop(0, 'rgba(96,200,140,0.3)');
+  glow.addColorStop(1, 'rgba(96,200,140,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(ex - 40 * S, ey - 40 * S, 80 * S, 80 * S);
+  ctx.fillStyle = 'rgba(70,160,110,0.85)';
+  ctx.fillRect(ex - 17 * S, ey - 8 * S, 34 * S, 15 * S);
+
+  // 행사 현수막 띠 + 벽 포스터(내용은 흐릿한 인쇄 블록)
+  ctx.fillStyle = 'rgba(95,122,160,0.16)';
+  ctx.fillRect(0, H * 0.115, W, H * 0.055);
+  for (const [px, pw] of [[0.31, 0.05], [0.55, 0.06]]) {
+    ctx.fillStyle = 'rgba(200,210,225,0.1)';
+    ctx.fillRect(W * px, H * 0.27, W * pw, H * 0.16);
+    ctx.fillStyle = 'rgba(120,140,170,0.18)';
+    ctx.fillRect(W * px + 4 * S, H * 0.28, W * pw - 8 * S, H * 0.05);
+  }
+
+  // 천장 조명 — 광원 띠가 보이고, 빛 웅덩이가 아래로 퍼진다
+  const lights = [W * 0.18, W * 0.5, W * 0.82];
+  for (const lx of lights) {
+    ctx.fillStyle = 'rgba(228,236,248,0.5)';
+    ctx.fillRect(lx - 44 * S, H * 0.028, 88 * S, 5 * S);
+    const g = ctx.createRadialGradient(lx, H * 0.05, 0, lx, H * 0.05, H * 0.55);
+    g.addColorStop(0, 'rgba(215,222,235,0.2)');
     g.addColorStop(1, 'rgba(215,222,235,0)');
     ctx.fillStyle = g;
-    ctx.fillRect(lx - H * 0.5, 0, H, H * 0.6);
+    ctx.fillRect(lx - H * 0.55, 0, H * 1.1, H * 0.65);
   }
-  ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  ctx.fillRect(0, H * 0.515, W, 3 * S);
-  ctx.fillStyle = '#1a1f28';
-  ctx.fillRect(0, H * 0.52, W, H * 0.48);
-  ctx.strokeStyle = 'rgba(255,255,255,0.055)';
+
+  // 걸레받이와 벽·바닥 경계
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.fillRect(0, horizon - 8 * S, W, 8 * S);
+  ctx.fillStyle = 'rgba(255,255,255,0.09)';
+  ctx.fillRect(0, horizon - 1.5 * S, W, 3 * S);
+
+  // 바닥 원근 격자 — 이음매는 흐리게, 재질감은 floorTexture 가 만든다
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
   for (let i = 0; i < 6; i++) {
-    const y = H * 0.52 + (i * i * 6 + i * 14) * S;
+    const y = horizon + (i * i * 6 + i * 14) * S;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
@@ -676,10 +843,16 @@ function hallBg(ctx, W, H, S) {
   }
   for (let i = -5; i <= 5; i++) {
     ctx.beginPath();
-    ctx.moveTo(W * 0.5 + i * 80 * S, H * 0.52);
+    ctx.moveTo(W * 0.5 + i * 80 * S, horizon);
     ctx.lineTo(W * 0.5 + i * 240 * S, H);
     ctx.stroke();
   }
+
+  floorTexture(ctx, W, H, S, horizon, lights);
+
+  // 소품 — 동작이 지나는 가운데를 피해 가장자리에 놓는다
+  bench(ctx, W * 0.025, horizon + H * 0.05, W * 0.11, S);
+  signboard(ctx, W * 0.755, horizon + H * 0.09, H * 0.125, S);
 }
 
 /** CCTV 질감 — 주사선·노이즈·비네트. 장면 마지막에 얹는다. */
@@ -760,6 +933,16 @@ const SCENES = {
       ctx.moveTo(0, y);
       ctx.lineTo(W, y - 18 * S);
       ctx.stroke();
+    }
+    // 아스팔트 얼룩 — 자리 고정 반점과 물때. 면이 재질로 읽힌다
+    for (let i = 0; i < 130; i++) {
+      const r = staticRand(i * 9.31);
+      const px = staticRand(i * 3.7) * W;
+      const py = H * 0.48 + staticRand(i * 5.9) * H * 0.52;
+      const a = 0.015 + r * 0.035;
+      ctx.fillStyle = r > 0.6 ? `rgba(255,255,255,${a.toFixed(3)})` : `rgba(0,0,0,${(a * 1.4).toFixed(3)})`;
+      const sz = (2 + staticRand(i * 7.1) * 9) * S * (py / H);
+      ctx.fillRect(px, py, sz * (1 + staticRand(i * 1.9) * 3), sz * 0.5);
     }
 
     // ── 통제선: 기둥 사이에 걸린 경고 테이프 ──────────────────────
@@ -1006,6 +1189,11 @@ const SCENES = {
       ctx.stroke();
     }
 
+    // 바닥 재질 — 타일 얼룩과 조명 반사
+    floorTexture(ctx, W, H, S, H * 0.52, [W * 0.14, W * 0.38, W * 0.62, W * 0.86]);
+    // 승강장 벤치 — 오른쪽 벽 아래 배경 소품
+    bench(ctx, W * 0.8, H * 0.555, W * 0.1, S);
+
     // 승강장 안전선 — 노란 점자블록 띠
     ctx.fillStyle = 'rgba(196,160,66,0.5)';
     ctx.fillRect(0, H * 0.9, W, 10 * S);
@@ -1180,6 +1368,9 @@ const SCENES = {
       ctx.lineTo(W * 0.5 + i * 230 * S, H);
       ctx.stroke();
     }
+
+    // 바닥 재질 — 타일 얼룩과 조명 반사
+    floorTexture(ctx, W, H, S, H * 0.5, [W * 0.2, W * 0.5, W * 0.8]);
 
     // ── 경호 구역: 화면 안쪽(위). 차단봉 벽이 가로로 서고 가운데가 개구부다 ──
     const lineY = H * 0.74;
