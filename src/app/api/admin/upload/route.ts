@@ -90,13 +90,21 @@ export async function POST(request: Request) {
     }
     const access = await resolveBlobAccess().catch(() => 'private' as const);
     const pathname = `uploads/${techId}/${filename}`;
-    await put(pathname, Buffer.from(await file.arrayBuffer()), {
+    const blob = await put(pathname, Buffer.from(await file.arrayBuffer()), {
       // SDK 타입은 public 만 선언하지만 private 저장소도 같은 인자로 동작한다
       access: access as 'public',
       token: blobToken(),
       contentType: file.type,
+      /*
+        무작위 접미사를 끈다. 미디어 서빙 라우트(/api/media)는 정확한
+        경로로 서명하므로, 저장 경로에 접미사가 붙으면 우리가 돌려준
+        주소가 존재하지 않는 파일을 가리켜 화면에 아무것도 안 나온다.
+        파일명에 시각이 들어 있어 충돌은 없다.
+      */
+      addRandomSuffix: false,
     });
-    return NextResponse.json({ path: `/api/media/${pathname}` });
+    // 돌려주는 경로는 SDK 가 알려준 실제 저장 경로를 쓴다
+    return NextResponse.json({ path: `/api/media/${blob.pathname}` });
   }
 
   const dir = path.join(UPLOAD_ROOT, techId);

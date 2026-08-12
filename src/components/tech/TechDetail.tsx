@@ -388,12 +388,11 @@ export function TechDetail({
                         ))}
                       </div>
                     ) : null}
-                    {certNames.length > 0 ? (
-                      <p className="mt-2 text-sm text-ink-600">
-                        위 성능 지표 중 <span className="font-medium">인증</span> 표시가 붙은
-                        수치가 이 시험의 결과입니다.
-                      </p>
-                    ) : null}
+                    {/*
+                      지표와의 관계를 설명하는 문장은 두지 않는다 — 지표 셀의
+                      인증 칩과 이 블록의 시험명으로 관계는 이미 보이고,
+                      화면을 해설하는 문장은 읽는 사람을 헷갈리게만 했다.
+                    */}
                   </div>
                 </div>
               </div>
