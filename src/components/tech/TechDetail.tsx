@@ -171,7 +171,8 @@ export function TechDetail({
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
   );
-  const hasResources = tech.resources.length > 0 || related.length > 0;
+  // 산업군 칩도 이 구간에 살므로, 자료가 없어도 산업군만으로 구간은 선다
+  const hasResources = tech.resources.length > 0 || related.length > 0 || industries.length > 0;
 
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
@@ -269,25 +270,11 @@ export function TechDetail({
             </p>
 
             {/*
-              산업 표시는 산업군 하나로 통일한다. 주요 수요처를 따로 세우면
-              방문자에게는 같은 이야기가 두 줄로 반복되는 것으로 읽혔다 —
-              구체 도입처가 중요하면 위 문제 문장에 녹여 쓴다.
+              산업군 칩은 여기 두지 않는다 — 상단은 문제 문장이 주인공이고,
+              산업군은 '이 기술에서 어디로 이어지나' 성격이라 하단의 함께
+              쓰는 기술 옆이 제자리다. (산업 표시는 산업군 하나로 통일한다.
+              주요 수요처를 따로 세우면 같은 이야기가 두 줄로 반복된다.)
             */}
-            {industries.length > 0 ? (
-              <div className="mt-6 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
-                  산업군
-                </span>
-                {industries.map((industry) => (
-                  <span
-                    key={industry}
-                    className="rounded bg-ink-100 px-2 py-0.5 text-sm text-ink-700"
-                  >
-                    {industry}
-                  </span>
-                ))}
-              </div>
-            ) : null}
           </section>
 
           {/* 이 기술이 들어간 제품 — 기술을 보러 온 방문자를 구매 단위로 안내한다 */}
@@ -604,6 +591,23 @@ export function TechDetail({
                       >
                         {item.name_ko}
                       </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* 적용 산업군 — 상단에서 내려온 자리. 문제 문장 곁을 비우고 연결 정보끼리 모은다 */}
+              {industries.length > 0 ? (
+                <div className={tech.resources.length > 0 || related.length > 0 ? 'mt-6' : ''}>
+                  <h3 className="text-sm font-medium text-ink-700">적용 산업군</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {industries.map((industry) => (
+                      <span
+                        key={industry}
+                        className="rounded bg-ink-100 px-2.5 py-1 text-sm text-ink-700"
+                      >
+                        {industry}
+                      </span>
                     ))}
                   </div>
                 </div>
