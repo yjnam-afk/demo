@@ -18,16 +18,32 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
+  const [httpStatus, setHttpStatus] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
+        /*
+          파일을 먼저 직접 받는다. pdf.js 에 URL 을 그대로 주면 "왜"
+          실패했는지(파일이 없음 vs 렌더링 실패)를 구분할 수 없어,
+          관리자에게 다음 행동을 말해줄 수 없다.
+        */
+        const response = await fetch(url);
+        if (!response.ok) {
+          if (!cancelled) {
+            setHttpStatus(response.status);
+            setState('error');
+          }
+          return;
+        }
+        const data = new Uint8Array(await response.arrayBuffer());
+
         const pdfjs = await import('pdfjs-dist');
         pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
-        const doc = await pdfjs.getDocument({ url }).promise;
+        const doc = await pdfjs.getDocument({ data }).promise;
         const page = await doc.getPage(1);
         const canvas = canvasRef.current;
         const wrap = wrapRef.current;
@@ -59,7 +75,9 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
     <div ref={wrapRef} className="flex h-full w-full items-center justify-center bg-ink-50">
       {state === 'error' ? (
         <p className="p-6 text-center text-sm text-ink-400">
-          미리보기를 만들지 못했습니다. 아래에서 원문을 여세요.
+          {httpStatus
+            ? `원본 파일을 불러오지 못했습니다 (HTTP ${httpStatus}). 업로드가 중간에 끊긴 파일일 수 있습니다 — 관리자에서 다시 올려 주세요.`
+            : '미리보기를 만들지 못했습니다. 아래에서 원문을 여세요.'}
         </p>
       ) : (
         <canvas
