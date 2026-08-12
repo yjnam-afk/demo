@@ -462,11 +462,14 @@ export function TechDetail({
 
           {/* 6. 기술 구성 — 칸이 두세 개뿐이라 격자로 나란히 세운다 */}
           <Section id="composition" title="기술 구성" tick={style.bar}>
+            {/*
+              평가 데이터셋은 여기 다시 세우지 않는다 — 지표 셀 하단이 이미
+              지표별로 보여 주고 있어, 여기 모으면 같은 이름이 두 번 선다.
+            */}
             <div
               className={cn(
                 'grid gap-px overflow-hidden rounded-lg border border-ink-200 bg-ink-200',
-                (tech.base_model || tech.metrics.some((m) => m.dataset)) && 'sm:grid-cols-2',
-                tech.base_model && tech.metrics.some((m) => m.dataset) && 'lg:grid-cols-3',
+                tech.base_model && 'sm:grid-cols-2',
               )}
             >
               {/* 프리셋 id 면 라벨로, 직접 입력한 구분이면 그 문구 그대로 */}
@@ -475,17 +478,6 @@ export function TechDetail({
               </ValueCell>
               {tech.base_model ? (
                 <ValueCell label="베이스 모델">{tech.base_model}</ValueCell>
-              ) : null}
-              {tech.metrics.some((m) => m.dataset) ? (
-                <ValueCell label="평가 데이터셋">
-                  <ul className="flex flex-col gap-1">
-                    {[...new Set(tech.metrics.map((m) => m.dataset).filter(Boolean))].map(
-                      (dataset) => (
-                        <li key={dataset}>{dataset}</li>
-                      ),
-                    )}
-                  </ul>
-                </ValueCell>
               ) : null}
             </div>
           </Section>
