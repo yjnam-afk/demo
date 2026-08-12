@@ -107,7 +107,7 @@ function ground(ctx, W, H) {
  */
 const FIG_TONES = {
   alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)', hair: 'rgba(168,104,56,0.95)' },
-  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)', head: 'rgba(222,208,192,0.92)', hair: 'rgba(124,96,68,0.95)' },
+  normal: { jacket: 'rgba(188,198,216,0.9)', pants: 'rgba(104,120,152,0.9)', back: 'rgba(88,100,124,0.82)', arm: 'rgba(160,172,194,0.86)', head: 'rgba(226,206,186,0.94)', hair: 'rgba(122,92,62,0.95)' },
   dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)', hair: 'rgba(122,110,96,0.42)' },
 };
 
@@ -716,9 +716,9 @@ function floorTexture(ctx, W, H, S, horizon, lights) {
     // 조명마다 세기가 조금씩 다르다 — 똑같은 반사가 줄지어 서면 도형이 된다
     const gain = 0.7 + staticRand(lx * 0.37) * 0.6;
     const g = ctx.createLinearGradient(0, horizon, 0, H);
-    g.addColorStop(0, `rgba(210,222,240,${(0.11 * gain).toFixed(3)})`);
-    g.addColorStop(0.5, `rgba(210,222,240,${(0.04 * gain).toFixed(3)})`);
-    g.addColorStop(1, 'rgba(210,222,240,0)');
+    g.addColorStop(0, `rgba(236,228,208,${(0.11 * gain).toFixed(3)})`);
+    g.addColorStop(0.5, `rgba(236,228,208,${(0.04 * gain).toFixed(3)})`);
+    g.addColorStop(1, 'rgba(236,228,208,0)');
     ctx.fillStyle = g;
     const wgt = W * 0.045;
     ctx.beginPath();
@@ -856,11 +856,12 @@ function hallBg(ctx, W, H, S) {
   // 천장 조명 — 광원 띠가 보이고, 빛 웅덩이가 아래로 퍼진다
   const lights = [W * 0.18, W * 0.5, W * 0.82];
   for (const lx of lights) {
-    ctx.fillStyle = 'rgba(228,236,248,0.5)';
+    // 실내등은 약간 따뜻하다 — 무채색 조명은 색을 다 죽인다
+    ctx.fillStyle = 'rgba(248,240,218,0.55)';
     ctx.fillRect(lx - 44 * S, H * 0.028, 88 * S, 5 * S);
     const g = ctx.createRadialGradient(lx, H * 0.05, 0, lx, H * 0.05, H * 0.55);
-    g.addColorStop(0, 'rgba(215,222,235,0.2)');
-    g.addColorStop(1, 'rgba(215,222,235,0)');
+    g.addColorStop(0, 'rgba(240,230,206,0.22)');
+    g.addColorStop(1, 'rgba(240,230,206,0)');
     ctx.fillStyle = g;
     ctx.fillRect(lx - H * 0.55, 0, H * 1.1, H * 0.65);
   }
@@ -2516,7 +2517,7 @@ function renderScene(name, ctx, W, H, t, opts) {
   ctx.rotate(-0.011);
   ctx.scale(1.04, 1.04);
   ctx.translate(-W / 2, -H / 2);
-  ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.42) brightness(1.45) contrast(0.87)`;
+  ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.74) brightness(1.42) contrast(0.89)`;
   ctx.drawImage(os, 0, 0);
   ctx.restore();
   ctx.filter = 'none';
@@ -2537,11 +2538,11 @@ function renderScene(name, ctx, W, H, t, opts) {
   // 4) 센서 그레인
   sensorGrain(ctx, W, H, t);
 
-  // 5) 노출 흔들림 — 자동 노출이 미세하게 출렁인다
+  // 5) 노출 흔들림 — 자동 노출이 미세하게 출렁인다. 과하면 화면이 떨려 보인다
   const flick = Math.sin(t * 47.1) * 0.5 + Math.sin(t * 89.3) * 0.5;
   ctx.fillStyle = flick > 0
-    ? `rgba(255,255,255,${(0.012 * flick).toFixed(4)})`
-    : `rgba(0,0,0,${(-0.015 * flick).toFixed(4)})`;
+    ? `rgba(255,255,255,${(0.006 * flick).toFixed(4)})`
+    : `rgba(0,0,0,${(-0.008 * flick).toFixed(4)})`;
   ctx.fillRect(0, 0, W, H);
 }
 
