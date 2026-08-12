@@ -70,10 +70,7 @@ export function CompositionFlow({
                     <span className="numeric font-semibold text-ink-900">
                       {formatNumber(headline.value)}
                     </span>
-                    {/* 조건 단서는 값과 떨어지지 않는다 */}
-                    {headline.conditions.length > 0 ? (
-                      <span className="text-ink-400">· {headline.conditions.join(' · ')}</span>
-                    ) : null}
+                    {/* 조건 단서는 구성 흐름에 싣지 않는다 — 상세 지표 판이 보여 준다 */}
                   </span>
                 ) : null}
 

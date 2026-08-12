@@ -130,18 +130,27 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   {metric.source}
                 </span>
               ) : null}
-              {/*
-                조건 단서 — 값과 떨어지지 않는다. 어두운 판이라 밝은 회색으로
-                올린다. 단서가 여러 개면 각각이 한 덩어리로 줄바꿈된다.
-              */}
-              {metric.conditions
-                .filter((c) => c.trim())
-                .map((c) => (
-                  <span key={c} className="text-xs text-ink-400">
-                    · {c}
-                  </span>
-                ))}
             </div>
+
+            {/*
+              조건 단서 — 값과 떨어지지 않는다. 칩 줄에 잔글씨로 이어 붙이면
+              묻혀서 안 읽히므로, 한 줄에 하나씩 세우고 본문 크기로 올린다.
+              이 목록이 정직하게 보여야 위의 큰 숫자가 신뢰를 얻는다.
+            */}
+            {metric.conditions.filter((c) => c.trim()).length > 0 ? (
+              <ul className="mt-3 space-y-1 text-sm text-ink-300">
+                {metric.conditions
+                  .filter((c) => c.trim())
+                  .map((c) => (
+                    <li key={c} className="flex gap-2">
+                      <span aria-hidden className="text-ink-500">
+                        ·
+                      </span>
+                      {c}
+                    </li>
+                  ))}
+              </ul>
+            ) : null}
 
             {metric.dataset ? (
               <div className="mt-3 border-t border-white/10 pt-2.5 text-xs text-ink-500">

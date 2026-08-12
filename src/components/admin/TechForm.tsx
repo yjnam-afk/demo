@@ -381,7 +381,7 @@ export function TechForm({
       <Section
         id="section-business"
         title="해결하는 문제 / 도입 정보"
-        description="상세 화면의 첫 문단과 '도입 정보' 블록이 됩니다. 외부 공개하려면 모두 채워야 합니다."
+        description="상세 화면의 첫 문단과 '도입 정보' 블록이 됩니다. 문제 문장은 필수, 도입 정보는 확인된 것만 적으세요 — 비운 칸은 화면에서 생략됩니다."
       >
         <Field label="해결하는 문제" required hint="고객이 겪는 문제를 한 문장으로.">
           <TextArea
@@ -400,7 +400,8 @@ export function TechForm({
         */}
 
         <Row>
-          <Field label="입력 형식" required>
+          {/* 필수 아님 — 사양이 확인 안 된 기술에 형식을 지어 넣게 하지 않는다 */}
+          <Field label="입력 형식">
             <TextInput
               value={draft.business.io?.input ?? ''}
               placeholder="RTSP 영상 스트림"
@@ -411,7 +412,7 @@ export function TechForm({
               }
             />
           </Field>
-          <Field label="출력 형식" required>
+          <Field label="출력 형식">
             <TextInput
               value={draft.business.io?.output ?? ''}
               placeholder="이벤트 알림 + 대상 좌표"

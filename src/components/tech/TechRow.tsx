@@ -103,12 +103,11 @@ export function TechRow({ tech }: { tech: PublicTech }) {
                 <span className="text-xs text-ink-500">정량 목표 {evaluated.targetText}</span>
               ) : null}
             </div>
-            {/* 조건 단서 — 값과 떨어지지 않는다. 좁은 기둥이라 한 줄로 잇는다 */}
-            {headline.conditions.length > 0 ? (
-              <div className="mt-0.5 text-xs text-ink-400">
-                {headline.conditions.join(' · ')}
-              </div>
-            ) : null}
+            {/*
+              조건 단서는 목록에 싣지 않는다. 훑는 자리에 시험 조건을 다
+              늘어놓으면 소음이 되고, 전체 조건은 클릭 한 번 안쪽 상세
+              지표 판이 값 옆에 그대로 보여 준다.
+            */}
           </>
         ) : (
           <div className="text-xs leading-relaxed text-ink-400 sm:pt-3">

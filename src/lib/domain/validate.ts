@@ -40,21 +40,11 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     });
   }
 
-  if (!b.io?.input?.trim()) {
-    issues.push({
-      field: 'business.io.input',
-      label: '입력 형식',
-      message: '도입 검토에 필요한 항목입니다.',
-    });
-  }
-
-  if (!b.io?.output?.trim()) {
-    issues.push({
-      field: 'business.io.output',
-      label: '출력 형식',
-      message: '도입 검토에 필요한 항목입니다.',
-    });
-  }
+  /*
+    입력·출력 형식은 필수가 아니다. 필수로 강제하면 사양이 확인되지 않은
+    기술에 지어낸 형식을 넣게 된다 — 비우면 상세 화면이 그 줄을 생략한다.
+    비어 있다는 사실은 발행을 막는 대신 관리자 목록 경고로만 알린다.
+  */
 
   if (!b.maturity) {
     issues.push({
@@ -180,7 +170,12 @@ export function canPublish(tech: Tech): boolean {
 export function collectWarnings(tech: Tech): string[] {
   const warnings: string[] = [];
 
-  if (!tech.business.requirements || tech.business.requirements.filter((s) => s.trim()).length === 0) {
+  if (
+    !tech.business.io?.input?.trim() ||
+    !tech.business.io?.output?.trim() ||
+    !tech.business.requirements ||
+    tech.business.requirements.filter((s) => s.trim()).length === 0
+  ) {
     warnings.push('도입 정보 미비');
   }
   if (tech.metrics.length > 0 && tech.metrics.some((m) => !m.dataset?.trim())) {
