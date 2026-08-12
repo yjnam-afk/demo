@@ -33,7 +33,7 @@ export async function GET(
   }
 
   try {
-    const [access, { issueSignedToken, presignUrl, list }] = await Promise.all([
+    const [access, { issueSignedToken, presignUrl, list, get }] = await Promise.all([
       resolveBlobAccess(),
       import('@vercel/blob'),
     ]);
@@ -68,8 +68,6 @@ export async function GET(
       return found?.pathname ?? null;
     };
 
-    const presignedUrl = await presignFor(pathname);
-
     /*
       문서와 이미지는 함수가 본문을 중계한다. 두 가지 이유다:
        - 내장 뷰어(<object>)는 302 를 따라가지 않아 리다이렉트로는 빈 칸이 된다
@@ -78,6 +76,12 @@ export async function GET(
          본문을 내주면 그 차단을 지난다.
       문서·이미지는 수 MB 수준이라 중계 비용이 작다 — 큰 영상만 리다이렉트로
       남긴다 (영상은 함수 실행 시간 제한에 걸린다. 막힌 망에서는 드라이브가 길이다).
+
+      중계는 서명 주소를 쓰지 않는다. 서명 발급(issueSignedToken → presignUrl)은
+      실패 지점이 두 개인데, 그 중 하나만 어긋나도 올라가 있는 파일이 화면에서
+      죽는다 — 실제로 업로드 직후 확인(head)은 통과한 파일이 서빙에서만 502 로
+      끝나는 사고가 났다. get 은 head 와 같은 토큰 직접 인증이라 그 두 지점을
+      통째로 건너뛴다. 서명은 브라우저가 직접 여는 영상 리다이렉트에만 남는다.
     */
     const PROXY_TYPES: Record<string, string> = {
       pdf: 'application/pdf',
@@ -91,21 +95,24 @@ export async function GET(
     const extension = pathname.toLowerCase().split('.').pop() ?? '';
     const proxyType = PROXY_TYPES[extension];
     if (proxyType) {
-      let upstream = await fetch(presignedUrl);
-      if (upstream.status === 404) {
+      const fetchBlob = (target: string) => get(target, { access, token: blobToken() });
+      // get 은 404 를 null 로 돌려준다 — 그때만 접미사 치유를 시도한다
+      let result = await fetchBlob(pathname);
+      if (!result) {
         const healed = await healPathname();
-        if (healed) upstream = await fetch(await presignFor(healed));
+        if (healed) result = await fetchBlob(healed);
       }
-      if (!upstream.ok || !upstream.body) throw new Error(`업스트림 ${upstream.status}`);
-      return new Response(upstream.body, {
+      if (!result?.stream) throw new Error('저장소에 파일이 없습니다');
+      return new Response(result.stream as unknown as BodyInit, {
         headers: {
-          'Content-Type': upstream.headers.get('content-type') ?? proxyType,
+          'Content-Type': result.blob.contentType || proxyType,
           'Content-Disposition': 'inline',
           'Cache-Control': 'public, max-age=1800',
         },
       });
     }
 
+    const presignedUrl = await presignFor(pathname);
     return NextResponse.redirect(presignedUrl, {
       status: 302,
       // 서명 유효기간(1시간)보다 짧게 캐시한다. 재생 중 만료로 끊기지 않게 여유를 둔다.
