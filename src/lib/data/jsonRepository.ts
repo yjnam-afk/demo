@@ -40,6 +40,28 @@ async function writeJson(name: string, data: unknown): Promise<void> {
   return store.write(name, data);
 }
 
+/**
+ * 저장된 기록의 세대 차이를 읽기 경계에서 흡수한다.
+ *
+ * 저장소의 JSON 은 파서를 거치지 않고 Tech 로 읽히므로, 스키마가 바뀌면
+ * 예전 기록이 새 코드가 기대하는 모양이 아닐 수 있다. 조건 단서가 그렇다 —
+ * 과거에는 condition 단수 문자열이었고, conditions 배열이 없으면 화면이
+ * conditions.length 에서 죽는다. 여기서 반드시 배열로 만들어 돌려준다.
+ */
+function migrateTech(tech: Tech): Tech {
+  return {
+    ...tech,
+    metrics: (tech.metrics ?? []).map((metric) => {
+      if (Array.isArray(metric.conditions)) return metric;
+      const legacy = (metric as { condition?: unknown }).condition;
+      return {
+        ...metric,
+        conditions: typeof legacy === 'string' && legacy.trim() ? [legacy.trim()] : [],
+      };
+    }),
+  };
+}
+
 function normalize(s: string): string {
   return s.toLowerCase().trim();
 }
@@ -78,7 +100,8 @@ function paginate(items: Tech[], query: TechQuery): TechPage {
 
 export class JsonTechRepository implements TechRepository {
   private async allTech(): Promise<Tech[]> {
-    return readJson<Tech[]>(TECH, []);
+    const all = await readJson<Tech[]>(TECH, []);
+    return all.map(migrateTech);
   }
 
   private async saveTech(list: Tech[]): Promise<void> {
