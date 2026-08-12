@@ -31,10 +31,12 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 export function CatalogFilters({ facets, params }: { facets: Facets; params: URLSearchParams }) {
   const selectedDomain = params.get('domain');
 
+  const domainShort = new Map(facets.domains.map((d) => [d.value, d.short_label]));
+
   /*
-    카테고리는 대분류의 하위 구분이다. 축을 골랐을 때만 그 축의 카테고리를
-    보여준다 — 전체 보기에서 모든 축의 카테고리를 섞어 놓으면 층위가 다른
-    값들이 한 줄에 서고, 축 표식을 달아도 소음이 된다.
+    카테고리는 대분류를 따른다. 축을 고르면 그 축의 카테고리만 서고,
+    전체에서는 모든 카테고리가 축 표식을 달고 선다 — 여기서 바로 골라
+    들어가는 길을 막을 이유는 없다.
 
     검증 등급 필터는 두지 않는다. 방문자는 풀려는 문제(축·카테고리·산업)로
     찾지 "개발 중인 것만 보기" 로 찾지 않고, 검증 등급은 카드마다 배지로
@@ -43,11 +45,12 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
   */
   const visibleCategories = selectedDomain
     ? facets.categories.filter((c) => c.domain === selectedDomain)
-    : [];
+    : facets.categories;
 
-  const categoryChips: ChipItem[] = visibleCategories.map(({ value, count }) => ({
+  const categoryChips: ChipItem[] = visibleCategories.map(({ value, domain, count }) => ({
     key: value,
     label: value,
+    note: selectedDomain ? undefined : domainShort.get(domain),
     count,
     href: toggledHref(params, 'category', value),
     active: isActive(params, 'category', value),

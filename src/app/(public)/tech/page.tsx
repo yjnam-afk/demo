@@ -86,7 +86,13 @@ export default async function TechCatalogPage({
         */}
         <CatalogFilters facets={facets} params={params} />
         <div className="mt-6">
+          {/*
+            key 가 필터 상태다. 목록은 "더보기" 누적을 위해 상태를 들고
+            있어서, 필터가 바뀌어도 같은 자리의 컴포넌트면 이전 목록이
+            그대로 남는다 — 필터가 바뀌면 새로 세운다.
+          */}
           <TechGrid
+            key={carriedQuery.toString()}
             initialItems={page.items.map((tech) => toPublicTech(tech, maps.labels, maps.domains))}
             total={page.total}
             hasMore={page.hasMore}
