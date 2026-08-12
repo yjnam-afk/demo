@@ -18,6 +18,8 @@ function toPublicDemo(demo: Demo): PublicDemo {
       return { type: 'video', src: demo.src, src_webm: demo.src_webm, poster: demo.poster };
     case 'metric':
       return { type: 'metric', highlight_metric: demo.highlight_metric };
+    case 'none':
+      return { type: 'none' };
   }
 }
 

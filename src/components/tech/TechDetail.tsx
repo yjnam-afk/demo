@@ -175,7 +175,9 @@ export function TechDetail({
 
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
-    tech.demo.type !== 'metric' ? { id: 'demo', label: '데모' } : null,
+    tech.demo.type !== 'metric' && tech.demo.type !== 'none'
+      ? { id: 'demo', label: '데모' }
+      : null,
     tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     certified ? { id: 'certification', label: '인증' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
@@ -318,7 +320,7 @@ export function TechDetail({
             metric 타입은 여기서 내지 않는다 — 보여줄 것이 지표뿐이라, 바로
             아래 성능 지표 블록과 같은 숫자가 두 번 서게 된다.
           */}
-          {tech.demo.type !== 'metric' ? (
+          {tech.demo.type !== 'metric' && tech.demo.type !== 'none' ? (
             <Section id="demo" title="데모" tick={style.bar}>
               <DemoSlot tech={tech} />
             </Section>
@@ -467,7 +469,10 @@ export function TechDetail({
                 tech.base_model && tech.metrics.some((m) => m.dataset) && 'lg:grid-cols-3',
               )}
             >
-              <ValueCell label="개발 구분">{DEV_TYPE_LABELS[tech.dev_type]}</ValueCell>
+              {/* 프리셋 id 면 라벨로, 직접 입력한 구분이면 그 문구 그대로 */}
+              <ValueCell label="개발 구분">
+                {DEV_TYPE_LABELS[tech.dev_type as keyof typeof DEV_TYPE_LABELS] ?? tech.dev_type}
+              </ValueCell>
               {tech.base_model ? (
                 <ValueCell label="베이스 모델">{tech.base_model}</ValueCell>
               ) : null}

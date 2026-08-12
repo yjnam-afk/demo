@@ -49,6 +49,8 @@ export function VerificationBadge({
 }
 
 export function DemoTypeBadge({ type, onDark = false }: { type: DemoType; onDark?: boolean }) {
+  // 없는 데모를 배지로 광고하지 않는다
+  if (type === 'none') return null;
   return (
     <span
       className={`inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium ${

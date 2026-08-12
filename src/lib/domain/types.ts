@@ -95,7 +95,9 @@ export type Demo =
       type: 'metric';
       /** 크게 보여줄 지표의 label. 없으면 첫 지표를 쓴다. */
       highlight_metric?: string;
-    };
+    }
+  /** 보여줄 데모가 없는 기술 — 상세 화면은 데모 블록을 생략한다. */
+  | { type: 'none' };
 
 export interface Media {
   thumbnail?: string;
@@ -156,7 +158,11 @@ export interface Tech {
     /** 인증 유효기간. 예: 2024.3.28 ~ 2027.3.27 */
     valid_until?: string;
   };
-  dev_type: DevType;
+  /**
+   * 개발 구분. DEV_TYPES 프리셋 id 이거나 관리자가 직접 입력한 자유 문구다 —
+   * 화면은 프리셋이면 라벨로, 아니면 입력된 문구 그대로 보여준다.
+   */
+  dev_type: string;
   base_model?: string;
   demo: Demo;
   media: Media;
@@ -199,7 +205,8 @@ export type PublicDemo =
   | { type: 'api'; input_kind: InputKind; samples: DemoSample[] }
   | { type: 'embed' }
   | { type: 'video'; src: string; src_webm?: string; poster?: string }
-  | { type: 'metric'; highlight_metric?: string };
+  | { type: 'metric'; highlight_metric?: string }
+  | { type: 'none' };
 
 export type PublicMetric = Omit<Metric, 'dataset_url'>;
 

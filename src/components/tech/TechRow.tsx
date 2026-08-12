@@ -112,8 +112,13 @@ export function TechRow({ tech }: { tech: PublicTech }) {
         ) : (
           <div className="text-xs leading-relaxed text-ink-400 sm:pt-3">
             정량 지표 없음
-            <br />
-            데모로 확인
+            {/* 데모 없는 기술에 "데모로 확인" 은 거짓 안내가 된다 */}
+            {tech.demo.type !== 'none' ? (
+              <>
+                <br />
+                데모로 확인
+              </>
+            ) : null}
           </div>
         )}
       </div>

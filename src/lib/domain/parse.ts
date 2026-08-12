@@ -4,7 +4,6 @@ import {
   DEPLOYMENTS,
   OFFERING_KINDS,
   RELEASE_STAGES,
-  DEV_TYPES,
   INPUT_KINDS,
   MATURITY_LEVELS,
   METRIC_DIRECTIONS,
@@ -179,6 +178,8 @@ function parseDemo(value: unknown): Demo {
       };
     case 'metric':
       return { type, highlight_metric: str(raw.highlight_metric) || undefined };
+    case 'none':
+      return { type };
   }
 }
 
@@ -252,7 +253,13 @@ export function parseTechInput(
       cert_no: str(verification.cert_no) || undefined,
       valid_until: str(verification.valid_until) || undefined,
     },
-    dev_type: pick(DEV_TYPES, raw.dev_type, '개발 구분'),
+    // 프리셋 id 또는 자유 문구. 목록에 없다고 거부하면 "커스텀" 같은
+    // 구분을 만들 수 없다 — 비어 있지만 않으면 받는다.
+    dev_type: (() => {
+      const v = str(raw.dev_type);
+      if (!v) throw new InvalidInputError('개발 구분을 입력해야 합니다.');
+      return v;
+    })(),
     base_model: str(raw.base_model) || undefined,
     demo: parseDemo(raw.demo),
     media: {

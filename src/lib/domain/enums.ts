@@ -74,7 +74,9 @@ export const DEV_TYPE_LABELS: Record<DevType, string> = {
   opensource: '오픈소스 활용',
 };
 
-export const DEMO_TYPES = ['api', 'embed', 'video', 'metric'] as const;
+// 'none' — 보여줄 데모가 아직 없는 기술. 데모를 필수로 강제하면 지표만
+// 있는 기술을 등록할 수 없어, 없음도 정식 선택지로 둔다.
+export const DEMO_TYPES = ['api', 'embed', 'video', 'metric', 'none'] as const;
 export type DemoType = (typeof DEMO_TYPES)[number];
 
 export const DEMO_TYPE_LABELS: Record<DemoType, string> = {
@@ -82,6 +84,7 @@ export const DEMO_TYPE_LABELS: Record<DemoType, string> = {
   embed: '웹 데모',
   video: '데모 영상',
   metric: '성능 지표',
+  none: '데모 없음',
 };
 
 export const INPUT_KINDS = ['video_upload', 'image_upload', 'text_input', 'none'] as const;

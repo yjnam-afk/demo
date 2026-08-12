@@ -672,11 +672,28 @@ export function TechForm({
 
         <Row>
           <Field label="개발 구분" required>
-            <Select
-              value={draft.dev_type}
-              options={options(DEV_TYPES, DEV_TYPE_LABELS)}
-              onChange={(dev_type) => set({ dev_type })}
-            />
+            {/* 프리셋에 없는 구분은 직접 입력한다 — 값이 프리셋 밖이면 입력 칸이 열린다 */}
+            <div className="flex flex-col gap-2">
+              <Select
+                value={
+                  (DEV_TYPES as readonly string[]).includes(draft.dev_type)
+                    ? draft.dev_type
+                    : '__custom'
+                }
+                options={[
+                  ...options(DEV_TYPES, DEV_TYPE_LABELS),
+                  { value: '__custom', label: '직접 입력…' },
+                ]}
+                onChange={(picked) => set({ dev_type: picked === '__custom' ? '' : picked })}
+              />
+              {!(DEV_TYPES as readonly string[]).includes(draft.dev_type) ? (
+                <TextInput
+                  value={draft.dev_type}
+                  placeholder="개발 구분을 직접 입력 (예: 커스텀)"
+                  onChange={(event) => set({ dev_type: event.target.value })}
+                />
+              ) : null}
+            </div>
           </Field>
           <Field label="베이스 모델">
             <TextInput

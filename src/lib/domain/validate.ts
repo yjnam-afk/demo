@@ -170,14 +170,11 @@ export function canPublish(tech: Tech): boolean {
 export function collectWarnings(tech: Tech): string[] {
   const warnings: string[] = [];
 
-  if (
-    !tech.business.io?.input?.trim() ||
-    !tech.business.io?.output?.trim() ||
-    !tech.business.requirements ||
-    tech.business.requirements.filter((s) => s.trim()).length === 0
-  ) {
-    warnings.push('도입 정보 미비');
-  }
+  /*
+    '도입 정보 미비' 경고는 없앴다. 도입 정보가 선택 항목이 된 이상,
+    확인된 사양이 없어 비워 둔 것은 관리자의 올바른 선택이다 — 그 선택에
+    경고를 붙이면 다시 지어낸 값을 넣으라고 떠미는 셈이 된다.
+  */
   if (tech.metrics.length > 0 && tech.metrics.some((m) => !m.dataset?.trim())) {
     warnings.push('평가 데이터셋 미기재');
   }
