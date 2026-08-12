@@ -276,7 +276,6 @@ export class JsonTechRepository implements TechRepository {
 
     const domains = new Map<Domain, number>();
     const categories = new Map<string, { domain: Domain; count: number }>();
-    const verification = new Map<VerificationLevel, number>();
     const industries = new Map<string, number>();
 
     for (const tech of all) {
@@ -287,8 +286,6 @@ export class JsonTechRepository implements TechRepository {
         domain: tech.domain,
         count: (catEntry?.count ?? 0) + 1,
       });
-
-      verification.set(tech.verification.level, (verification.get(tech.verification.level) ?? 0) + 1);
 
       // 산업군 집계는 마스터 id 를 쓰는 tech.industries 만 센다.
       // target_industries 는 "공항·항만" 같은 자유 서술이라 필터 값으로 섞으면
@@ -307,7 +304,6 @@ export class JsonTechRepository implements TechRepository {
         count,
       })),
       categories: [...categories].map(([value, meta]) => ({ value, ...meta })),
-      verification: [...verification].map(([value, count]) => ({ value, count })),
       industries: [...industries]
         .map(([value, count]) => ({ value, label: industryLabels.get(value) ?? value, count }))
         .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),

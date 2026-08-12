@@ -1,10 +1,6 @@
 import Link from 'next/link';
 import { ExpandableChips, type ChipItem } from './ExpandableChips';
-import {
-  VERIFICATION_LABELS,
-  type Accent,
-  type VerificationLevel,
-} from '@/lib/domain/enums';
+import { type Accent } from '@/lib/domain/enums';
 import { isActive, toggledHref } from '@/lib/ui/query';
 import { accentStyle, cn } from '@/lib/ui/domain';
 
@@ -12,7 +8,6 @@ export interface Facets {
   /** 라벨과 색은 저장소가 마스터에서 붙여 준다 — 화면은 다시 조회하지 않는다. */
   domains: { value: string; label: string; short_label: string; accent: Accent; count: number }[];
   categories: { value: string; domain: string; count: number }[];
-  verification: { value: VerificationLevel; count: number }[];
   industries: { value: string; label: string; count: number }[];
 }
 
@@ -36,28 +31,26 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 export function CatalogFilters({ facets, params }: { facets: Facets; params: URLSearchParams }) {
   const selectedDomain = params.get('domain');
 
-  const domainShort = new Map(facets.domains.map((d) => [d.value, d.short_label]));
+  /*
+    카테고리는 대분류의 하위 구분이다. 축을 골랐을 때만 그 축의 카테고리를
+    보여준다 — 전체 보기에서 모든 축의 카테고리를 섞어 놓으면 층위가 다른
+    값들이 한 줄에 서고, 축 표식을 달아도 소음이 된다.
 
-  // 대분류가 선택되면 그 축의 하위 카테고리만 보여준다.
+    검증 등급 필터는 두지 않는다. 방문자는 풀려는 문제(축·카테고리·산업)로
+    찾지 "개발 중인 것만 보기" 로 찾지 않고, 검증 등급은 카드마다 배지로
+    이미 보인다 — 필터로 세우면 가장 약한 항목만 모아 보는 길을 안내하는
+    셈이 된다.
+  */
   const visibleCategories = selectedDomain
     ? facets.categories.filter((c) => c.domain === selectedDomain)
-    : facets.categories;
+    : [];
 
-  const categoryChips: ChipItem[] = visibleCategories.map(({ value, domain, count }) => ({
+  const categoryChips: ChipItem[] = visibleCategories.map(({ value, count }) => ({
     key: value,
     label: value,
-    note: selectedDomain ? undefined : domainShort.get(domain),
     count,
     href: toggledHref(params, 'category', value),
     active: isActive(params, 'category', value),
-  }));
-
-  const verificationChips: ChipItem[] = facets.verification.map(({ value, count }) => ({
-    key: value,
-    label: VERIFICATION_LABELS[value],
-    count,
-    href: toggledHref(params, 'verification', value),
-    active: isActive(params, 'verification', value),
   }));
 
   // 값은 산업군 id, 표시는 라벨. 둘을 섞으면 칩에 raw id 가 그대로 보인다.
@@ -114,12 +107,6 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
         {categoryChips.length > 0 ? (
           <Group label="카테고리">
             <ExpandableChips items={categoryChips} />
-          </Group>
-        ) : null}
-
-        {verificationChips.length > 0 ? (
-          <Group label="검증 등급">
-            <ExpandableChips items={verificationChips} />
           </Group>
         ) : null}
 

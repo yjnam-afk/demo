@@ -10,7 +10,6 @@ import {
   isCatalogView,
   type CatalogView,
 } from '@/components/tech/catalogView';
-import { DomainPillars } from '@/components/site/DomainPillars';
 import { BRAND } from '@/lib/brand';
 import { getRepo } from '@/lib/data';
 import { listPublicOfferings } from '@/lib/data/offerings';
@@ -51,10 +50,9 @@ export default async function TechCatalogPage({
   const selectedDomain = (query.domain ?? null) as Domain | null;
 
   const repo = getRepo();
-  const [page, facets, summary, industries] = await Promise.all([
+  const [page, facets, industries] = await Promise.all([
     repo.listPublic(query),
     repo.publicFacets(),
-    repo.publicSummary(),
     repo.listIndustries(),
   ]);
   const maps = await loadPublicMaps(repo);
@@ -82,16 +80,10 @@ export default async function TechCatalogPage({
     body = (
       <>
         {/*
-          기술 영역은 기술 자체의 분류다. 제품별·산업별 보기에서는 제품과
-          산업군이 이미 묶는 기준이므로, 이 블록은 기술 영역별 보기에만 둔다.
+          대분류 선택은 필터 바의 탭 하나로만 한다. 전에는 위에 축 카드
+          (DomainPillars)가 한 벌 더 있었는데, 같은 것을 고르는 조작이 두 벌
+          서면 방문자는 둘의 차이를 찾으려 든다. 축 카드는 랜딩의 소개용이다.
         */}
-        <div className="mb-6">
-          <DomainPillars
-            domains={maps.domainList}
-            counts={summary.domainCounts}
-            selected={selectedDomain}
-          />
-        </div>
         <CatalogFilters facets={facets} params={params} />
         <div className="mt-6">
           <TechGrid

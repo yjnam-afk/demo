@@ -80,7 +80,6 @@ export interface TechRepository {
       count: number;
     }[];
     categories: { value: string; domain: Domain; count: number }[];
-    verification: { value: VerificationLevel; count: number }[];
     industries: { value: string; label: string; count: number }[];
   }>;
 
