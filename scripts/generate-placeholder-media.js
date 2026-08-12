@@ -67,14 +67,14 @@ async function renderFrames(page, scene, variant, dir) {
   const total = FPS * SECONDS;
   for (let i = 0; i < total; i++) {
     const data = await page.evaluate(
-      ([s, t, compact]) => {
+      ([s, t, compact, clean]) => {
         const c = document.getElementById('c');
         const ctx = c.getContext('2d');
         // 카메라 장면은 광학 파이프라인(블러·그레인·블룸)을 거친다
-        window.renderScene(s, ctx, c.width, c.height, t, { compact });
+        window.renderScene(s, ctx, c.width, c.height, t, { compact, clean });
         return c.toDataURL('image/png').slice('data:image/png;base64,'.length);
       },
-      [scene, i / total, variant.compact],
+      [scene, i / total, variant.compact, Boolean(variant.clean)],
     );
     fs.writeFileSync(
       path.join(dir, `${String(i).padStart(4, '0')}.png`),
@@ -104,7 +104,12 @@ function encode(dir, out, variant) {
 
 async function main() {
   // 인자로 장면 이름을 주면 그 작업만 만든다. 없으면 전부.
-  const only = process.argv.slice(2);
+  // --clean: 오버레이 없는 원본만 만든다 (<이름>.clean.mp4) —
+  // 영상→영상 실사 변환 모델에 넣는 소스다. 박스·글자가 구워져 있으면
+  // 변환 모델이 그것까지 뭉갠다.
+  const args = process.argv.slice(2);
+  const cleanMode = args.includes('--clean');
+  const only = args.filter((a) => a !== '--clean');
   const jobs = only.length > 0 ? JOBS.filter((job) => only.includes(job.scene)) : JOBS;
 
   const browser = await chromium.launch({
@@ -118,6 +123,14 @@ async function main() {
 
   for (const job of jobs) {
     const out = path.join(ROOT, job.out);
+
+    if (cleanMode) {
+      const cleanDir = path.join(TMP, `${job.scene}-clean`);
+      await renderFrames(page, job.scene, { ...FULL, clean: true }, cleanDir);
+      encode(cleanDir, out.replace(/\.mp4$/, '.clean.mp4'), FULL);
+      console.log('rendered (clean)', job.out.replace(/\.mp4$/, '.clean.mp4'));
+      continue;
+    }
 
     const fullDir = path.join(TMP, `${job.scene}-full`);
     const total = await renderFrames(page, job.scene, FULL, fullDir);

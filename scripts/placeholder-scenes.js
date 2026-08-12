@@ -1275,10 +1275,15 @@ const SCENES = {
       phase: walkPhase,
       stride,
       facing,
-      tone: flagged ? 'alert' : 'normal',
+      // 클린 모드(실사 변환용 원본)에서는 경고색도 오버레이다 — 사람은 사람 색
+      tone: flagged && !opts?.clean ? 'alert' : 'normal',
     });
 
-    // ── 탐지 오버레이 ────────────────────────────────────────────────
+    // ── 탐지 오버레이 — 클린 모드에서는 전부 생략한다 ─────────────────
+    if (opts?.clean) {
+      cctvTexture(ctx, W, H, t);
+      return;
+    }
     // 감시 구역
     const zx = W * 0.2;
     const zw = W * 0.6;
