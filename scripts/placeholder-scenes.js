@@ -2181,10 +2181,10 @@ const SCENES = {
     const S = scaleOf(H);
     const z = opts?.compact ? 1.25 : 1;
 
-    // 야간 야외 — 하늘·부스 실루엣·바닥
-    ctx.fillStyle = '#0e1116';
+    // 야간 야외 — 하늘·부스 실루엣·바닥. 줄 조명 덕에 완전한 어둠은 아니다
+    ctx.fillStyle = '#20242c';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#12161d';
+    ctx.fillStyle = '#1a1e26';
     ctx.fillRect(0, 0, W, H * 0.5);
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(0, H * 0.495, W, 2 * S);
@@ -2232,19 +2232,32 @@ const SCENES = {
     const size = H * 0.2 * z * (0.35 + 0.65 * grow) * (1 + Math.sin(t * Math.PI * 2 * 7) * 0.04);
     flame(ctx, fx, fy, size, t);
 
-    // 대피하는 인원 — 불길 반대쪽으로 뛰어간다
-    if (t > 0.5) {
-      const k = (t - 0.5) / 0.5;
+    /*
+      대피하는 인원 — 뛴다. 뛰는 몸은 (1) 이동이 빠르고(화면을 1초대에
+      가로질러 밖으로 사라진다) (2) 상체가 앞으로 기울고 (3) 보폭과
+      팔다리 스윙이 크다. 걷기 속도로 미끄러지면 산책이 된다.
+    */
+    const runner = (k, y, hh, tone) => {
+      const x = fx + W * 0.06 + k * (W * 1.08 - fx - W * 0.06);
+      if (x > W + hh) return;
+      ctx.save();
+      ctx.translate(x, y - hh * 0.5);
+      ctx.rotate(0.17);
+      ctx.translate(-x, -(y - hh * 0.5));
       walker(ctx, {
-        x: fx + W * 0.12 + k * W * 0.34,
-        y: H * 0.86,
-        h: H * WALKER_H * z * 0.9,
-        phase: t * Math.PI * 40,
-        stride: 1.15,
+        x,
+        y,
+        h: hh,
+        phase: t * Math.PI * 46,
+        stride: 1.38,
         facing: 1,
-        tone: 'normal',
+        tone,
       });
-    }
+      ctx.restore();
+    };
+    if (t > 0.45) runner(Math.min(1, (t - 0.45) / 0.3), H * 0.86, H * WALKER_H * z * 0.9, 'normal');
+    // 두 번째 인원 — 조금 늦게, 더 안쪽(작게) 뛰어간다
+    if (t > 0.6) runner(Math.min(1, (t - 0.6) / 0.34), H * 0.79, H * WALKER_H * z * 0.7, 'dim');
 
     if (detected) {
       detectPulse(ctx, fx, fy - size * 0.5, size * 0.7, (t - DETECT) / 0.14, S * z);
