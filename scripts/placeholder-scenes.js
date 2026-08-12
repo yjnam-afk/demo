@@ -106,20 +106,21 @@ function ground(ctx, W, H) {
  *  tone: 'alert' | 'normal' | 'dim'
  */
 const FIG_TONES = {
-  alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)' },
-  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)', head: 'rgba(222,208,192,0.92)' },
-  dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)' },
+  alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)', hair: 'rgba(122,72,40,0.95)' },
+  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)', head: 'rgba(222,208,192,0.92)', hair: 'rgba(58,64,76,0.92)' },
+  dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)', hair: 'rgba(78,84,96,0.4)' },
 };
 
 function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
 
   /*
-    인체 비례(약 7.5등신)로 그린다. 이전 판은 다리를 곡선 하나로 그려
-    무릎이 없었고 머리가 몸통색이라 조각상처럼 읽혔다. 여기서는
-    엉덩이-무릎-발목, 어깨-팔꿈치-손의 2관절 사슬을 삼각함수로 세워
-    걸을 때 무릎이 실제로 굽는다. 먼 쪽 팔다리는 어두운 톤 — 이 원근
-    단서 하나가 실루엣을 입체로 만든다.
+    인체 비례(약 7.5등신) 실루엣.
+     - 엉덩이-무릎-발목 / 어깨-팔꿈치-손 2관절 사슬: 걸을 때 무릎·팔꿈치가 굽는다
+     - 허벅지보다 정강이가 가늘고, 발에는 신발이 있고, 팔 끝에는 손이 있다
+     - 머리는 머리카락 층 + 살색 얼굴: "사람" 으로 읽히는 가장 큰 단서다
+     - 보행 바운스: 다리가 벌어진 순간 몸이 내려간다 — 미끄러지는 느낌을 없앤다
+     - 먼 쪽 팔다리는 어두운 톤(원근), 상체에는 좌우 명암(부피)
   */
   ctx.save();
   ctx.lineCap = 'round';
@@ -131,94 +132,114 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.ellipse(x, y + h * 0.012, h * 0.2, h * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const hipY = y - h * 0.5;
-  const shoulderY = y - h * 0.79;
+  const drop = Math.abs(Math.sin(phase)) * h * 0.018 * Math.min(1, stride);
+  const hipY = y - h * 0.5 + drop;
+  const shoulderY = y - h * 0.79 + drop;
   const thigh = h * 0.25;
   const shin = h * 0.25;
   const upperArm = h * 0.155;
-  const forearm = h * 0.15;
+  const forearm = h * 0.14;
 
-  /* 다리 — 허벅지 진자 + 내딛는 다리만 무릎이 접힌다 */
-  const leg = (p, rest, color, width) => {
+  const leg = (p, rest, color) => {
     const swing = Math.sin(p) * 0.5 * stride;
-    // 무릎 굽힘: 다리가 뒤에서 앞으로 넘어오는 구간에서 최대
     const bend = Math.max(0, Math.sin(p - 1.1)) * 0.85 * stride + 0.05;
     const kx = x + facing * (Math.sin(swing) * thigh + rest);
     const ky = hipY + Math.cos(swing) * thigh;
     const ax = kx + facing * Math.sin(swing - bend) * shin;
     const ay = ky + Math.cos(swing - bend) * shin;
     ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.lineWidth = h * 0.078;
     ctx.beginPath();
     ctx.moveTo(x + facing * rest * 0.3, hipY);
     ctx.lineTo(kx, ky);
+    ctx.stroke();
+    ctx.lineWidth = h * 0.052;
+    ctx.beginPath();
+    ctx.moveTo(kx, ky);
     ctx.lineTo(ax, ay);
     ctx.stroke();
-    // 발 — 발목에서 진행 방향으로 짧게
-    ctx.lineWidth = width * 0.72;
+    // 신발 — 앞으로 나갈 때 발끝이 들리고, 뒤로 밀 때 발끝이 처진다
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(-facing * swing * 0.55);
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(ax + facing * h * 0.07, ay + h * 0.005);
-    ctx.stroke();
+    ctx.roundRect(facing > 0 ? -h * 0.02 : -h * 0.075, -h * 0.016, h * 0.095, h * 0.03, h * 0.012);
+    ctx.fill();
+    ctx.restore();
   };
 
-  /* 팔 — 어깨 진자 + 항상 조금 굽은 팔꿈치 */
-  const arm = (p, color, width) => {
+  const arm = (p, color, width, handColor) => {
     const swing = Math.sin(p) * 0.42 * stride;
-    const ex = x + facing * (h * 0.01 + Math.sin(swing) * upperArm);
-    const ey = shoulderY + h * 0.015 + Math.cos(swing) * upperArm;
+    const sx = x + facing * h * 0.005;
+    const sy = shoulderY + h * 0.02;
+    const ex = sx + facing * Math.sin(swing) * upperArm;
+    const ey = sy + Math.cos(swing) * upperArm;
     const hx = ex + facing * Math.sin(swing + 0.45) * forearm;
     const hy = ey + Math.cos(swing + 0.45) * forearm;
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
     ctx.beginPath();
-    ctx.moveTo(x + facing * h * 0.005, shoulderY + h * 0.02);
+    ctx.moveTo(sx, sy);
     ctx.lineTo(ex, ey);
     ctx.lineTo(hx, hy);
     ctx.stroke();
+    // 손
+    ctx.fillStyle = handColor;
+    ctx.beginPath();
+    ctx.arc(hx, hy + h * 0.012, h * 0.024, 0, Math.PI * 2);
+    ctx.fill();
   };
 
   // 먼 쪽부터 — 팔, 다리 (어두운 톤이 뒤에 깔린다)
-  arm(phase, c.back, h * 0.046);
-  leg(phase + Math.PI, -h * 0.016, c.back, h * 0.066);
-  // 가까운 다리
-  leg(phase, h * 0.016, c.pants, h * 0.07);
+  arm(phase, c.back, h * 0.044, c.back);
+  leg(phase + Math.PI, -h * 0.016, c.back);
+  leg(phase, h * 0.016, c.pants);
 
-  // 몸통 — 어깨가 넓고 허리로 좁아지는 상체. 옆선을 곡선으로 깎는다.
+  /* 몸통 — 어깨가 넓고 허리로 좁아진다. 같은 경로에 명암을 겹쳐 부피를 만든다. */
+  const torso = () => {
+    ctx.beginPath();
+    ctx.moveTo(x - h * 0.105, shoulderY);
+    ctx.quadraticCurveTo(x + facing * h * 0.01, shoulderY - h * 0.028, x + h * 0.105, shoulderY);
+    ctx.quadraticCurveTo(x + h * 0.1, hipY - h * 0.14, x + h * 0.072, hipY + h * 0.02);
+    ctx.lineTo(x - h * 0.072, hipY + h * 0.02);
+    ctx.quadraticCurveTo(x - h * 0.1, hipY - h * 0.14, x - h * 0.105, shoulderY);
+    ctx.closePath();
+  };
+  torso();
   ctx.fillStyle = c.jacket;
-  ctx.beginPath();
-  ctx.moveTo(x - h * 0.105, shoulderY);
-  ctx.quadraticCurveTo(x + facing * h * 0.01, shoulderY - h * 0.028, x + h * 0.105, shoulderY);
-  ctx.quadraticCurveTo(x + h * 0.1, hipY - h * 0.14, x + h * 0.072, hipY + h * 0.02);
-  ctx.lineTo(x - h * 0.072, hipY + h * 0.02);
-  ctx.quadraticCurveTo(x - h * 0.1, hipY - h * 0.14, x - h * 0.105, shoulderY);
-  ctx.closePath();
+  ctx.fill();
+  const shade = ctx.createLinearGradient(x - facing * h * 0.105, 0, x + facing * h * 0.105, 0);
+  shade.addColorStop(0, 'rgba(0,0,0,0.16)');
+  shade.addColorStop(0.55, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(255,255,255,0.1)');
+  torso();
+  ctx.fillStyle = shade;
   ctx.fill();
 
-  // 목 — 머리가 몸에 붙어 있게 하는 한 획
+  // 목
   ctx.strokeStyle = c.head;
-  ctx.lineWidth = h * 0.042;
+  ctx.lineWidth = h * 0.04;
   ctx.beginPath();
-  ctx.moveTo(x + facing * h * 0.012, shoulderY + h * 0.005);
-  ctx.lineTo(x + facing * h * 0.022, shoulderY - h * 0.045);
+  ctx.moveTo(x + facing * h * 0.012, shoulderY + h * 0.004);
+  ctx.lineTo(x + facing * h * 0.022, shoulderY - h * 0.042);
   ctx.stroke();
 
-  // 머리 — 세로로 살짝 긴 타원, 진행 방향으로 반걸음 앞
+  /* 머리 — 머리카락 층 위에 얼굴을 진행 방향으로 조금 치우쳐 얹는다.
+     뒤통수·정수리에 머리카락 띠가 남아 옆얼굴로 읽힌다. */
+  const hx = x + facing * h * 0.026;
+  const hy = shoulderY - h * 0.103 + drop * 0.3;
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
+  ctx.ellipse(hx - facing * h * 0.004, hy - h * 0.006, h * 0.062, h * 0.073, facing * 0.06, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = c.head;
   ctx.beginPath();
-  ctx.ellipse(
-    x + facing * h * 0.026,
-    shoulderY - h * 0.105,
-    h * 0.06,
-    h * 0.072,
-    facing * 0.06,
-    0,
-    Math.PI * 2,
-  );
+  ctx.ellipse(hx + facing * h * 0.017, hy + h * 0.014, h * 0.047, h * 0.056, facing * 0.06, 0, Math.PI * 2);
   ctx.fill();
 
   // 가까운 팔 — 몸통 위에 얹힌다
-  arm(phase + Math.PI, c.arm, h * 0.05);
+  arm(phase + Math.PI, c.arm, h * 0.048, c.head);
 
   ctx.restore();
 }
@@ -236,8 +257,13 @@ function lyingFigure(ctx, { x, y, h, tone }) {
   ctx.fillRect(x - len * 0.46, by - h * 0.042, len * 0.46, h * 0.088);
   ctx.fillStyle = c.jacket;
   ctx.fillRect(x - len * 0.02, by - h * 0.05, len * 0.4, h * 0.105);
+  ctx.fillStyle = c.hair;
   ctx.beginPath();
-  ctx.arc(x + len * 0.45, by, h * 0.085, 0, Math.PI * 2);
+  ctx.arc(x + len * 0.46, by, h * 0.075, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = c.head;
+  ctx.beginPath();
+  ctx.arc(x + len * 0.43, by + h * 0.012, h * 0.055, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -279,9 +305,13 @@ function sittingFigure(ctx, { x, y, h, facing, tone }) {
   ctx.moveTo(x + facing * h * 0.02, shoulderY + h * 0.05);
   ctx.quadraticCurveTo(x + facing * h * 0.14, y - h * 0.34, x + facing * h * 0.15, y - h * 0.27);
   ctx.stroke();
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
+  ctx.arc(x + facing * h * 0.026, shoulderY - h * 0.145, h * 0.078, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = c.head;
   ctx.beginPath();
-  ctx.arc(x + facing * h * 0.03, shoulderY - h * 0.14, h * 0.08, 0, Math.PI * 2);
+  ctx.arc(x + facing * h * 0.047, shoulderY - h * 0.125, h * 0.057, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
