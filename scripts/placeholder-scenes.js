@@ -198,18 +198,21 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   /* 몸통 — 어깨가 넓고 허리로 좁아진다. 같은 경로에 명암을 겹쳐 부피를 만든다. */
   const torso = () => {
+    // 어깨는 목에서 바깥으로 흘러내린다(승모근 경사). 어깨 끝이 목보다
+    // 높거나 각지면 뽕 들어간 정장처럼 읽힌다.
     ctx.beginPath();
-    ctx.moveTo(x - h * 0.105, shoulderY);
-    ctx.quadraticCurveTo(x + facing * h * 0.01, shoulderY - h * 0.028, x + h * 0.105, shoulderY);
-    ctx.quadraticCurveTo(x + h * 0.1, hipY - h * 0.14, x + h * 0.072, hipY + h * 0.02);
-    ctx.lineTo(x - h * 0.072, hipY + h * 0.02);
-    ctx.quadraticCurveTo(x - h * 0.1, hipY - h * 0.14, x - h * 0.105, shoulderY);
+    ctx.moveTo(x - h * 0.086, shoulderY + h * 0.012);
+    ctx.quadraticCurveTo(x - h * 0.04, shoulderY - h * 0.018, x, shoulderY - h * 0.02);
+    ctx.quadraticCurveTo(x + h * 0.04, shoulderY - h * 0.018, x + h * 0.086, shoulderY + h * 0.012);
+    ctx.quadraticCurveTo(x + h * 0.084, hipY - h * 0.14, x + h * 0.064, hipY + h * 0.02);
+    ctx.lineTo(x - h * 0.064, hipY + h * 0.02);
+    ctx.quadraticCurveTo(x - h * 0.084, hipY - h * 0.14, x - h * 0.086, shoulderY + h * 0.012);
     ctx.closePath();
   };
   torso();
   ctx.fillStyle = c.jacket;
   ctx.fill();
-  const shade = ctx.createLinearGradient(x - facing * h * 0.105, 0, x + facing * h * 0.105, 0);
+  const shade = ctx.createLinearGradient(x - facing * h * 0.086, 0, x + facing * h * 0.086, 0);
   shade.addColorStop(0, 'rgba(0,0,0,0.16)');
   shade.addColorStop(0.55, 'rgba(0,0,0,0)');
   shade.addColorStop(1, 'rgba(255,255,255,0.1)');
@@ -229,13 +232,19 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
      뒤통수·정수리에 머리카락 띠가 남아 옆얼굴로 읽힌다. */
   const hx = x + facing * h * 0.026;
   const hy = shoulderY - h * 0.103 + drop * 0.3;
+  // 머리 전체를 머리카락색으로 깔고, 얼굴은 앞아래 사분면에만 얹는다.
+  // 얼굴이 머리를 다 덮으면 머리카락이 사라져 마네킹이 된다.
   ctx.fillStyle = c.hair;
   ctx.beginPath();
-  ctx.ellipse(hx - facing * h * 0.004, hy - h * 0.006, h * 0.062, h * 0.073, facing * 0.06, 0, Math.PI * 2);
+  ctx.ellipse(hx, hy, h * 0.06, h * 0.071, facing * 0.06, 0, Math.PI * 2);
+  ctx.fill();
+  // 뒷목 머리선
+  ctx.beginPath();
+  ctx.ellipse(hx - facing * h * 0.038, hy + h * 0.05, h * 0.024, h * 0.035, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = c.head;
   ctx.beginPath();
-  ctx.ellipse(hx + facing * h * 0.017, hy + h * 0.014, h * 0.047, h * 0.056, facing * 0.06, 0, Math.PI * 2);
+  ctx.ellipse(hx + facing * h * 0.03, hy + h * 0.026, h * 0.034, h * 0.044, facing * 0.1, 0, Math.PI * 2);
   ctx.fill();
 
   // 가까운 팔 — 몸통 위에 얹힌다
