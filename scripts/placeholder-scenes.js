@@ -106,9 +106,9 @@ function ground(ctx, W, H) {
  *  tone: 'alert' | 'normal' | 'dim'
  */
 const FIG_TONES = {
-  alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)', hair: 'rgba(122,72,40,0.95)' },
-  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)', head: 'rgba(222,208,192,0.92)', hair: 'rgba(58,64,76,0.92)' },
-  dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)', hair: 'rgba(78,84,96,0.4)' },
+  alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)', hair: 'rgba(168,104,56,0.95)' },
+  normal: { jacket: 'rgba(196,204,216,0.88)', pants: 'rgba(132,142,158,0.85)', back: 'rgba(104,112,126,0.8)', arm: 'rgba(168,177,192,0.85)', head: 'rgba(222,208,192,0.92)', hair: 'rgba(124,96,68,0.95)' },
+  dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)', hair: 'rgba(122,110,96,0.42)' },
 };
 
 function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
