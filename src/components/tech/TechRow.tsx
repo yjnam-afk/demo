@@ -100,7 +100,7 @@ export function TechRow({ tech }: { tech: PublicTech }) {
               </span>
               {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구를 생략한다 */}
               {evaluated.targetText ? (
-                <span className="text-xs text-ink-500">목표 {evaluated.targetText}</span>
+                <span className="text-xs text-ink-500">정량 목표 {evaluated.targetText}</span>
               ) : null}
             </div>
             {/* 조건 단서 — 값과 떨어지지 않는다. 좁은 기둥이라 한 줄로 잇는다 */}

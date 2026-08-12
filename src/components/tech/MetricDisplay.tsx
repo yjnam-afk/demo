@@ -61,7 +61,7 @@ export function MetricStat({
           {formatNumber(metric.value)}
         </span>
         {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
-        {targetText ? <span className="text-sm text-ink-500">목표 {targetText}</span> : null}
+        {targetText ? <span className="text-sm text-ink-500">정량 목표 {targetText}</span> : null}
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
         {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
@@ -105,7 +105,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                 {formatNumber(metric.value)}
               </span>
               {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
-              {targetText ? <span className="text-sm text-ink-400">목표 {targetText}</span> : null}
+              {targetText ? <span className="text-sm text-ink-400">정량 목표 {targetText}</span> : null}
               {ratePercent ? (
                 <span className="numeric text-sm text-ink-400">달성률 {ratePercent}</span>
               ) : null}
