@@ -18,10 +18,22 @@ import { cn } from '@/lib/ui/domain';
 export function MainNav() {
   const pathname = usePathname();
 
+  /*
+    메뉴는 기술 하나다. 이 포털이 소개하는 대상이 기술이고, 제품은 랜딩의
+    제품 구간과 기술 상세의 "이 기술이 들어간 제품" 링크로 닿는다 —
+    제품에서 시작하는 이야기는 회사 공식 사이트의 몫이다.
+    산업별·제품 화면에 있을 때도 기술 메뉴가 켜진다. 모두 기술을 묶거나
+    담은 화면이라, 켜진 메뉴가 없으면 길을 잃은 것처럼 보인다.
+  */
   const items = [
-    // 산업별 화면은 기술을 산업으로 묶은 것이므로 기술 메뉴가 켜진다
-    { href: '/tech', label: '기술', active: pathname.startsWith('/tech') || pathname.startsWith('/industries') },
-    { href: '/products', label: '제품', active: pathname.startsWith('/products') },
+    {
+      href: '/tech',
+      label: '기술',
+      active:
+        pathname.startsWith('/tech') ||
+        pathname.startsWith('/industries') ||
+        pathname.startsWith('/products'),
+    },
   ];
 
   return (
