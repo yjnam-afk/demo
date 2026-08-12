@@ -99,8 +99,8 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     if (metric.target !== undefined && !Number.isFinite(metric.target)) {
       issues.push({
         field: `metrics.${index}.value`,
-        label: `${name} 목표값`,
-        message: '목표값은 비우거나 숫자여야 합니다.',
+        label: `${name} 정량 목표`,
+        message: '정량 목표는 비우거나 숫자여야 합니다.',
       });
     }
   });

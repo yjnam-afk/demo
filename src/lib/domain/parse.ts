@@ -104,7 +104,7 @@ function parseMetrics(value: unknown): Metric[] {
       */
       target:
         typeof raw.target === 'number' || str(raw.target) !== ''
-          ? num(raw.target, `지표 "${label}" 의 목표값`)
+          ? num(raw.target, `지표 "${label}" 의 정량 목표`)
           : undefined,
       // 방향은 기본값을 두지 않는다. 누락되면 저장을 막아 관리자가 반드시 고르게 한다.
       direction: pick(METRIC_DIRECTIONS, raw.direction, `지표 "${label}" 의 방향`),

@@ -506,7 +506,7 @@ export function TechForm({
                     목표값은 선택 — KISA 같은 인증 성적서는 측정값만 싣는다.
                     근거 없는 목표를 지어 넣느니 비워 두는 쪽이 맞다.
                   */}
-                  <Field label="목표값">
+                  <Field label="정량 목표">
                     <TextInput
                       value={metric.target}
                       inputMode="decimal"
