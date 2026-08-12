@@ -603,6 +603,53 @@ export function TechForm({
           </Field>
         </Row>
 
+        {/*
+          인증 상세 — 제3자 인증일 때만 편다. 전에는 시험명을 지표의
+          데이터셋 이름에 실어 나르는 우회로였는데, 결과보고서의 인증번호·
+          유효기간까지 담으려면 제 필드가 있어야 한다. 상세 화면의 인증
+          블록이 이 값을 그대로 쓴다.
+        */}
+        {draft.verification.level === 'third_party' ? (
+          <>
+            <Row>
+              <Field
+                label="인증 시험명"
+                hint="인증 블록의 제목. 비우면 지표의 인증 데이터셋 이름으로 대신합니다."
+              >
+                <TextInput
+                  value={draft.verification.cert_name ?? ''}
+                  placeholder="지능형 CCTV 성능시험인증(침입)"
+                  onChange={(event) =>
+                    set({ verification: { ...draft.verification, cert_name: event.target.value } })
+                  }
+                />
+              </Field>
+              <Field label="인증번호">
+                <TextInput
+                  value={draft.verification.cert_no ?? ''}
+                  placeholder="KISA-IC-2024-004"
+                  onChange={(event) =>
+                    set({ verification: { ...draft.verification, cert_no: event.target.value } })
+                  }
+                />
+              </Field>
+            </Row>
+            <Row>
+              <Field label="인증 유효기간">
+                <TextInput
+                  value={draft.verification.valid_until ?? ''}
+                  placeholder="2024.3.28 ~ 2027.3.27"
+                  onChange={(event) =>
+                    set({
+                      verification: { ...draft.verification, valid_until: event.target.value },
+                    })
+                  }
+                />
+              </Field>
+            </Row>
+          </>
+        ) : null}
+
         <Row>
           <Field label="개발 구분" required>
             <Select

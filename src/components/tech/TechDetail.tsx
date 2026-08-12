@@ -147,20 +147,26 @@ export function TechDetail({
     시험 항목인지는 셀 안의 출처 칩이 가른다. 인증 구간은 숫자를 다시
     세우지 않고 그 평가를 공인한 기관·시험명을 밝힌다.
 
-    인증 시험명은 별도 필드가 없어 인증 수치의 평가 데이터셋 이름에 실려
-    있다("지능형 CCTV 성능시험인증(침입)" 등). 인증 출처가 붙은 지표의
-    데이터셋을 모으면 인증 목록이 된다.
+    시험명은 검증 구간의 인증 시험명 필드가 우선이고, 비어 있으면 예전
+    방식대로 인증 출처가 붙은 지표의 데이터셋 이름에서 모은다(필드가
+    생기기 전에 입력된 기술들을 위한 하위 호환).
   */
   const certNames = certified
-    ? [
-        ...new Set(
-          tech.metrics
-            .filter((metric) => metric.source && /인증/.test(metric.source))
-            .map((metric) => metric.dataset)
-            .filter((name): name is string => Boolean(name?.trim())),
-        ),
-      ]
+    ? tech.verification.cert_name?.trim()
+      ? [tech.verification.cert_name.trim()]
+      : [
+          ...new Set(
+            tech.metrics
+              .filter((metric) => metric.source && /인증/.test(metric.source))
+              .map((metric) => metric.dataset)
+              .filter((name): name is string => Boolean(name?.trim())),
+          ),
+        ]
     : [];
+  const certMeta = [
+    tech.verification.cert_no ? `인증번호 ${tech.verification.cert_no}` : null,
+    tech.verification.valid_until ? `유효기간 ${tech.verification.valid_until}` : null,
+  ].filter(Boolean);
 
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
@@ -388,6 +394,9 @@ export function TechDetail({
                           </p>
                         ))}
                       </div>
+                    ) : null}
+                    {certMeta.length > 0 ? (
+                      <p className="mt-1.5 text-sm text-ink-500">{certMeta.join(' · ')}</p>
                     ) : null}
                     {/*
                       지표와의 관계를 설명하는 문장은 두지 않는다 — 지표 셀의

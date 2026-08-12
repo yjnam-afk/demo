@@ -132,7 +132,16 @@ export interface Tech {
   metrics: Metric[];
   /** draft 는 부분 입력을 허용하고, 발행 시점에 완전성을 검사한다. */
   business: Partial<Business>;
-  verification: { level: VerificationLevel; body?: string };
+  verification: {
+    level: VerificationLevel;
+    body?: string;
+    /** 인증 시험명 — 상세 화면 인증 블록의 제목. 예: 지능형 CCTV 성능시험인증(침입) */
+    cert_name?: string;
+    /** 인증번호. 예: KISA-IC-2024-004 */
+    cert_no?: string;
+    /** 인증 유효기간. 예: 2024.3.28 ~ 2027.3.27 */
+    valid_until?: string;
+  };
   dev_type: DevType;
   base_model?: string;
   demo: Demo;

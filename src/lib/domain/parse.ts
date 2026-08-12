@@ -235,6 +235,9 @@ export function parseTechInput(
     verification: {
       level: pick(VERIFICATION_LEVELS, verification.level, '검증 등급'),
       body: str(verification.body) || undefined,
+      cert_name: str(verification.cert_name) || undefined,
+      cert_no: str(verification.cert_no) || undefined,
+      valid_until: str(verification.valid_until) || undefined,
     },
     dev_type: pick(DEV_TYPES, raw.dev_type, '개발 구분'),
     base_model: str(raw.base_model) || undefined,
