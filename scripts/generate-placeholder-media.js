@@ -84,7 +84,7 @@ async function renderFrames(page, scene, variant, dir) {
   return total;
 }
 
-function encode(dir, out, variant) {
+function encode(dir, out, variant, { skipWebm = false } = {}) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const input = ['-framerate', String(FPS), '-i', path.join(dir, '%04d.png')];
 
@@ -95,6 +95,7 @@ function encode(dir, out, variant) {
     '-movflags', '+faststart', '-an', out,
   ]);
 
+  if (skipWebm) return;
   execFileSync(ffmpeg, [
     '-y', '-loglevel', 'error', ...input,
     '-c:v', 'libvpx-vp9', '-b:v', variant.vp9, '-row-mt', '1', '-an',
@@ -127,7 +128,8 @@ async function main() {
     if (cleanMode) {
       const cleanDir = path.join(TMP, `${job.scene}-clean`);
       await renderFrames(page, job.scene, { ...FULL, clean: true }, cleanDir);
-      encode(cleanDir, out.replace(/\.mp4$/, '.clean.mp4'), FULL);
+      // 변환 모델에는 mp4 하나면 된다 — webm 까지 만들면 지울 파일만 는다
+      encode(cleanDir, out.replace(/\.mp4$/, '.clean.mp4'), FULL, { skipWebm: true });
       console.log('rendered (clean)', job.out.replace(/\.mp4$/, '.clean.mp4'));
       continue;
     }
