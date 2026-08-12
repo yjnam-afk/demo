@@ -673,6 +673,27 @@ function staticRand(i) {
   return v - Math.floor(v);
 }
 
+/** 표면 얼룩 — 실제 벽·바닥에 균일한 면은 없다. 저주파 명암 얼룩을
+    두 옥타브(크게 12개 + 중간 26개) 깔아 도형의 평평함을 깬다. */
+function surfaceMottle(ctx, W, H) {
+  const blot = (seed, count, rMin, rSpan) => {
+    for (let i = 0; i < count; i++) {
+      const px = staticRand(seed + i * 17.3) * W;
+      const py = staticRand(seed + i * 31.9) * H;
+      const r = (rMin + staticRand(seed + i * 5.3) * rSpan) * H;
+      const bright = staticRand(seed + i * 2.7) > 0.45;
+      const a = 0.018 + staticRand(seed + i * 9.7) * 0.032;
+      const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+      g.addColorStop(0, bright ? `rgba(235,240,248,${a.toFixed(3)})` : `rgba(0,0,0,${(a * 1.3).toFixed(3)})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(px - r, py - r, r * 2, r * 2);
+    }
+  };
+  blot(7, 12, 0.18, 0.3);
+  blot(211, 26, 0.04, 0.09);
+}
+
 /** 바닥 질감 — 타일별 명암 얼룩 + 광택 바닥의 조명 반사 스트릭.
     실내 바닥이 "면" 이 아니라 "재질" 로 읽히게 만드는 두 요소다. */
 function floorTexture(ctx, W, H, S, horizon, lights) {
@@ -692,9 +713,11 @@ function floorTexture(ctx, W, H, S, horizon, lights) {
     }
   }
   for (const lx of lights) {
+    // 조명마다 세기가 조금씩 다르다 — 똑같은 반사가 줄지어 서면 도형이 된다
+    const gain = 0.7 + staticRand(lx * 0.37) * 0.6;
     const g = ctx.createLinearGradient(0, horizon, 0, H);
-    g.addColorStop(0, 'rgba(210,222,240,0.11)');
-    g.addColorStop(0.5, 'rgba(210,222,240,0.04)');
+    g.addColorStop(0, `rgba(210,222,240,${(0.11 * gain).toFixed(3)})`);
+    g.addColorStop(0.5, `rgba(210,222,240,${(0.04 * gain).toFixed(3)})`);
     g.addColorStop(1, 'rgba(210,222,240,0)');
     ctx.fillStyle = g;
     const wgt = W * 0.045;
@@ -705,6 +728,22 @@ function floorTexture(ctx, W, H, S, horizon, lights) {
     ctx.lineTo(lx - wgt * 1.7, H);
     ctx.closePath();
     ctx.fill();
+  }
+
+  // 스커프 자국 — 바닥에 끌린 짧은 흔적들. 방향과 길이가 제각각이다
+  const S2 = scaleOf(H);
+  for (let i = 0; i < 18; i++) {
+    const px = staticRand(500 + i * 7.9) * W;
+    const py = horizon + staticRand(500 + i * 13.1) * (H - horizon);
+    const depth = 0.45 + ((py - horizon) / (H - horizon)) * 0.8;
+    const len = (10 + staticRand(500 + i * 3.3) * 42) * S2 * depth;
+    const ang = (staticRand(500 + i * 5.1) - 0.5) * 0.5;
+    ctx.strokeStyle = `rgba(0,0,0,${(0.03 + staticRand(500 + i * 11.7) * 0.05).toFixed(3)})`;
+    ctx.lineWidth = (1 + staticRand(500 + i * 2.3) * 2.2) * S2;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px + Math.cos(ang) * len, py + Math.sin(ang) * len * 0.4);
+    ctx.stroke();
   }
 }
 
@@ -766,10 +805,11 @@ function hallBg(ctx, W, H, S) {
     ctx.fillStyle = `rgba(255,255,255,${(0.01 + staticRand(i * 3.13) * 0.028).toFixed(3)})`;
     ctx.fillRect((W / panels) * i + 1.5 * S, H * 0.055, W / panels - 3 * S, horizon - H * 0.055 - 8 * S);
   }
-  ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)';
   ctx.lineWidth = 1.5 * S;
   for (let i = 1; i < panels; i++) {
-    const x = (W / panels) * i;
+    // 이음매 간격을 미세하게 흔든다 — 완벽히 등간격인 벽은 도면이다
+    const x = (W / panels) * i + (staticRand(i * 41.3) - 0.5) * 8 * S;
     ctx.beginPath();
     ctx.moveTo(x, H * 0.05);
     ctx.lineTo(x, horizon - 8 * S);
@@ -803,13 +843,13 @@ function hallBg(ctx, W, H, S) {
   ctx.fillStyle = 'rgba(70,160,110,0.85)';
   ctx.fillRect(ex - 17 * S, ey - 8 * S, 34 * S, 15 * S);
 
-  // 행사 현수막 띠 + 벽 포스터(내용은 흐릿한 인쇄 블록)
-  ctx.fillStyle = 'rgba(95,122,160,0.16)';
+  // 행사 현수막 띠 + 벽 포스터 — 색이 튀면 도형이 된다. 무채색에 가깝게
+  ctx.fillStyle = 'rgba(140,152,168,0.12)';
   ctx.fillRect(0, H * 0.115, W, H * 0.055);
   for (const [px, pw] of [[0.31, 0.05], [0.55, 0.06]]) {
-    ctx.fillStyle = 'rgba(200,210,225,0.1)';
+    ctx.fillStyle = 'rgba(200,208,220,0.1)';
     ctx.fillRect(W * px, H * 0.27, W * pw, H * 0.16);
-    ctx.fillStyle = 'rgba(120,140,170,0.18)';
+    ctx.fillStyle = 'rgba(130,142,160,0.16)';
     ctx.fillRect(W * px + 4 * S, H * 0.28, W * pw - 8 * S, H * 0.05);
   }
 
@@ -832,7 +872,7 @@ function hallBg(ctx, W, H, S) {
   ctx.fillRect(0, horizon - 1.5 * S, W, 3 * S);
 
   // 바닥 원근 격자 — 이음매는 흐리게, 재질감은 floorTexture 가 만든다
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.032)';
   ctx.lineWidth = 1;
   for (let i = 0; i < 6; i++) {
     const y = horizon + (i * i * 6 + i * 14) * S;
@@ -853,6 +893,9 @@ function hallBg(ctx, W, H, S) {
   // 소품 — 동작이 지나는 가운데를 피해 가장자리에 놓는다
   bench(ctx, W * 0.025, horizon + H * 0.05, W * 0.11, S);
   signboard(ctx, W * 0.755, horizon + H * 0.09, H * 0.125, S);
+
+  // 마지막에 얼룩 — 벽·바닥·소품을 한 공기로 묶는다
+  surfaceMottle(ctx, W, H);
 }
 
 /** CCTV 질감 — 주사선·노이즈·비네트. 장면 마지막에 얹는다. */
@@ -944,6 +987,7 @@ const SCENES = {
       const sz = (2 + staticRand(i * 7.1) * 9) * S * (py / H);
       ctx.fillRect(px, py, sz * (1 + staticRand(i * 1.9) * 3), sz * 0.5);
     }
+    surfaceMottle(ctx, W, H);
 
     // ── 통제선: 기둥 사이에 걸린 경고 테이프 ──────────────────────
     /*
@@ -1193,6 +1237,7 @@ const SCENES = {
     floorTexture(ctx, W, H, S, H * 0.52, [W * 0.14, W * 0.38, W * 0.62, W * 0.86]);
     // 승강장 벤치 — 오른쪽 벽 아래 배경 소품
     bench(ctx, W * 0.8, H * 0.555, W * 0.1, S);
+    surfaceMottle(ctx, W, H);
 
     // 승강장 안전선 — 노란 점자블록 띠
     ctx.fillStyle = 'rgba(196,160,66,0.5)';
@@ -1371,6 +1416,7 @@ const SCENES = {
 
     // 바닥 재질 — 타일 얼룩과 조명 반사
     floorTexture(ctx, W, H, S, H * 0.5, [W * 0.2, W * 0.5, W * 0.8]);
+    surfaceMottle(ctx, W, H);
 
     // ── 경호 구역: 화면 안쪽(위). 차단봉 벽이 가로로 서고 가운데가 개구부다 ──
     const lineY = H * 0.74;
@@ -2463,7 +2509,13 @@ function renderScene(name, ctx, W, H, t, opts) {
   // 1) 렌즈+노출 — 미세 블러가 벡터 윤곽을 죽이고, 올린 노출이 야간 CCTV 의
   //    "밝게 끌어올린 중간 회색" 을 만든다. 어두운 원장면을 그대로 두면
   //    실사가 아니라 그냥 어두운 그림으로 읽힌다.
+  //    카메라는 살짝 기울인다 — 완벽하게 수평·정면인 구도가 연출 티의
+  //    근원이다. 실제 설치 카메라는 어딘가 반드시 삐뚤다.
   ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-0.011);
+  ctx.scale(1.04, 1.04);
+  ctx.translate(-W / 2, -H / 2);
   ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.42) brightness(1.45) contrast(0.87)`;
   ctx.drawImage(os, 0, 0);
   ctx.restore();
