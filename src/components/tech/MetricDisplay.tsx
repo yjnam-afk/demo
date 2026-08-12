@@ -51,10 +51,11 @@ export function MetricStat({
         >
           {formatNumber(metric.value)}
         </span>
-        <span className="text-sm text-ink-500">목표 {targetText}</span>
+        {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
+        {targetText ? <span className="text-sm text-ink-500">목표 {targetText}</span> : null}
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-        <AchievementMark achieved={achieved} />
+        {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
         <Condition text={metric.condition} />
       </div>
     </div>
@@ -94,14 +95,15 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
               <span className="numeric text-4xl font-semibold text-white sm:text-5xl">
                 {formatNumber(metric.value)}
               </span>
-              <span className="text-sm text-ink-400">목표 {targetText}</span>
+              {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
+              {targetText ? <span className="text-sm text-ink-400">목표 {targetText}</span> : null}
               {ratePercent ? (
                 <span className="numeric text-sm text-ink-400">달성률 {ratePercent}</span>
               ) : null}
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <AchievementMark achieved={achieved} />
+              {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
               {/*
                 검증 주체는 판정 옆 칩으로 세운다. 하단 잔글씨에 두면 인증이
                 데이터셋 이름에 묻힌다 — 인증 수치와 자체 시험 수치는 무게가

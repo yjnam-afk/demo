@@ -16,7 +16,12 @@ import type {
 export interface Metric {
   label: string;
   value: number;
-  target: number;
+  /**
+   * 목표값 — 선택 항목. 외부 인증 성적서(KISA 등)는 목표치 없이 측정값만
+   * 싣는 경우가 있고, 그때 목표를 지어내 넣으면 근거 없는 숫자가 된다.
+   * 없으면 화면은 달성 판정 없이 값만 보여준다.
+   */
+  target?: number;
   /**
    * 달성 판정 방향. 기본값을 두지 않는다 — MAE·FID·Angular Error 처럼
    * 낮을수록 좋은 지표를 'higher' 로 잘못 판정하면 초과 달성이 미달로 표시된다.

@@ -91,7 +91,7 @@ function toDraft(tech: Tech): Draft {
     metrics: tech.metrics.map((metric) => ({
       label: metric.label,
       value: String(metric.value),
-      target: String(metric.target),
+      target: metric.target === undefined ? '' : String(metric.target),
       direction: metric.direction,
       condition: metric.condition ?? '',
       dataset: metric.dataset ?? '',
@@ -113,7 +113,8 @@ function toTech(draft: Draft): Tech {
     metrics: draft.metrics.map((metric) => ({
       label: metric.label,
       value: metric.value.trim() === '' ? Number.NaN : Number(metric.value),
-      target: metric.target.trim() === '' ? Number.NaN : Number(metric.target),
+      // 목표값은 선택 항목 — 비우면 지어내지 않고 없음으로 저장한다
+      target: metric.target.trim() === '' ? undefined : Number(metric.target),
       direction: metric.direction as MetricDirection,
       condition: metric.condition,
       dataset: metric.dataset,
@@ -501,10 +502,15 @@ export function TechForm({
                 </Row>
 
                 <Row>
-                  <Field label="목표값" required>
+                  {/*
+                    목표값은 선택 — KISA 같은 인증 성적서는 측정값만 싣는다.
+                    근거 없는 목표를 지어 넣느니 비워 두는 쪽이 맞다.
+                  */}
+                  <Field label="목표값">
                     <TextInput
                       value={metric.target}
                       inputMode="decimal"
+                      placeholder="근거 없으면 비워 둠"
                       onChange={(event) => update({ target: event.target.value })}
                     />
                   </Field>

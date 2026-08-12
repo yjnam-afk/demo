@@ -88,11 +88,19 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
         message: '높을수록 좋음 / 낮을수록 좋음 중 하나를 골라야 달성 여부를 계산할 수 있습니다.',
       });
     }
-    if (!Number.isFinite(metric.target) || !Number.isFinite(metric.value)) {
+    // 목표값은 선택 항목이다 — 인증 성적서에는 목표치가 없는 경우가 있다.
+    if (!Number.isFinite(metric.value)) {
       issues.push({
         field: `metrics.${index}.value`,
-        label: `${name} 목표·달성값`,
-        message: '목표값과 달성값은 숫자여야 합니다.',
+        label: `${name} 달성값`,
+        message: '달성값은 숫자여야 합니다.',
+      });
+    }
+    if (metric.target !== undefined && !Number.isFinite(metric.target)) {
+      issues.push({
+        field: `metrics.${index}.value`,
+        label: `${name} 목표값`,
+        message: '목표값은 비우거나 숫자여야 합니다.',
       });
     }
   });

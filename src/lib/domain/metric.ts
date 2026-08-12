@@ -1,15 +1,21 @@
 import type { Metric } from './types';
 
 export interface MetricEvaluation {
-  /** 목표 달성 여부. direction 을 반영한 유일한 판정 지점이다. */
-  achieved: boolean;
+  /**
+   * 목표 달성 여부. direction 을 반영한 유일한 판정 지점이다.
+   * 목표값이 없는 지표(인증 성적서의 측정값 등)는 null — 판정 자체가 없다.
+   */
+  achieved: boolean | null;
   /**
    * 달성률(1 = 목표 정확히 달성, 1 초과 = 초과 달성).
    * 0 으로 나누는 등 계산이 불가능하면 null 이며, 이때 UI 는 달성률을 감춘다.
    */
   rate: number | null;
-  /** "목표 7.0 이하" / "목표 90 이상" 처럼 방향이 드러나는 목표 문구 */
-  targetText: string;
+  /**
+   * "목표 7.0 이하" / "목표 90 이상" 처럼 방향이 드러나는 목표 문구.
+   * 목표값이 없으면 null — UI 는 목표 문구를 통째로 생략한다.
+   */
+  targetText: string | null;
 }
 
 /**
@@ -21,6 +27,8 @@ export interface MetricEvaluation {
  */
 export function evaluateMetric(metric: Metric): MetricEvaluation {
   const { value, target, direction } = metric;
+  if (target === undefined) return { achieved: null, rate: null, targetText: null };
+
   const lowerIsBetter = direction === 'lower';
 
   const achieved = lowerIsBetter ? value <= target : value >= target;
@@ -59,17 +67,20 @@ export function pickHeadlineMetric(metrics: Metric[], preferredLabel?: string): 
     const named = metrics.find((m) => m.label === preferredLabel);
     if (named) return named;
   }
-  return metrics.find((m) => evaluateMetric(m).achieved) ?? metrics[0];
+  return metrics.find((m) => evaluateMetric(m).achieved === true) ?? metrics[0];
 }
 
-/** 성과 요약용 집계. 목표가 있는 지표 중 몇 개를 달성했는지 센다. */
+/**
+ * 성과 요약용 집계. 목표가 있는 지표 중 몇 개를 달성했는지 센다.
+ * 목표 없는 지표는 분모에서도 뺀다 — 판정이 없는 지표를 미달로 세면 왜곡이다.
+ */
 export function summarizeAchievement(metricsList: Metric[][]): {
   total: number;
   achieved: number;
 } {
-  const all = metricsList.flat();
+  const withTarget = metricsList.flat().filter((m) => m.target !== undefined);
   return {
-    total: all.length,
-    achieved: all.filter((m) => evaluateMetric(m).achieved).length,
+    total: withTarget.length,
+    achieved: withTarget.filter((m) => evaluateMetric(m).achieved === true).length,
   };
 }
