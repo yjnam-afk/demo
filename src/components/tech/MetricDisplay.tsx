@@ -130,6 +130,15 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   {metric.source}
                 </span>
               ) : null}
+              {/*
+                수준 주석 — "세계 최고 수준(SOTA) 준용" 같은 위치 표명.
+                인증 칩과 혼동되지 않게 초록이 아닌 테두리 칩으로 세운다.
+              */}
+              {metric.benchmark?.trim() ? (
+                <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-300">
+                  {metric.benchmark}
+                </span>
+              ) : null}
             </div>
 
             {/*

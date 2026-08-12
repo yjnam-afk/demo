@@ -36,6 +36,7 @@ type MetricDraft = {
   conditions: string[];
   dataset: string;
   source: string;
+  benchmark: string;
   dataset_url: string;
 };
 
@@ -96,6 +97,7 @@ function toDraft(tech: Tech): Draft {
       conditions: metric.conditions ?? [],
       dataset: metric.dataset ?? '',
       source: metric.source ?? '',
+      benchmark: metric.benchmark ?? '',
       dataset_url: metric.dataset_url ?? '',
     })),
   };
@@ -119,6 +121,7 @@ function toTech(draft: Draft): Tech {
       conditions: metric.conditions.map((c) => c.trim()).filter(Boolean),
       dataset: metric.dataset,
       source: metric.source,
+      benchmark: metric.benchmark,
       dataset_url: metric.dataset_url,
     })),
   };
@@ -550,10 +553,19 @@ export function TechForm({
                   </Field>
                 </Row>
 
-                <Field label="평가 데이터 원본 링크" hint="내부 전용입니다. 외부 화면에 나가지 않습니다.">
+                {/*
+                  평가 데이터 원본 링크 입력은 내렸다(쓰이지 않았다). 저장된
+                  값은 draft 에 실려 그대로 보존된다. 그 자리에는 달성값의
+                  수준 주석이 선다 — 값이 업계에서 어디쯤인지 말하는 칸이다.
+                */}
+                <Field
+                  label="성능 수준"
+                  hint="달성값이 어느 수준인지. 예: 세계 최고 수준(SOTA) 준용 / 국내 최고 수준. 외부 화면에 값 옆 칩으로 노출되니 근거 있는 표현만 적으세요."
+                >
                   <TextInput
-                    value={metric.dataset_url}
-                    onChange={(event) => update({ dataset_url: event.target.value })}
+                    value={metric.benchmark}
+                    placeholder="세계 최고 수준(SOTA) 준용"
+                    onChange={(event) => update({ benchmark: event.target.value })}
                   />
                 </Field>
               </div>
@@ -575,6 +587,7 @@ export function TechForm({
                   conditions: [],
                   dataset: '',
                   source: '',
+                  benchmark: '',
                   dataset_url: '',
                 },
               ],

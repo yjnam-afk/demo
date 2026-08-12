@@ -116,6 +116,7 @@ function parseMetrics(value: unknown): Metric[] {
           : [],
       dataset: str(raw.dataset) || undefined,
       source: str(raw.source) || undefined,
+      benchmark: str(raw.benchmark) || undefined,
       dataset_url: str(raw.dataset_url) || undefined,
     };
   });

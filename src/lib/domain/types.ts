@@ -35,6 +35,11 @@ export interface Metric {
   conditions: string[];
   dataset?: string;
   source?: string;
+  /**
+   * 달성값의 수준 주석 — "세계 최고 수준(SOTA) 준용" 처럼 이 값이 업계에서
+   * 어디쯤인지. 값 옆 칩으로 노출되므로 근거 있는 표현만 적는다.
+   */
+  benchmark?: string;
   /** 평가 데이터 원본 링크 — 내부 전용. 외부 뷰에서 제거된다. */
   dataset_url?: string;
 }
