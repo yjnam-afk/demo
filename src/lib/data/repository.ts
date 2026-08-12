@@ -70,8 +70,9 @@ export interface TechRepository {
    */
   publicSummary(): Promise<PublicSummary>;
 
-  /** 공개 화면의 필터 선택지를 실제 데이터에서 뽑아낸다. */
-  publicFacets(): Promise<{
+  /** 공개 화면의 필터 선택지를 실제 데이터에서 뽑아낸다.
+      query 를 주면 칩 숫자를 "그 칩을 누르면 몇 건이 남는가" 로 센다. */
+  publicFacets(query?: TechQuery): Promise<{
     domains: {
       value: string;
       label: string;

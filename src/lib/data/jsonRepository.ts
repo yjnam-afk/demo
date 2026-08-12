@@ -267,26 +267,31 @@ export class JsonTechRepository implements TechRepository {
     };
   }
 
-  async publicFacets() {
+  async publicFacets(query: TechQuery = {}) {
     const all = (await this.allTech()).filter(isExternallyVisible);
     const industryLabels = new Map((await this.listIndustries()).map((i) => [i.id, i.label]));
     // 필터 칩도 라벨과 색이 필요하다. 화면이 마스터를 다시 조회하지 않도록
     // 산업군과 같은 방식으로 여기서 붙여 보낸다.
-    const domainDefs = new Map((await this.listDomains()).map((d) => [d.id, d]));
+    const domainDefs = await this.listDomains();
 
-    const domains = new Map<Domain, number>();
+    /*
+      칩의 숫자는 "이 칩을 누르면 몇 건이 남는가" 다. 전체 기준으로 세면
+      필터를 거는 순간부터 화면의 건수와 어긋난다. 그래서 차원마다 자기
+      차원의 선택만 빼고 나머지 필터를 적용한 목록에서 센다. 카테고리는
+      대분류의 하위라, 대분류를 셀 때는 카테고리 선택도 함께 뺀다.
+    */
+    const forDomains = all.filter((t) => matches(t, { ...query, domain: undefined, categories: undefined }));
+    const forCategories = all.filter((t) => matches(t, { ...query, categories: undefined }));
+    const forIndustries = all.filter((t) => matches(t, { ...query, industries: undefined }));
+
     const categories = new Map<string, { domain: Domain; count: number }>();
+    for (const tech of forCategories) {
+      const entry = categories.get(tech.category);
+      categories.set(tech.category, { domain: tech.domain, count: (entry?.count ?? 0) + 1 });
+    }
+
     const industries = new Map<string, number>();
-
-    for (const tech of all) {
-      domains.set(tech.domain, (domains.get(tech.domain) ?? 0) + 1);
-
-      const catEntry = categories.get(tech.category);
-      categories.set(tech.category, {
-        domain: tech.domain,
-        count: (catEntry?.count ?? 0) + 1,
-      });
-
+    for (const tech of forIndustries) {
       // 산업군 집계는 마스터 id 를 쓰는 tech.industries 만 센다.
       // target_industries 는 "공항·항만" 같은 자유 서술이라 필터 값으로 섞으면
       // 선택지가 무한히 늘어난다.
@@ -296,13 +301,18 @@ export class JsonTechRepository implements TechRepository {
     }
 
     return {
-      domains: [...domains].map(([value, count]) => ({
-        value,
-        label: domainDefs.get(value)?.label ?? value,
-        short_label: domainDefs.get(value)?.short_label ?? value,
-        accent: domainDefs.get(value)?.accent ?? FALLBACK_ACCENT,
-        count,
-      })),
+      // 탭 순서는 마스터의 순서다. 공개 기술이 하나도 없는 축은 싣지 않되,
+      // 다른 필터 때문에 0 이 된 축은 0 으로라도 세운다 — 탭이 사라졌다
+      // 나타나면 화면이 흔들린다.
+      domains: domainDefs
+        .filter((d) => all.some((t) => t.domain === d.id))
+        .map((d) => ({
+          value: d.id,
+          label: d.label,
+          short_label: d.short_label,
+          accent: d.accent,
+          count: forDomains.filter((t) => t.domain === d.id).length,
+        })),
       categories: [...categories].map(([value, meta]) => ({ value, ...meta })),
       industries: [...industries]
         .map(([value, count]) => ({ value, label: industryLabels.get(value) ?? value, count }))

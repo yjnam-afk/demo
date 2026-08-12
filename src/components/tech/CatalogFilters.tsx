@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ExpandableChips, type ChipItem } from './ExpandableChips';
 import { type Accent } from '@/lib/domain/enums';
-import { isActive, toggledHref } from '@/lib/ui/query';
+import { isActive, strippedHref, toggledHref } from '@/lib/ui/query';
 import { accentStyle, cn } from '@/lib/ui/domain';
 
 export interface Facets {
@@ -72,7 +72,9 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
       {/* 대분류 — 단일 선택 */}
       <div className="flex flex-wrap gap-2">
         <Link
-          href="/tech"
+          // 전체는 축·카테고리만 해제한다. 산업군 등 다른 필터까지 지우면
+          // "전체" 가 아니라 "초기화" 가 된다.
+          href={strippedHref(params, ['domain', 'category'])}
           scroll={false}
           className={cn(
             'rounded border px-4 py-2 text-sm font-medium',
@@ -89,7 +91,7 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
           return (
             <Link
               key={value}
-              href={toggledHref(params, 'domain', value, { single: true })}
+              href={toggledHref(params, 'domain', value, { single: true, clear: ['category'] })}
               scroll={false}
               className={cn(
                 'flex items-center gap-2 rounded border px-4 py-2 text-sm font-medium',

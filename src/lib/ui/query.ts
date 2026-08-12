@@ -45,12 +45,14 @@ export function toggledHref(
   base: URLSearchParams,
   key: string,
   value: string,
-  options: { single?: boolean } = {},
+  options: { single?: boolean; clear?: string[] } = {},
 ): string {
   const next = new URLSearchParams(base);
   const current = next.getAll(key);
 
   next.delete(key);
+  // 종속 필터 정리 — 축을 바꾸면 이전 축의 카테고리 선택은 의미를 잃는다.
+  for (const key2 of options.clear ?? []) next.delete(key2);
   if (options.single) {
     if (!current.includes(value)) next.set(key, value);
   } else {
@@ -63,6 +65,15 @@ export function toggledHref(
   // 필터가 바뀌면 처음부터 다시 본다.
   next.delete('offset');
 
+  const qs = next.toString();
+  return qs ? `/tech?${qs}` : '/tech';
+}
+
+/** 지정한 키들만 지운 URL. "전체" 처럼 한 차원만 해제할 때 쓴다. */
+export function strippedHref(base: URLSearchParams, keys: string[]): string {
+  const next = new URLSearchParams(base);
+  for (const key of keys) next.delete(key);
+  next.delete('offset');
   const qs = next.toString();
   return qs ? `/tech?${qs}` : '/tech';
 }
