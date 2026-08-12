@@ -46,6 +46,23 @@ export async function GET(
     });
     const { presignedUrl } = await presignUrl(issued, { operation: 'get', pathname, access });
 
+    /*
+      PDF 는 함수가 본문을 중계한다. 상세 화면의 내장 뷰어(<object>)는
+      302 를 따라가지 않아, 리다이렉트 방식으로는 미리보기가 빈 칸이 된다.
+      문서는 수 MB 수준이라 중계 비용이 작다 — 큰 영상은 계속 리다이렉트다.
+    */
+    if (pathname.toLowerCase().endsWith('.pdf')) {
+      const upstream = await fetch(presignedUrl);
+      if (!upstream.ok || !upstream.body) throw new Error(`업스트림 ${upstream.status}`);
+      return new Response(upstream.body, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'inline',
+          'Cache-Control': 'public, max-age=1800',
+        },
+      });
+    }
+
     return NextResponse.redirect(presignedUrl, {
       status: 302,
       // 서명 유효기간(1시간)보다 짧게 캐시한다. 재생 중 만료로 끊기지 않게 여유를 둔다.

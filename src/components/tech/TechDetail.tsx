@@ -532,17 +532,13 @@ export function TechDetail({
                             className="block h-80 w-full sm:h-96"
                             aria-label={resource.label}
                           >
-                            {/* 인라인 뷰어가 없는 브라우저(주로 모바일)는 버튼으로 내려간다 */}
-                            <div className="p-4">
-                              <a
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener"
-                                className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
-                              >
-                                <span className="truncate">{resource.label}</span>
-                                <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
-                              </a>
+                            {/*
+                              뷰어가 없는 브라우저의 대체 내용. 버튼을 두지
+                              않는다 — 아래 캡션의 "새 창에서 열기" 와 같은
+                              기능이 위아래로 두 번 서는 것이 더 나빴다.
+                            */}
+                            <div className="flex h-full items-center justify-center p-6 text-sm text-ink-400">
+                              이 브라우저는 문서 미리보기를 지원하지 않습니다.
                             </div>
                           </object>
                           <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
