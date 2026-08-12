@@ -23,8 +23,8 @@ const ROOT = path.join(__dirname, '..');
 const TMP = path.join(ROOT, '.media-frames');
 const SCENES_JS = fs.readFileSync(path.join(__dirname, 'placeholder-scenes.js'), 'utf8');
 
-// 30fps — 25 에서는 보행·전도 같은 연속 동작이 미세하게 끊겨 보인다
-const FPS = 30;
+// 50fps — 보행·전도 같은 연속 동작이 육안으로 매끈해지는 지점
+const FPS = 50;
 const SECONDS = 6;
 
 /** 상세 화면용 원본 */

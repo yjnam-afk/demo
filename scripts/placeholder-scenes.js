@@ -790,12 +790,12 @@ function signboard(ctx, x, y, hgt, S) {
 function hallBg(ctx, W, H, S) {
   const horizon = H * 0.52;
 
-  // 공기 원근 — 벽 중단이 가장 밝고 앞바닥으로 오며 가라앉는다
+  // 공기 원근 — 불 켜진 실내. 벽은 따뜻한 밝은 회색, 앞바닥으로 오며 가라앉는다
   const air = ctx.createLinearGradient(0, 0, 0, H);
-  air.addColorStop(0, '#242a33');
-  air.addColorStop(0.5, '#2a303a');
-  air.addColorStop(0.53, '#232830');
-  air.addColorStop(1, '#191d24');
+  air.addColorStop(0, '#565149');
+  air.addColorStop(0.5, '#645e53');
+  air.addColorStop(0.53, '#57524a');
+  air.addColorStop(1, '#403c35');
   ctx.fillStyle = air;
   ctx.fillRect(0, 0, W, H);
 
@@ -821,9 +821,9 @@ function hallBg(ctx, W, H, S) {
     ctx.fillStyle = 'rgba(0,0,0,0.34)';
     ctx.fillRect(dx - 3 * S, H * 0.24, dw + 6 * S, horizon - H * 0.24 - 8 * S);
     const leaf = ctx.createLinearGradient(dx, 0, dx + dw, 0);
-    leaf.addColorStop(0, '#2e3540');
-    leaf.addColorStop(0.5, '#39414e');
-    leaf.addColorStop(1, '#2b323c');
+    leaf.addColorStop(0, '#4c463e');
+    leaf.addColorStop(0.5, '#5c554a');
+    leaf.addColorStop(1, '#463f38');
     ctx.fillStyle = leaf;
     ctx.fillRect(dx, H * 0.25, dw, horizon - H * 0.25 - 9 * S);
     ctx.fillStyle = 'rgba(210,220,235,0.5)';
@@ -947,11 +947,11 @@ const SCENES = {
     const S = scaleOf(H);
     const z = opts?.compact ? 1.45 : 1;
 
-    // ── 배경: 야간 야외 경계 구역 ──────────────────────────────────
-    ctx.fillStyle = '#0e1116';
+    // ── 배경: 야간 야외 경계 구역 — 투광등이 있어 완전한 어둠은 아니다 ──
+    ctx.fillStyle = '#242830';
     ctx.fillRect(0, 0, W, H);
     // 밤하늘과 지평선
-    ctx.fillStyle = '#12161d';
+    ctx.fillStyle = '#1e222b';
     ctx.fillRect(0, 0, W, H * 0.46);
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(0, H * 0.455, W, 2 * S);
@@ -1186,12 +1186,12 @@ const SCENES = {
       return v - Math.floor(v);
     };
 
-    // ── 배경: 야간 승강장 ────────────────────────────────────────────
-    ctx.fillStyle = '#101318';
+    // ── 배경: 심야 승강장 — 형광등이 켜진 실내라 어둡지 않다 ─────────
+    ctx.fillStyle = '#393d44';
     ctx.fillRect(0, 0, W, H);
 
     // 벽 패널
-    ctx.fillStyle = '#161b22';
+    ctx.fillStyle = '#42474f';
     ctx.fillRect(0, 0, W, H * 0.52);
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
@@ -1217,7 +1217,7 @@ const SCENES = {
     }
 
     // 바닥 타일 (원근)
-    ctx.fillStyle = '#14181f';
+    ctx.fillStyle = '#383c43';
     ctx.fillRect(0, H * 0.52, W, H * 0.48);
     ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     for (let i = 0; i < 7; i++) {
@@ -1362,10 +1362,10 @@ const SCENES = {
     const S = scaleOf(H);
     const z = opts?.compact ? 1.3 : 1;
 
-    // ── 배경: 실내 로비 ──────────────────────────────────────────────
-    ctx.fillStyle = '#151920';
+    // ── 배경: 불 켜진 실내 로비 — 따뜻한 밝은 회색 ────────────────────
+    ctx.fillStyle = '#4a453d';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#1c222c';
+    ctx.fillStyle = '#575148';
     ctx.fillRect(0, 0, W, H * 0.5);
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1;
@@ -1390,7 +1390,7 @@ const SCENES = {
       ctx.fillStyle = g;
       ctx.fillRect(lx - H * 0.52, 0, H * 1.04, H * 0.62);
     }
-    ctx.fillStyle = '#1a1f28';
+    ctx.fillStyle = '#443f38';
     ctx.fillRect(0, H * 0.5, W, H * 0.5);
     for (let i = 0; i < 3; i++) {
       const lx = W * (0.2 + i * 0.3);
@@ -2517,13 +2517,13 @@ function renderScene(name, ctx, W, H, t, opts) {
   ctx.rotate(-0.011);
   ctx.scale(1.04, 1.04);
   ctx.translate(-W / 2, -H / 2);
-  ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.74) brightness(1.42) contrast(0.89)`;
+  ctx.filter = `blur(${(0.55 * S).toFixed(2)}px) saturate(0.78) brightness(1.18) contrast(0.93)`;
   ctx.drawImage(os, 0, 0);
   ctx.restore();
   ctx.filter = 'none';
 
   // 2) 블랙 리프트 — 실제 카메라 영상에 순수한 검정은 없다
-  ctx.fillStyle = 'rgba(152,162,174,0.10)';
+  ctx.fillStyle = 'rgba(152,162,174,0.06)';
   ctx.fillRect(0, 0, W, H);
 
   // 3) 하이라이트 블룸 — 조명·밝은 면이 번진다
