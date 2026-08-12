@@ -16,7 +16,7 @@ import { BRAND } from '@/lib/brand';
  * 기술 데이터에 다시 연결하지는 않는다 — 히어로 배경은 브랜드 자산이지
  * 특정 기술의 데모 화면이 아니다.
  */
-export function Hero({ axes }: { axes: readonly string[] }) {
+export function Hero() {
   const media = BRAND.heroMedia;
 
   return (
@@ -56,11 +56,7 @@ export function Hero({ axes }: { axes: readonly string[] }) {
         <h1 className="headline max-w-3xl text-4xl font-semibold text-white sm:text-5xl">
           {BRAND.headline}
         </h1>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">
-          {BRAND.intro(axes)}
-          {/* 어디에 적용돼 있는지가 이 소개의 근거다. 푸터에 있던 문장을 여기로 올렸다. */}
-          <span className="mt-1 block text-ink-400">{BRAND.positioning}</span>
-        </p>
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">{BRAND.intro}</p>
 
         {/*
           버튼은 두지 않는다. 도입 문의는 GNB 에 항상 떠 있고, 기술 카탈로그는

@@ -48,8 +48,7 @@ export default async function HomePage({
 
   return (
     <>
-      {/* 첫 문장에 들어갈 축 이름. 관리자가 대분류를 고치면 문장도 따라 바뀐다. */}
-      <Hero axes={maps.domainList.map((domain) => domain.label)} />
+      <Hero />
 
       {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
       <section>
