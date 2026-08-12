@@ -66,7 +66,8 @@ export function toggledHref(
   next.delete('offset');
 
   const qs = next.toString();
-  return qs ? `/tech?${qs}` : '/tech';
+  // 카탈로그는 루트다 — /tech 로 보내면 리다이렉트를 한 번 더 탄다.
+  return qs ? `/?${qs}` : '/';
 }
 
 /** 지정한 키들만 지운 URL. "전체" 처럼 한 차원만 해제할 때 쓴다. */
@@ -75,7 +76,7 @@ export function strippedHref(base: URLSearchParams, keys: string[]): string {
   for (const key of keys) next.delete(key);
   next.delete('offset');
   const qs = next.toString();
-  return qs ? `/tech?${qs}` : '/tech';
+  return qs ? `/?${qs}` : '/';
 }
 
 export function isActive(params: URLSearchParams, key: string, value: string): boolean {
