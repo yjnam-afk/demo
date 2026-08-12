@@ -3,6 +3,7 @@ import { DemoSlot } from '@/components/demo/DemoSlot';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
 import { JumpBar } from './JumpBar';
 import { MetricStatGrid } from './MetricDisplay';
+import { PdfPreview } from './PdfPreview';
 import {
   DEV_TYPE_LABELS,
   MATURITY_LABELS,
@@ -526,21 +527,14 @@ export function TechDetail({
                           key={resource.url}
                           className="overflow-hidden rounded-lg border border-ink-200 bg-white"
                         >
-                          <object
-                            data={resource.url}
-                            type="application/pdf"
-                            className="block h-80 w-full sm:h-96"
-                            aria-label={resource.label}
-                          >
-                            {/*
-                              뷰어가 없는 브라우저의 대체 내용. 버튼을 두지
-                              않는다 — 아래 캡션의 "새 창에서 열기" 와 같은
-                              기능이 위아래로 두 번 서는 것이 더 나빴다.
-                            */}
-                            <div className="flex h-full items-center justify-center p-6 text-sm text-ink-400">
-                              이 브라우저는 문서 미리보기를 지원하지 않습니다.
-                            </div>
-                          </object>
+                          {/*
+                            내장 뷰어(<object>)를 쓰지 않는다 — iOS 사파리가
+                            지원하지 않아 모바일에서 통째로 빈 칸이 됐다.
+                            첫 장을 캔버스에 직접 그려 어디서든 같게 보인다.
+                          */}
+                          <div className="h-80 w-full sm:h-96">
+                            <PdfPreview url={resource.url} label={resource.label} />
+                          </div>
                           <figcaption className="flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-2.5 text-sm text-ink-600">
                             <span className="truncate">{resource.label}</span>
                             <a
