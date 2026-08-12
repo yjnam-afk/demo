@@ -30,7 +30,8 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
           실패했는지(파일이 없음 vs 렌더링 실패)를 구분할 수 없어,
           관리자에게 다음 행동을 말해줄 수 없다.
         */
-        const response = await fetch(url);
+        // 캐시를 거치지 않는다 — 방금 다시 올린 파일이 캐시된 실패에 가려지면 안 된다
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) {
           if (!cancelled) {
             setHttpStatus(response.status);
@@ -76,7 +77,12 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
       {state === 'error' ? (
         <p className="p-6 text-center text-sm text-ink-400">
           {httpStatus
-            ? `원본 파일을 불러오지 못했습니다 (HTTP ${httpStatus}). 업로드가 중간에 끊긴 파일일 수 있습니다 — 관리자에서 다시 올려 주세요.`
+            ? /*
+                파일명을 함께 보여준다. 업로드 파일명에는 올린 시각이 들어
+                있어, 기록이 방금 올린 파일을 가리키는지 옛 경로에 머물러
+                있는지를 이 문구만 보고 판별할 수 있다.
+              */
+              `원본 파일을 불러오지 못했습니다 (HTTP ${httpStatus} · ${url.split('/').pop() ?? url}). 관리자에서 이 자료를 다시 올려 주세요.`
             : '미리보기를 만들지 못했습니다. 아래에서 원문을 여세요.'}
         </p>
       ) : (

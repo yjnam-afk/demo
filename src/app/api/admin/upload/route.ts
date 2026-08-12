@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { head, put } from '@vercel/blob';
 import { requireAdminApi } from '@/lib/auth/guard';
 import { blobToken, blobTokenName, resolveBlobAccess } from '@/lib/data/store';
 import { MEDIA_EXTENSIONS, MEDIA_KINDS, MEDIA_MAX_BYTES } from '@/lib/media';
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   const extension = MEDIA_EXTENSIONS[file.type];
   if (!extension) {
     return NextResponse.json(
-      { error: '지원하지 않는 형식입니다. 이미지(jpg/png/webp/svg) 또는 영상(mp4/webm)만 올릴 수 있습니다.' },
+      { error: '지원하지 않는 형식입니다. 이미지(jpg/png/webp/svg)·영상(mp4/webm)·PDF 만 올릴 수 있습니다.' },
       { status: 415 },
     );
   }
@@ -103,6 +103,20 @@ export async function POST(request: Request) {
       */
       addRandomSuffix: false,
     });
+    /*
+      성공을 돌려주기 전에 실물을 재확인한다. put 이 성공처럼 끝나도
+      저장소에 파일이 없으면 관리자는 "올렸는데 왜 안 나오지"를 화면
+      502 로 한참 뒤에야 알게 된다 — 그 실패는 지금 여기서 말해야 한다.
+    */
+    try {
+      await head(blob.url, { token: blobToken() });
+    } catch (err) {
+      console.error('[admin] 업로드 직후 확인 실패', blob.pathname, err);
+      return NextResponse.json(
+        { error: '업로드가 저장소에 반영되지 않았습니다. 잠시 후 다시 시도해 주세요.' },
+        { status: 502 },
+      );
+    }
     // 돌려주는 경로는 SDK 가 알려준 실제 저장 경로를 쓴다
     return NextResponse.json({ path: `/api/media/${blob.pathname}` });
   }
