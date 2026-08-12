@@ -165,9 +165,6 @@ export default async function HomePage() {
                   );
                 })}
               </div>
-              <div className="mt-6">
-                <MoreLink href="/tech?view=industry">산업별 보기</MoreLink>
-              </div>
             </div>
             {products.length > 0 ? (
               <div className="flex flex-col rounded-lg border border-ink-200 bg-white p-6">

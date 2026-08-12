@@ -61,6 +61,10 @@ export function Hero({ axes }: { axes: readonly string[] }) {
           {BRAND.intro(axes)}
         </p>
 
+        {/*
+          도입 문의 버튼은 두지 않는다 — 바로 위 GNB 에 항상 떠 있어,
+          여기 한 번 더 서면 같은 화면에 같은 버튼이 두 개가 된다.
+        */}
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <Link
             href="/tech"
@@ -68,12 +72,6 @@ export function Hero({ axes }: { axes: readonly string[] }) {
           >
             기술 카탈로그 보기
           </Link>
-          <a
-            href="#contact"
-            className="rounded border border-white/25 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-white/60"
-          >
-            {BRAND.contact.label}
-          </a>
         </div>
       </div>
     </section>

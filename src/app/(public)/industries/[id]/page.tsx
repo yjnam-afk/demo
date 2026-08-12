@@ -149,18 +149,10 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
           </section>
         ) : null}
 
-        <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
-          <p className="text-lg font-medium text-white">
-            {industry.label} 현장에 맞는 구성을 제안해 드립니다
-          </p>
-          <Link
-            href="/#contact"
-            className="mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
-          >
-            {BRAND.contact.label}
-          </Link>
-        </section>
-      </div>
+        {/*
+          도입 문의 배너는 두지 않는다 — 상시 진입은 GNB 버튼 하나로 충분하고,
+          같은 화면에 같은 버튼이 두 벌 서면 덕지덕지 붙은 광고로 읽힌다.
+        */}      </div>
     </>
   );
 }
