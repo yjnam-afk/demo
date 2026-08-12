@@ -53,32 +53,15 @@ function Footer() {
     // 상단 여백을 두지 않는다 — 앞 구간이 어두우면 사이에 밝은 띠가 생겨
     // 이어진 화면이 끊겨 보인다. 여백은 각 화면의 마지막 구간이 책임진다.
     <footer className="bg-ink-950">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-12">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <p className="text-base font-semibold text-white">{BRAND.name}</p>
-            <p className="mt-1.5 text-sm text-ink-400">{BRAND.tagline}</p>
-            <p className="mt-1 max-w-xl text-sm text-ink-500">{BRAND.positioning}</p>
-          </div>
-          {/* 헤더의 본사 링크는 좁은 화면에서 숨으므로 푸터에서 항상 노출한다. */}
-          <div className="flex flex-col items-start gap-2 text-sm sm:items-end">
-            <a
-              href={BRAND.site.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-ink-300 hover:text-white"
-            >
-              {BRAND.site.label} ↗
-            </a>
-            <a
-              href={`mailto:${BRAND.contact.email}`}
-              className="text-ink-300 underline underline-offset-4 hover:text-white"
-            >
-              {BRAND.contact.email}
-            </a>
-          </div>
-        </div>
-
+      {/*
+        푸터는 저작권 한 줄만 진다. 본사 링크는 GNB 에, 이메일은 도입 문의에,
+        회사 소개는 히어로에 이미 있다 — 같은 정보를 바닥에 한 번 더 깔면
+        푸터가 정리 안 된 서랍이 된다.
+      */}
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <p className="text-sm text-ink-500">
+          © {new Date().getFullYear()} {BRAND.nameEn} Co., Ltd.
+        </p>
       </div>
     </footer>
   );

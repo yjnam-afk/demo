@@ -59,6 +59,8 @@ export function Hero({ axes }: { axes: readonly string[] }) {
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">
           {BRAND.intro(axes)}
+          {/* 어디에 적용돼 있는지가 이 소개의 근거다. 푸터에 있던 문장을 여기로 올렸다. */}
+          <span className="mt-1 block text-ink-400">{BRAND.positioning}</span>
         </p>
 
         {/*

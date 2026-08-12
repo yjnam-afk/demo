@@ -82,9 +82,9 @@ export default async function HomePage() {
       <Hero axes={maps.domainList.map((domain) => domain.label)} />
 
       {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
-      <section className="border-b border-ink-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <TrustBar summary={summary} tone="light" />
+      <section>
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <TrustBar summary={summary} />
         </div>
       </section>
 
