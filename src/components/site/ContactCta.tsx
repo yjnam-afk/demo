@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { BRAND } from '@/lib/brand';
 
 /**
@@ -16,19 +15,19 @@ export function ContactCta() {
           현장 조건을 알려주시면 적용 가능한 기술과 도입 조건을 정리해 회신드립니다.
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        {/*
+          버튼은 문의 하나다. 카탈로그로 돌려보내는 보조 버튼은 문의까지 온
+          방문자를 되돌리는 문이었다. 메일 주소는 버튼 옆에 글자로 남긴다 —
+          메일 클라이언트가 안 열리는 환경에서는 주소를 복사해야 한다.
+        */}
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent('[도입 문의]')}`}
             className="rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
           >
-            {BRAND.contact.email}
+            {BRAND.contact.label}
           </a>
-          <Link
-            href="/tech"
-            className="rounded border border-white/25 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-white/60"
-          >
-            기술 카탈로그 먼저 보기
-          </Link>
+          <span className="numeric text-sm text-ink-400">{BRAND.contact.email}</span>
         </div>
       </div>
     </section>

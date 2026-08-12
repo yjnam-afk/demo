@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { LoopVideo } from '@/components/ui/LoopVideo';
 import { BRAND } from '@/lib/brand';
 
@@ -64,17 +63,10 @@ export function Hero({ axes }: { axes: readonly string[] }) {
         </p>
 
         {/*
-          도입 문의 버튼은 두지 않는다 — 바로 위 GNB 에 항상 떠 있어,
-          여기 한 번 더 서면 같은 화면에 같은 버튼이 두 개가 된다.
+          버튼은 두지 않는다. 도입 문의는 GNB 에 항상 떠 있고, 기술 카탈로그는
+          GNB 의 기술 메뉴와 바로 아래 대표 기술 구간의 "전체 보기" 가 잇는다 —
+          같은 문이 한 화면에 여러 개 서면 어느 것도 문으로 읽히지 않는다.
         */}
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          <Link
-            href="/tech"
-            className="rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
-          >
-            기술 카탈로그 보기
-          </Link>
-        </div>
       </div>
     </section>
   );
