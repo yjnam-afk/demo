@@ -105,7 +105,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
               지표가 하나면 넓은 화면에서 좌우로 나눈다. 한 칸짜리 셀에
               모든 것을 왼쪽에 쌓으면 화면 절반이 빈 채로 남는다.
             */}
-            <div className="grid gap-x-10 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+            <div>
               <div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
@@ -135,52 +135,60 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   ) : null}
                 </div>
 
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                {/* 수치와 목표는 한 줄 — 목표는 수치의 해석이라 붙어 있어야 한다 */}
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
                   <span className="numeric text-4xl font-semibold text-white sm:text-5xl">
                     {formatNumber(metric.value)}
                   </span>
                   {/* 목표가 없는 지표(인증 성적서 측정값)는 판정이 없다 */}
-                  {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
+                  {achieved !== null ? (
+                    <span className="self-center">
+                      <AchievementMark achieved={achieved} />
+                    </span>
+                  ) : null}
+                  {targetText ? (
+                    <span className="text-xs text-ink-500">
+                      정량 목표 {targetText}
+                      {ratePercent ? <span className="numeric"> · 달성률 {ratePercent}</span> : null}
+                    </span>
+                  ) : null}
                 </div>
-
-                {targetText ? (
-                  <div className="mt-1.5 text-xs text-ink-500">
-                    정량 목표 {targetText}
-                    {ratePercent ? <span className="numeric"> · 달성률 {ratePercent}</span> : null}
-                  </div>
-                ) : null}
               </div>
 
               {/*
-                전제 — 시험 조건과 데이터셋. 좁은 화면에서는 수치 아래로
-                내려가고, 넓은 화면에서는 오른쪽 칸을 채운다.
+                전제 — 시험 조건과 데이터셋.
+
+                세로 목록을 옆 칸에 세웠더니 왼쪽은 아래가 텅 비고 오른쪽만
+                길어져 두 칸의 키가 맞지 않았다. 조건은 짧은 구절들이므로
+                가로로 흘려 전체 폭을 한 줄기로 쓴다 — 수치 아래에 놓이는
+                띠 하나가 되어 읽는 순서도 위에서 아래로 단순해진다.
               */}
               {metric.conditions.filter((c) => c.trim()).length > 0 || metric.dataset ? (
-                <div className="border-t border-white/10 pt-3 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+                <div className="mt-4 border-t border-white/10 pt-3">
                   {metric.conditions.filter((c) => c.trim()).length > 0 ? (
-                    <>
-                      <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                      <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">
                         시험 조건
-                      </div>
-                      <ul className="mt-1.5 space-y-1 text-sm text-ink-300">
-                        {metric.conditions
-                          .filter((c) => c.trim())
-                          .map((c) => (
-                            <li key={c} className="flex gap-2">
+                      </span>
+                      {metric.conditions
+                        .filter((c) => c.trim())
+                        .map((c, index) => (
+                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-300">
+                            {index > 0 ? (
                               <span aria-hidden className="text-ink-600">
                                 ·
                               </span>
-                              {c}
-                            </li>
-                          ))}
-                      </ul>
-                    </>
+                            ) : null}
+                            {c}
+                          </span>
+                        ))}
+                    </div>
                   ) : null}
                   {metric.dataset ? (
                     <div
                       className={cn(
                         'text-xs text-ink-500',
-                        metric.conditions.filter((c) => c.trim()).length > 0 ? 'mt-3' : '',
+                        metric.conditions.filter((c) => c.trim()).length > 0 ? 'mt-2.5' : '',
                       )}
                     >
                       데이터셋 · {metric.dataset}

@@ -687,24 +687,48 @@ function frontFigure(ctx, { x, y, h, tone, phase = null, back = false }) {
   ctx.beginPath();
   ctx.ellipse(x, y + bob + h * 0.012, h * 0.17, h * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
+  /*
+    체중 이동 — 정면 보행에서 가장 먼저 읽히는 신호다. 디딤발 쪽으로 몸이
+    실리며 좌우로 미세하게 흔들린다. 이것이 없으면 다리만 버둥거린다.
+  */
+  const sway = phase === null ? 0 : Math.sin(phase) * h * 0.012;
+  x += sway;
   const hipY = y - h * 0.5;
   const shoulderY = y - h * 0.79;
-  // 다리 — 정면이라 두 기둥. 걸으면 한쪽이 앞으로 나오며 짧아 보인다
+  /*
+    다리 — 정면이라 좌우 두 개다. 걸을 때는 무릎이 접히며 발이 들리고,
+    앞으로 나온 다리는 카메라에 가까워 발이 화면 아래쪽으로 내려온다.
+    기둥 두 개를 세워 두고 살짝 올렸다 내리면 다리는 움직이지 않고 몸만
+    미끄러지는 것으로 보인다.
+  */
   for (const d of [-1, 1]) {
     const color = d === 1 ? c.pants : c.back;
-    // 앞으로 나온 다리는 발이 낮고 크게, 뒤에 남은 다리는 살짝 짧게
     const swing = phase === null ? 0 : Math.sin(phase + (d === 1 ? 0 : Math.PI));
-    const lift = phase === null ? 0 : Math.max(0, swing) * h * 0.045;
+    // 앞으로 나오는 구간(swing>0)에만 무릎이 접히고 발이 들린다
+    const lift = Math.max(0, swing) * h * 0.075;
+    const knee = Math.max(0, swing) * h * 0.03;
+    const hipX = x + d * h * 0.03;
+    // 디딤발은 바깥으로, 앞으로 나온 발은 몸 중심선 쪽으로 모인다
+    const footX = x + d * h * (0.042 - Math.max(0, swing) * 0.014);
+    const kneeX = x + d * h * 0.036;
+    const kneeY = y - h * 0.26 - lift * 0.55;
     ctx.strokeStyle = color;
-    ctx.lineWidth = h * 0.07;
+    // 허벅지 — 무릎이 앞으로 나오면 화면에서 짧아진다
+    ctx.lineWidth = h * 0.072;
     ctx.beginPath();
-    ctx.moveTo(x + d * h * 0.032, hipY);
-    ctx.lineTo(x + d * h * 0.042, y - h * 0.02 - lift);
+    ctx.moveTo(hipX, hipY);
+    ctx.lineTo(kneeX + d * knee * 0.4, kneeY);
+    ctx.stroke();
+    // 정강이
+    ctx.lineWidth = h * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(kneeX + d * knee * 0.4, kneeY);
+    ctx.lineTo(footX, y - h * 0.02 - lift);
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.roundRect(
-      x + d * h * 0.042 - h * 0.033,
+      footX - h * 0.033,
       y - h * 0.03 - lift,
       h * 0.066,
       h * 0.03,
@@ -1657,7 +1681,8 @@ const SCENES = {
     }
 
     // 지면 잠금 — 깊이 이동은 화면상 압축되므로 거리를 2.2배로 환산한다
-    const g = gaitAlong((u) => yAt(u) * 2.2, t, h);
+    // 깊이 이동은 화면상 짧게 눌리지만, 과장하면 제자리 종종걸음이 된다
+    const g = gaitAlong((u) => yAt(u) * 0.85, t, h);
 
     /*
       이 인물은 화면 안쪽↔앞쪽(깊이)으로 오간다. 옆모습으로 그리면 옆으로
