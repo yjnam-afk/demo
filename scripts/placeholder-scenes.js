@@ -165,8 +165,14 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   const walkAmount = Math.min(1, stride);
   const drop = Math.abs(Math.sin(phase)) * h * 0.018 * walkAmount;
-  // 걸을 때 상체가 진행 방향으로 살짝 기운다 — 어깨 높이 좌표를 앞으로 민다
-  const leanX = facing * h * 0.026 * walkAmount;
+  /*
+    상체 리듬: 진행 방향으로 기우는 고정 기울임에, 걸음(보폭 2배 주기)에
+    맞춰 앞뒤로 살짝 흔들리는 성분을 더한다. 상체가 병풍처럼 고정된 채
+    다리만 움직이면 걸음 전체가 뻣뻣하게 읽힌다.
+  */
+  const leanX =
+    facing * h * 0.026 * walkAmount +
+    Math.sin(phase * 2 + 0.7) * h * 0.011 * walkAmount * facing;
   const hipY = y - h * 0.5 + drop;
   const shoulderY = y - h * 0.79 + drop;
   const thigh = h * 0.25;
@@ -182,7 +188,8 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
       크게 접힌다. 두 다리가 같은 굽힘으로 흔들리면 컴퍼스가 된다.
     */
     const swingK = Math.max(0, Math.sin(p - 1.7));
-    const bend = (0.08 + 1.05 * swingK * swingK) * stride * 0.85 + 0.04;
+    // 디딤발은 거의 펴지고(기저 0.05) 스윙 무릎만 또렷하게 접힌다(제곱으로 날카롭게)
+    const bend = (0.05 + 1.18 * swingK * swingK) * stride * 0.85 + 0.03;
     const hipX = x + facing * rest * 0.3;
     const kx = x + facing * (Math.sin(swing) * thigh + rest);
     const ky = hipY + Math.cos(swing) * thigh;
@@ -263,24 +270,32 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   const front = facing;
   const torso = () => {
     /*
-      옆모습의 몸통 두께다 — 정면 어깨너비가 아니다. 걷는 인물은 측면으로
-      보이므로 몸통을 정면 폭으로 그리면 앞가슴이 불룩한 판자가 된다.
-      측면 가슴 두께는 정면 어깨너비의 절반쯤이다.
+      옆모습의 몸통 두께로(정면 어깨너비 아님), 그리고 직선 없이 곡선만으로
+      그린다. 직선으로 이은 다각형 몸통은 어깨·옆구리·밑단이 전부 모서리라
+      "통으로 각진" 판자가 된다. 실루엣의 재료: 승모근 능선, 볼록한 가슴,
+      명치 아래의 완만한 들어감, 살짝 볼록한 등판, 가운데가 처지는 재킷 밑단.
     */
+    const sx0 = x + leanX;
     ctx.beginPath();
-    ctx.moveTo(x + leanX - h * 0.05, shoulderY + h * 0.012);
-    ctx.quadraticCurveTo(x + leanX - h * 0.024, shoulderY - h * 0.016, x + leanX + h * 0.004, shoulderY - h * 0.018);
-    ctx.quadraticCurveTo(x + leanX + h * 0.03, shoulderY - h * 0.015, x + leanX + h * 0.052, shoulderY + h * 0.012);
-    // 앞면(진행 방향) — 가슴이 등보다 조금 나오고 허리로 오며 들어간다
-    ctx.quadraticCurveTo(
-      x + leanX * 0.5 + h * 0.062 + front * h * 0.008,
-      shoulderY + h * 0.1,
-      x + h * 0.048,
-      hipY - h * 0.015,
+    ctx.moveTo(sx0 - h * 0.048, shoulderY + h * 0.016);
+    // 목덜미를 지나는 승모근 능선
+    ctx.quadraticCurveTo(sx0 - h * 0.028, shoulderY - h * 0.015, sx0 + h * 0.004, shoulderY - h * 0.017);
+    ctx.quadraticCurveTo(sx0 + h * 0.032, shoulderY - h * 0.013, sx0 + h * 0.05, shoulderY + h * 0.014);
+    // 가슴 — 밖으로 볼록했다가 명치 아래에서 완만히 들어간다
+    ctx.bezierCurveTo(
+      sx0 + h * 0.066 + front * h * 0.006,
+      shoulderY + h * 0.055,
+      x + h * 0.06,
+      shoulderY + h * 0.145,
+      x + h * 0.05,
+      hipY - h * 0.05,
     );
-    ctx.lineTo(x - h * 0.048, hipY - h * 0.015);
-    // 등 — 어깨 뒤에서 완만하게 내려온다
-    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.058, shoulderY + h * 0.1, x + leanX - h * 0.05, shoulderY + h * 0.012);
+    // 재킷 앞자락 → 가운데가 살짝 처지는 밑단 → 뒷자락
+    ctx.quadraticCurveTo(x + h * 0.052, hipY - h * 0.018, x + h * 0.043, hipY - h * 0.006);
+    ctx.quadraticCurveTo(x, hipY + h * 0.006, x - h * 0.043, hipY - h * 0.006);
+    // 등 — 엉덩이에서 어깨로 오르며 견갑부가 살짝 볼록하다
+    ctx.quadraticCurveTo(x - h * 0.055, hipY - h * 0.055, sx0 - h * 0.056, shoulderY + h * 0.085);
+    ctx.quadraticCurveTo(sx0 - h * 0.058, shoulderY + h * 0.04, sx0 - h * 0.048, shoulderY + h * 0.016);
     ctx.closePath();
   };
   torso();
