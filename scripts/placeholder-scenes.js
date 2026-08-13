@@ -115,51 +115,6 @@ const FIG_TONES = {
   civC: { jacket: 'rgba(122,130,122,0.92)', pants: 'rgba(78,84,80,0.92)', back: 'rgba(64,70,66,0.85)', arm: 'rgba(108,116,108,0.88)', head: 'rgba(222,200,178,0.94)', hair: 'rgba(70,58,46,0.95)' },
 };
 
-/*
- * ── 지면 잠금 보행 ────────────────────────────────────────────────
- * 다리가 자기 박자로 휘젓고 몸이 별개 속도로 흐르면 발이 지면에서
- * 미끄러진다 — 걷기는 문워크, 뛰기는 얼음판이 된다. 발걸음 위상을
- * 시간이 아니라 "누적 이동 거리" 에서 구하면 이동한 만큼만 다리가
- * 움직이고, 멈추면 다리도 저절로 멈춘다.
- */
-
-/** 순간 속도 → 보폭. 빠르면 성큼, 느려지면 좁아지고, 멈추면 다리가 모인다. */
-function strideFor(spd, h, run = false) {
-  return Math.max(0.12, Math.min(run ? 1.15 : 1.0, spd / (h * (run ? 5.5 : 3.2))));
-}
-
-/**
- * 경로 → 지면 잠금 위상과 현재 보폭.
- *
- * 발이 미끄러지지 않으려면 디딤발이 뒤로 쓸리는 속도가 몸의 전진 속도와
- * 같아야 한다. 다리 기하를 미분하면 반 주기(π)당 지면 거리는
- * 걷기 ≈ 0.79·키·보폭, 달리기 ≈ 0.97·키·보폭이다. 보폭이 속도 따라
- * 변하므로 위상은 나눗셈이 아니라 경로를 따라 적분해 쌓는다.
- */
-function gaitAlong(xAt, t, h, run = false) {
-  const n = Math.max(2, Math.ceil(150 * Math.max(t, 0.02)));
-  const dt = Math.max(t, 0.0001) / n;
-  let phase = 0;
-  let stride = 0.12;
-  let prev = xAt(0);
-  for (let i = 1; i <= n; i++) {
-    const cur = xAt(dt * i);
-    const dx = Math.abs(cur - prev);
-    stride = strideFor(dx / dt, h, run);
-    /*
-      걸음 길이 = 접지한 발이 몸 기준으로 쓸어 내는 총 거리.
-      다리 수식을 실제로 돌려 실측한 값이다 (어림 유도값 0.52·h,
-      0.79·h·stride 는 둘 다 틀렸었다):
-        걷기: step/h ≈ 0.028 + 0.488·stride  (stride 0.4~1.15 실측 적합)
-        달리기: step/h ≈ 0.139 + 0.428·stride
-    */
-    const step = h * (run ? 0.139 + 0.428 * stride : 0.028 + 0.488 * stride);
-    phase += (Math.PI * dx) / step;
-    prev = cur;
-  }
-  return { phase, stride };
-}
-
 /**
  * 테이퍼 사지 — 시작 굵기 w1 에서 끝 굵기 w2 로 가늘어지는 캡슐.
  * 위아래 굵기가 같은 획으로 그린 팔다리는 소시지가 된다. 허벅지→무릎→발목,
@@ -1260,14 +1215,13 @@ const SCENES = {
       ctx.rotate(lean);
       ctx.translate(-pos.x, -(baseY - h * 0.4));
     }
-    // 지면 잠금 — 멈칫 구간은 거리가 늘지 않아 다리도 저절로 멈춘다
-    const g = gaitAlong((u) => posAt(u).x, t, h);
     walker(ctx, {
       x: pos.x,
       y: baseY,
       h: pos.mode === 'cross' ? h * 0.92 : h,
-      phase: g.phase,
-      stride: g.stride,
+      // 멈칫: 다리를 모은다. 통과·보행: 걷는다.
+      phase: pos.mode === 'pause' ? 0 : t * Math.PI * 26,
+      stride: pos.mode === 'walk' ? 1 : pos.mode === 'cross' ? 0.6 : 0.15,
       facing: 1,
       tone: crossed ? 'alert' : 'normal',
     });
@@ -1275,18 +1229,15 @@ const SCENES = {
 
     // 배경의 정상 인원 — 대비를 위해 흐리게
     if (!opts?.compact) {
-      {
-        const gb = gaitAlong((u) => -u * 30 * S, t, H * 0.12);
-        walker(ctx, {
-          x: W * 0.86 - t * 30 * S,
-          y: H * 0.66,
-          h: H * 0.12,
-          phase: gb.phase,
-          stride: gb.stride,
-          facing: -1,
-          tone: 'dim',
-        });
-      }
+      walker(ctx, {
+        x: W * 0.86 - t * 30 * S,
+        y: H * 0.66,
+        h: H * 0.12,
+        phase: t * Math.PI * 18,
+        stride: 0.7,
+        facing: -1,
+        tone: 'dim',
+      });
     }
 
     if (crossed) {
@@ -1398,14 +1349,13 @@ const SCENES = {
 
     // ── 인물: 배회 동선과 걷는 실루엣 ────────────────────────────────
     // 왕복 횟수를 줄여 서성임을 초조한 왕복이 아니라 느린 배회로 만든다
-    const xPath = (u) => W * 0.5 + Math.sin(u * Math.PI * 3) * W * 0.21;
-    const x = xPath(t);
+    const sway = Math.sin(t * Math.PI * 3);
+    const x = W * 0.5 + sway * W * 0.21;
     const y = H * 0.885;
     const h = H * WALKER_H * z;
-    // 지면 잠금 — 왕복의 감속·전환이 그대로 발걸음에 실린다
-    const g = gaitAlong(xPath, t, h);
-    const walkPhase = g.phase;
-    const stride = g.stride;
+    const walkPhase = t * Math.PI * 16;
+    // 방향 전환 순간에는 보폭이 줄되, 다리가 완전히 붙지는 않게 하한을 둔다
+    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 3));
     const facing = Math.sign(Math.cos(t * Math.PI * 3)) || 1;
 
     const dwell = Math.floor(t * 52);
@@ -1631,16 +1581,16 @@ const SCENES = {
       ctx.fill();
     }
 
-    // 지면 잠금 — 깊이 이동은 화면상 압축되므로 거리를 2.2배로 환산한다
-    const g = gaitAlong((u) => yAt(u) * 2.2, t, h);
+    const dy = yAt(Math.min(1, t + 0.015)) - yAt(Math.max(0, t - 0.015));
+    const moving = Math.abs(dy) > 0.6 * S;
 
     const drawSubject = () =>
       walker(ctx, {
         x,
         y,
         h,
-        phase: g.phase,
-        stride: g.stride,
+        phase: moving ? t * Math.PI * 26 : 0,
+        stride: moving ? 0.9 : 0.15,
         facing: Math.cos(t * Math.PI * 6) >= 0 ? 1 : -1,
         tone: matched ? 'alert' : 'normal',
       });
@@ -1846,10 +1796,8 @@ const SCENES = {
       // 접근 — 가방을 멘 채 걷는다. 가방이 걸음을 따라 흔들린다.
       const k = t / 0.3;
       const px = W * 0.14 + k * (cx - W * 0.14);
-      // 지면 잠금 — 가방의 들썩임도 같은 위상을 쓴다
-      const g = gaitAlong((u) => W * 0.14 + Math.min(1, u / 0.3) * (cx - W * 0.14), t, h);
-      walker(ctx, { x: px, y, h, phase: g.phase, stride: g.stride, facing: 1, tone: 'normal' });
-      drawWornBag(px, Math.sin(g.phase) * h * 0.018, Math.sin(g.phase) * 0.04);
+      walker(ctx, { x: px, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
+      drawWornBag(px, Math.sin(t * Math.PI * 24) * h * 0.018, Math.sin(t * Math.PI * 24) * 0.04);
     } else {
       // 멈춰 서서 가방을 뒤진다
       walker(ctx, {
@@ -1956,9 +1904,7 @@ const SCENES = {
     if (t < 0.35) {
       const k = t / 0.35;
       x = W * 0.82 - k * (W * 0.82 - W * 0.5);
-      // 지면 잠금
-      const g = gaitAlong((u) => -Math.min(1, u / 0.35) * (W * 0.32), t, h);
-      walker(ctx, { x, y, h, phase: g.phase, stride: g.stride, facing: -1, tone: 'normal' });
+      walker(ctx, { x, y, h, phase: t * Math.PI * 22, stride: 0.85, facing: -1, tone: 'normal' });
     } else {
       x = W * 0.5;
       // 멈춰 서서 — 좌우로 아주 조금 흔들린다
@@ -2044,14 +1990,12 @@ const SCENES = {
       const k = Math.min(1, t / WALK_END);
       const px = W * 0.16 + k * (cx - W * 0.16);
       const stopK = t < WALK_END ? 1 : Math.max(0, 1 - (t - WALK_END) / 0.05);
-      // 지면 잠금 — 멈추면 위상이 얼고, 보폭은 0 으로 줄며 다리가 모인다
-      const g = gaitAlong((u) => W * 0.16 + Math.min(1, u / WALK_END) * (cx - W * 0.16), t, h);
       walker(ctx, {
         x: px,
         y,
         h,
-        phase: g.phase,
-        stride: g.stride * stopK,
+        phase: t * Math.PI * 24,
+        stride: 0.9 * stopK,
         facing: 1,
         tone: 'normal',
       });
@@ -2127,9 +2071,7 @@ const SCENES = {
     if (t < 0.35) {
       const k = t / 0.35;
       const x = W * 0.84 - k * (W * 0.84 - cx);
-      // 지면 잠금
-      const g = gaitAlong((u) => -Math.min(1, u / 0.35) * (W * 0.84 - cx), t, h);
-      walker(ctx, { x, y, h, phase: g.phase, stride: g.stride, facing: -1, tone: 'normal' });
+      walker(ctx, { x, y, h, phase: t * Math.PI * 20, stride: 0.75, facing: -1, tone: 'normal' });
     } else {
       /*
         앉는 동작은 인물을 축소하는 것이 아니라 관절 보간으로 그린다 —
@@ -2203,14 +2145,12 @@ const SCENES = {
       const y = p.yy * H;
       const scale = 0.5 + ((p.yy - 0.63) / 0.25) * 0.5;
       const h = H * WALKER_H * scale * p.hf;
-      // 지면 잠금 — 등속 이동. p.s 는 걸음 시작 위상차
-      const g = gaitAlong((u) => Math.abs(p.v) * W * u, t, h);
       walker(ctx, {
         x,
         y,
         h,
-        phase: g.phase + p.s * 20,
-        stride: g.stride,
+        phase: (t * 30 * Math.abs(p.v) + p.s * 20) * Math.PI,
+        stride: 0.85,
         facing: p.f,
         tone: p.tone,
       });
@@ -2305,14 +2245,12 @@ const SCENES = {
     if (gazing) {
       frontFigure(ctx, { x, y, h, tone: detected ? 'alert' : 'normal' });
     } else {
-      // 지면 잠금 — 응시 정지 구간은 거리가 늘지 않아 다리도 멈춘다
-      const g = gaitAlong(xAt, t, h);
       walker(ctx, {
         x,
         y,
         h,
-        phase: g.phase,
-        stride: g.stride,
+        phase: t * Math.PI * 22,
+        stride: 0.85,
         facing: 1,
         tone: detected ? 'alert' : 'normal',
       });
@@ -2415,21 +2353,18 @@ const SCENES = {
       팔다리 스윙이 크다. 걷기 속도로 미끄러지면 산책이 된다.
     */
     const runner = (k, y, hh, tone) => {
-      const span = W * 1.08 - fx - W * 0.06;
-      const x = fx + W * 0.06 + k * span;
+      const x = fx + W * 0.06 + k * (W * 1.08 - fx - W * 0.06);
       if (x > W + hh) return;
       ctx.save();
       ctx.translate(x, y - hh * 0.5);
       ctx.rotate(0.17);
       ctx.translate(-x, -(y - hh * 0.5));
-      // 지면 잠금 — 등속 달리기라 위상 = π·거리/걸음길이 로 바로 나온다
-      const rs = strideFor(span / 0.3, hh, true);
       walker(ctx, {
         x,
         y,
         h: hh,
-        phase: (Math.PI * k * span) / (hh * (0.139 + 0.428 * rs)),
-        stride: rs,
+        phase: t * Math.PI * 46,
+        stride: 1.1,
         facing: 1,
         tone,
         run: true,
