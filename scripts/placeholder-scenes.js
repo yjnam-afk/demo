@@ -115,6 +115,53 @@ const FIG_TONES = {
   civC: { jacket: 'rgba(122,130,122,0.92)', pants: 'rgba(78,84,80,0.92)', back: 'rgba(64,70,66,0.85)', arm: 'rgba(108,116,108,0.88)', head: 'rgba(222,200,178,0.94)', hair: 'rgba(70,58,46,0.95)' },
 };
 
+/*
+ * ── 지면 잠금 보행 ────────────────────────────────────────────────
+ * 다리가 자기 박자로 휘젓고 몸이 별개 속도로 흐르면 발이 지면에서
+ * 미끄러진다 — 걷기는 문워크, 뛰기는 얼음판이 된다. 발걸음 위상을
+ * 시간이 아니라 "누적 이동 거리" 에서 구하면 이동한 만큼만 다리가
+ * 움직이고, 멈추면 다리도 저절로 멈춘다.
+ */
+
+/** 순간 속도 → 보폭. 빠르면 성큼, 느려지면 좁아지고, 멈추면 다리가 모인다. */
+function strideFor(spd, h, run = false) {
+  return Math.max(0.12, Math.min(run ? 1.15 : 1.0, spd / (h * (run ? 5.5 : 3.2))));
+}
+
+/**
+ * 경로 → 지면 잠금 위상과 현재 보폭.
+ *
+ * 발이 미끄러지지 않으려면 디딤발이 뒤로 쓸리는 속도가 몸의 전진 속도와
+ * 같아야 한다. 다리 기하를 미분하면 반 주기(π)당 지면 거리는
+ * 걷기 ≈ 0.79·키·보폭, 달리기 ≈ 0.97·키·보폭이다. 보폭이 속도 따라
+ * 변하므로 위상은 나눗셈이 아니라 경로를 따라 적분해 쌓는다.
+ */
+function gaitAlong(xAt, t, h, run = false) {
+  const n = Math.max(2, Math.ceil(150 * Math.max(t, 0.02)));
+  const dt = Math.max(t, 0.0001) / n;
+  let phase = 0;
+  let stride = 0.12;
+  let prev = xAt(0);
+  for (let i = 1; i <= n; i++) {
+    const cur = xAt(dt * i);
+    const dx = Math.abs(cur - prev);
+    stride = strideFor(dx / dt, h, run);
+    /*
+      걸음 길이 = 한 걸음(반 주기)에 지면을 덮는 거리.
+
+      물리적 실측값은 키의 0.516배(걷기)지만 그대로 쓰면 다리가 느려
+      미끄러지듯 보인다. 사람 눈은 다리가 물리보다 조금 빨라야 자연스럽게
+      읽는다. 그래서 이 값은 이론이 아니라 실측 기준을 쓴다 — 장면 중
+      가장 자연스럽다고 판정된 군중 계수 장면의 박자/속도 비율(키의
+      0.307배)이다. 이 상수 하나가 모든 장면의 걸음을 같게 만든다.
+    */
+    const step = h * (run ? 0.4 : 0.31);
+    phase += (Math.PI * dx) / step;
+    prev = cur;
+  }
+  return { phase, stride };
+}
+
 /**
  * 테이퍼 사지 — 시작 굵기 w1 에서 끝 굵기 w2 로 가늘어지는 캡슐.
  * 위아래 굵기가 같은 획으로 그린 팔다리는 소시지가 된다. 허벅지→무릎→발목,
@@ -622,29 +669,47 @@ function sittingFigure(ctx, { x, y, h, facing, tone, k = 1 }) {
 }
 
 /** 정면(카메라 쪽)을 바라보는 자세 — 응시 장면 전용. 눈이 카메라를 본다. */
-function frontFigure(ctx, { x, y, h, tone }) {
+/**
+ * 정면(또는 뒷모습) 인물.
+ *  phase — 주면 카메라 쪽으로 걸어오는 몸짓이 붙는다(상하 반동, 앞뒤로
+ *          엇갈리는 다리). 깊이 방향 이동은 옆모습으로 그리면 안 된다.
+ *  back  — 카메라를 등지고 멀어지는 뒷모습(얼굴 없음).
+ */
+function frontFigure(ctx, { x, y, h, tone, phase = null, back = false }) {
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  // 걸을 때의 상하 반동 — 정면에서는 이것이 보행의 주된 신호다
+  const bob = phase === null ? 0 : Math.abs(Math.sin(phase)) * h * 0.016;
+  y -= bob;
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath();
-  ctx.ellipse(x, y + h * 0.012, h * 0.17, h * 0.045, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + bob + h * 0.012, h * 0.17, h * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
   const hipY = y - h * 0.5;
   const shoulderY = y - h * 0.79;
-  // 다리 — 정면이라 두 기둥, 발은 좌우로 벌어진다
+  // 다리 — 정면이라 두 기둥. 걸으면 한쪽이 앞으로 나오며 짧아 보인다
   for (const d of [-1, 1]) {
     const color = d === 1 ? c.pants : c.back;
+    // 앞으로 나온 다리는 발이 낮고 크게, 뒤에 남은 다리는 살짝 짧게
+    const swing = phase === null ? 0 : Math.sin(phase + (d === 1 ? 0 : Math.PI));
+    const lift = phase === null ? 0 : Math.max(0, swing) * h * 0.045;
     ctx.strokeStyle = color;
     ctx.lineWidth = h * 0.07;
     ctx.beginPath();
     ctx.moveTo(x + d * h * 0.032, hipY);
-    ctx.lineTo(x + d * h * 0.042, y - h * 0.02);
+    ctx.lineTo(x + d * h * 0.042, y - h * 0.02 - lift);
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(x + d * h * 0.042 - h * 0.033, y - h * 0.03, h * 0.066, h * 0.03, h * 0.012);
+    ctx.roundRect(
+      x + d * h * 0.042 - h * 0.033,
+      y - h * 0.03 - lift,
+      h * 0.066,
+      h * 0.03,
+      h * 0.012,
+    );
     ctx.fill();
   }
   // 골반
@@ -663,14 +728,16 @@ function frontFigure(ctx, { x, y, h, tone }) {
   ctx.quadraticCurveTo(x - h * 0.095, shoulderY + h * 0.12, x - h * 0.09, shoulderY + h * 0.014);
   ctx.closePath();
   ctx.fill();
-  // 팔 — 양옆으로 늘어뜨린다
+  // 팔 — 양옆으로 늘어뜨린다. 걸으면 다리와 엇갈려 앞뒤로 흔들린다
   for (const d of [-1, 1]) {
+    const aSwing =
+      phase === null ? 0 : Math.sin(phase + (d === 1 ? Math.PI : 0)) * h * 0.03;
     ctx.strokeStyle = d === 1 ? c.arm : c.back;
     ctx.lineWidth = h * 0.046;
     ctx.beginPath();
     ctx.moveTo(x + d * h * 0.085, shoulderY + h * 0.025);
-    ctx.lineTo(x + d * h * 0.105, y - h * 0.51);
-    ctx.lineTo(x + d * h * 0.095, y - h * 0.38);
+    ctx.lineTo(x + d * h * 0.105, y - h * 0.51 + aSwing * 0.4);
+    ctx.lineTo(x + d * h * 0.095, y - h * 0.38 + aSwing);
     ctx.stroke();
     ctx.fillStyle = c.head;
     ctx.beginPath();
@@ -690,16 +757,19 @@ function frontFigure(ctx, { x, y, h, tone }) {
   ctx.beginPath();
   ctx.ellipse(x, hy, h * 0.058, h * 0.07, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = c.head;
-  ctx.beginPath();
-  ctx.ellipse(x, hy + h * 0.012, h * 0.043, h * 0.052, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // 눈 — 카메라(시청자)를 본다. 이 두 점이 "응시" 다.
-  ctx.fillStyle = 'rgba(20,24,30,0.85)';
-  for (const d of [-1, 1]) {
+  // 뒷모습이면 얼굴이 없다 — 머리카락이 뒤통수를 덮는다
+  if (!back) {
+    ctx.fillStyle = c.head;
     ctx.beginPath();
-    ctx.arc(x + d * h * 0.018, hy + h * 0.004, h * 0.0068, 0, Math.PI * 2);
+    ctx.ellipse(x, hy + h * 0.012, h * 0.043, h * 0.052, 0, 0, Math.PI * 2);
     ctx.fill();
+    // 눈 — 카메라(시청자)를 본다. 이 두 점이 "응시" 다.
+    ctx.fillStyle = 'rgba(20,24,30,0.85)';
+    for (const d of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(x + d * h * 0.018, hy + h * 0.004, h * 0.0068, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.restore();
 }
@@ -1215,13 +1285,14 @@ const SCENES = {
       ctx.rotate(lean);
       ctx.translate(-pos.x, -(baseY - h * 0.4));
     }
+    // 지면 잠금 — 멈칫 구간은 거리가 늘지 않아 다리도 저절로 멈춘다
+    const g = gaitAlong((u) => posAt(u).x, t, h);
     walker(ctx, {
       x: pos.x,
       y: baseY,
       h: pos.mode === 'cross' ? h * 0.92 : h,
-      // 멈칫: 다리를 모은다. 통과·보행: 걷는다.
-      phase: pos.mode === 'pause' ? 0 : t * Math.PI * 26,
-      stride: pos.mode === 'walk' ? 1 : pos.mode === 'cross' ? 0.6 : 0.15,
+      phase: g.phase,
+      stride: g.stride,
       facing: 1,
       tone: crossed ? 'alert' : 'normal',
     });
@@ -1229,15 +1300,18 @@ const SCENES = {
 
     // 배경의 정상 인원 — 대비를 위해 흐리게
     if (!opts?.compact) {
-      walker(ctx, {
-        x: W * 0.86 - t * 30 * S,
-        y: H * 0.66,
-        h: H * 0.12,
-        phase: t * Math.PI * 18,
-        stride: 0.7,
-        facing: -1,
-        tone: 'dim',
-      });
+      {
+        const gb = gaitAlong((u) => -u * 30 * S, t, H * 0.12);
+        walker(ctx, {
+          x: W * 0.86 - t * 30 * S,
+          y: H * 0.66,
+          h: H * 0.12,
+          phase: gb.phase,
+          stride: gb.stride,
+          facing: -1,
+          tone: 'dim',
+        });
+      }
     }
 
     if (crossed) {
@@ -1349,13 +1423,14 @@ const SCENES = {
 
     // ── 인물: 배회 동선과 걷는 실루엣 ────────────────────────────────
     // 왕복 횟수를 줄여 서성임을 초조한 왕복이 아니라 느린 배회로 만든다
-    const sway = Math.sin(t * Math.PI * 3);
-    const x = W * 0.5 + sway * W * 0.21;
+    const xPath = (u) => W * 0.5 + Math.sin(u * Math.PI * 3) * W * 0.21;
+    const x = xPath(t);
     const y = H * 0.885;
     const h = H * WALKER_H * z;
-    const walkPhase = t * Math.PI * 16;
-    // 방향 전환 순간에는 보폭이 줄되, 다리가 완전히 붙지는 않게 하한을 둔다
-    const stride = 0.45 + 0.55 * Math.abs(Math.cos(t * Math.PI * 3));
+    // 지면 잠금 — 왕복의 감속·전환이 그대로 발걸음에 실린다
+    const g = gaitAlong(xPath, t, h);
+    const walkPhase = g.phase;
+    const stride = g.stride;
     const facing = Math.sign(Math.cos(t * Math.PI * 3)) || 1;
 
     const dwell = Math.floor(t * 52);
@@ -1581,17 +1656,22 @@ const SCENES = {
       ctx.fill();
     }
 
-    const dy = yAt(Math.min(1, t + 0.015)) - yAt(Math.max(0, t - 0.015));
-    const moving = Math.abs(dy) > 0.6 * S;
+    // 지면 잠금 — 깊이 이동은 화면상 압축되므로 거리를 2.2배로 환산한다
+    const g = gaitAlong((u) => yAt(u) * 2.2, t, h);
 
+    /*
+      이 인물은 화면 안쪽↔앞쪽(깊이)으로 오간다. 옆모습으로 그리면 옆으로
+      게걸음 치는 것으로 보인다 — 카메라 쪽으로 오면 정면, 안쪽으로 멀어지면
+      뒷모습이다. 정면 보행의 신호는 상하 반동과 앞뒤로 엇갈리는 팔다리다.
+    */
+    const approaching = yAt(Math.min(1, t + 0.01)) >= y;
     const drawSubject = () =>
-      walker(ctx, {
+      frontFigure(ctx, {
         x,
         y,
         h,
-        phase: moving ? t * Math.PI * 26 : 0,
-        stride: moving ? 0.9 : 0.15,
-        facing: Math.cos(t * Math.PI * 6) >= 0 ? 1 : -1,
+        phase: g.phase,
+        back: !approaching,
         tone: matched ? 'alert' : 'normal',
       });
 
@@ -1796,8 +1876,10 @@ const SCENES = {
       // 접근 — 가방을 멘 채 걷는다. 가방이 걸음을 따라 흔들린다.
       const k = t / 0.3;
       const px = W * 0.14 + k * (cx - W * 0.14);
-      walker(ctx, { x: px, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
-      drawWornBag(px, Math.sin(t * Math.PI * 24) * h * 0.018, Math.sin(t * Math.PI * 24) * 0.04);
+      // 지면 잠금 — 가방의 들썩임도 같은 위상을 쓴다
+      const g = gaitAlong((u) => W * 0.14 + Math.min(1, u / 0.3) * (cx - W * 0.14), t, h);
+      walker(ctx, { x: px, y, h, phase: g.phase, stride: g.stride, facing: 1, tone: 'normal' });
+      drawWornBag(px, Math.sin(g.phase) * h * 0.018, Math.sin(g.phase) * 0.04);
     } else {
       // 멈춰 서서 가방을 뒤진다
       walker(ctx, {
@@ -1904,7 +1986,9 @@ const SCENES = {
     if (t < 0.35) {
       const k = t / 0.35;
       x = W * 0.82 - k * (W * 0.82 - W * 0.5);
-      walker(ctx, { x, y, h, phase: t * Math.PI * 22, stride: 0.85, facing: -1, tone: 'normal' });
+      // 지면 잠금
+      const g = gaitAlong((u) => -Math.min(1, u / 0.35) * (W * 0.32), t, h);
+      walker(ctx, { x, y, h, phase: g.phase, stride: g.stride, facing: -1, tone: 'normal' });
     } else {
       x = W * 0.5;
       // 멈춰 서서 — 좌우로 아주 조금 흔들린다
@@ -1990,12 +2074,14 @@ const SCENES = {
       const k = Math.min(1, t / WALK_END);
       const px = W * 0.16 + k * (cx - W * 0.16);
       const stopK = t < WALK_END ? 1 : Math.max(0, 1 - (t - WALK_END) / 0.05);
+      // 지면 잠금 — 멈추면 위상이 얼고, 보폭은 0 으로 줄며 다리가 모인다
+      const g = gaitAlong((u) => W * 0.16 + Math.min(1, u / WALK_END) * (cx - W * 0.16), t, h);
       walker(ctx, {
         x: px,
         y,
         h,
-        phase: t * Math.PI * 24,
-        stride: 0.9 * stopK,
+        phase: g.phase,
+        stride: g.stride * stopK,
         facing: 1,
         tone: 'normal',
       });
@@ -2071,7 +2157,9 @@ const SCENES = {
     if (t < 0.35) {
       const k = t / 0.35;
       const x = W * 0.84 - k * (W * 0.84 - cx);
-      walker(ctx, { x, y, h, phase: t * Math.PI * 20, stride: 0.75, facing: -1, tone: 'normal' });
+      // 지면 잠금
+      const g = gaitAlong((u) => -Math.min(1, u / 0.35) * (W * 0.84 - cx), t, h);
+      walker(ctx, { x, y, h, phase: g.phase, stride: g.stride, facing: -1, tone: 'normal' });
     } else {
       /*
         앉는 동작은 인물을 축소하는 것이 아니라 관절 보간으로 그린다 —
@@ -2145,12 +2233,14 @@ const SCENES = {
       const y = p.yy * H;
       const scale = 0.5 + ((p.yy - 0.63) / 0.25) * 0.5;
       const h = H * WALKER_H * scale * p.hf;
+      // 지면 잠금 — 등속 이동. p.s 는 걸음 시작 위상차
+      const g = gaitAlong((u) => Math.abs(p.v) * W * u, t, h);
       walker(ctx, {
         x,
         y,
         h,
-        phase: (t * 30 * Math.abs(p.v) + p.s * 20) * Math.PI,
-        stride: 0.85,
+        phase: g.phase + p.s * 20,
+        stride: g.stride,
         facing: p.f,
         tone: p.tone,
       });
@@ -2245,12 +2335,14 @@ const SCENES = {
     if (gazing) {
       frontFigure(ctx, { x, y, h, tone: detected ? 'alert' : 'normal' });
     } else {
+      // 지면 잠금 — 응시 정지 구간은 거리가 늘지 않아 다리도 멈춘다
+      const g = gaitAlong(xAt, t, h);
       walker(ctx, {
         x,
         y,
         h,
-        phase: t * Math.PI * 22,
-        stride: 0.85,
+        phase: g.phase,
+        stride: g.stride,
         facing: 1,
         tone: detected ? 'alert' : 'normal',
       });
@@ -2353,18 +2445,21 @@ const SCENES = {
       팔다리 스윙이 크다. 걷기 속도로 미끄러지면 산책이 된다.
     */
     const runner = (k, y, hh, tone) => {
-      const x = fx + W * 0.06 + k * (W * 1.08 - fx - W * 0.06);
+      const span = W * 1.08 - fx - W * 0.06;
+      const x = fx + W * 0.06 + k * span;
       if (x > W + hh) return;
       ctx.save();
       ctx.translate(x, y - hh * 0.5);
       ctx.rotate(0.17);
       ctx.translate(-x, -(y - hh * 0.5));
+      // 지면 잠금 — 등속 달리기라 위상 = π·거리/걸음길이 로 바로 나온다
+      const rs = strideFor(span / 0.3, hh, true);
       walker(ctx, {
         x,
         y,
         h: hh,
-        phase: t * Math.PI * 46,
-        stride: 1.1,
+        phase: (Math.PI * k * span) / (hh * 0.4),
+        stride: rs,
         facing: 1,
         tone,
         run: true,

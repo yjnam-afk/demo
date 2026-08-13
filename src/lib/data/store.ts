@@ -186,7 +186,9 @@ export async function resolveBlobAccess(): Promise<BlobAccess> {
   try {
     // 시간 제한이 없으면 토큰이 잘못됐을 때 이 확인이 무한정 매달린다.
     await withTimeout(
-      put(probe, '', {
+      // 본문은 비우지 않는다 — SDK 가 빈 본문을 "body is required" 로 거부해,
+      // 확인이 늘 실패하고 그 오류가 미디어 서빙까지 죽였다.
+      put(probe, 'probe', {
         access: 'public',
         addRandomSuffix: false,
         allowOverwrite: true,
@@ -198,8 +200,18 @@ export async function resolveBlobAccess(): Promise<BlobAccess> {
     accessCache = 'public';
     await del(probe, { token: blobToken() }).catch(() => {});
   } catch (err) {
-    if (!isAccessMismatch(err)) throw err;
-    accessCache = 'private';
+    if (isAccessMismatch(err)) {
+      accessCache = 'private';
+      return accessCache;
+    }
+    /*
+      확인 자체가 실패한 경우(권한·네트워크·SDK 규칙 변경 등)에는 던지지
+      않는다. 이 값을 필요로 하는 쪽은 미디어를 내주는 화면 경로이고,
+      확인 실패로 화면을 죽이는 것보다 기본값으로 계속 가는 편이 낫다.
+      틀린 값을 기억하지는 않는다 — 다음 요청에서 다시 확인한다.
+    */
+    console.error('[blob] 공개 설정 확인 실패 — private 로 진행', err);
+    return 'private';
   }
   return accessCache;
 }
