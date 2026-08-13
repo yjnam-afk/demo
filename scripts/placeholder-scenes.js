@@ -138,7 +138,7 @@ function limb(ctx, x1, y1, x2, y2, w1, w2, color) {
   ctx.fill();
 }
 
-function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
+function walker(ctx, { x, y, h, phase, stride, facing, tone, run = false }) {
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
 
   /*
@@ -164,7 +164,8 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   ctx.fill();
 
   const walkAmount = Math.min(1, stride);
-  const drop = Math.abs(Math.sin(phase)) * h * 0.018 * walkAmount;
+  // 뛰면 상하 반동이 걷기의 두 배쯤 된다
+  const drop = Math.abs(Math.sin(phase)) * h * (run ? 0.034 : 0.018) * walkAmount;
   // 걸을 때 상체가 진행 방향으로 살짝 기운다. 걸음마다 흔드는 성분은
   // 리듬이 아니라 떨림으로 읽혀서 뺐다 — 기울임은 고정값이 낫다.
   const leanX = facing * h * 0.026 * walkAmount;
@@ -176,15 +177,18 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   const forearm = h * 0.14;
 
   const leg = (p, rest, color) => {
-    const swing = Math.sin(p) * 0.5 * stride;
     /*
-      실제 보행의 비대칭: 디딤발(뒤로 쓸리는 구간)은 거의 곧게 펴진 채
-      몸을 밀고, 무릎은 다리가 뒤에서 앞으로 넘어오는 스윙 구간에만
-      크게 접힌다. 두 다리가 같은 굽힘으로 흔들리면 컴퍼스가 된다.
+      걷기와 달리기는 다리 문법이 다르다.
+      걷기 — 디딤발은 거의 곧게 몸을 밀고, 스윙 다리만 무릎이 접힌다.
+      달리기 — 디딤다리도 항상 약간 굽어 있고(충격 흡수), 스윙 다리는
+      발뒤꿈치가 엉덩이 쪽까지 크게 접힌다. 걷기 문법에 보폭만 키우면
+      가위처럼 다리를 벌리는 경보 선수가 된다.
     */
-    const swingK = Math.max(0, Math.sin(p - 1.7));
-    // 디딤발은 거의 펴지고, 스윙 다리만 무릎이 접힌다 (과하면 껑충거린다)
-    const bend = (0.08 + 1.05 * swingK * swingK) * stride * 0.85 + 0.04;
+    const swing = Math.sin(p) * (run ? 0.62 : 0.5) * Math.min(stride, run ? 1.15 : stride);
+    const swingK = Math.max(0, Math.sin(p - (run ? 1.4 : 1.7)));
+    const bend = run
+      ? 0.35 + 1.5 * swingK * swingK
+      : (0.08 + 1.05 * swingK * swingK) * stride * 0.85 + 0.04;
     const hipX = x + facing * rest * 0.3;
     const kx = x + facing * (Math.sin(swing) * thigh + rest);
     const ky = hipY + Math.cos(swing) * thigh;
@@ -212,9 +216,10 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   };
 
   const arm = (p, color, width, handColor) => {
-    const swing = Math.sin(p) * 0.42 * stride;
-    // 팔꿈치는 팔이 앞으로 나갈 때 더 접힌다 — 고정 굽힘은 막대 팔이 된다
-    const elbow = 0.32 + 0.3 * Math.max(0, Math.sin(p)) * stride;
+    // 뛰는 팔은 팔꿈치를 직각으로 접은 채 작게 펌프질한다.
+    // 걷는 팔은 늘어진 채 흔들리고, 앞으로 나갈 때만 조금 더 접힌다.
+    const swing = Math.sin(p) * (run ? 0.5 : 0.42) * Math.min(stride, 1.1);
+    const elbow = run ? 1.25 : 0.32 + 0.3 * Math.max(0, Math.sin(p)) * stride;
     const sx = x + leanX + facing * h * 0.005;
     const sy = shoulderY + h * 0.02;
     const ex = sx + facing * Math.sin(swing) * upperArm;
@@ -2359,9 +2364,10 @@ const SCENES = {
         y,
         h: hh,
         phase: t * Math.PI * 46,
-        stride: 1.38,
+        stride: 1.1,
         facing: 1,
         tone,
+        run: true,
       });
       ctx.restore();
     };
