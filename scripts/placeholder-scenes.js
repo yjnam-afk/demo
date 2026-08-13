@@ -146,7 +146,15 @@ function gaitAlong(xAt, t, h, run = false) {
     const cur = xAt(dt * i);
     const dx = Math.abs(cur - prev);
     stride = strideFor(dx / dt, h, run);
-    phase += (Math.PI * dx) / (h * (run ? 0.97 : 0.79) * stride);
+    /*
+      걸음 길이 = 접지한 발이 몸 기준으로 쓸어 내는 총 거리.
+      다리 수식을 실제로 돌려 실측한 값이다 (어림 유도값 0.52·h,
+      0.79·h·stride 는 둘 다 틀렸었다):
+        걷기: step/h ≈ 0.028 + 0.488·stride  (stride 0.4~1.15 실측 적합)
+        달리기: step/h ≈ 0.139 + 0.428·stride
+    */
+    const step = h * (run ? 0.139 + 0.428 * stride : 0.028 + 0.488 * stride);
+    phase += (Math.PI * dx) / step;
     prev = cur;
   }
   return { phase, stride };
@@ -2420,7 +2428,7 @@ const SCENES = {
         x,
         y,
         h: hh,
-        phase: (Math.PI * k * span) / (hh * 0.97 * rs),
+        phase: (Math.PI * k * span) / (hh * (0.139 + 0.428 * rs)),
         stride: rs,
         facing: 1,
         tone,
