@@ -445,9 +445,25 @@ function fallFigure(ctx, { x, y, h, facing, tone, k = 1 }) {
   ctx.beginPath();
   ctx.ellipse(hx, hy, h * 0.06, h * 0.068, ang, 0, Math.PI * 2);
   ctx.fill();
+  /*
+    얼굴은 몸의 배 쪽(가슴이 향하는 방향)에 붙는다. 정수리 방향 연장선에
+    붙이면 상체가 눕는 동안 얼굴이 정수리로 미끄러져, 엎어졌을 때 뒤통수
+    위에 얼굴이 있는 "뒤집힌 머리" 가 된다. 서 있으면 앞, 엎어지면 바닥
+    쪽 — 가슴이 향하는 곳이 언제나 얼굴 자리다.
+  */
+  const vx = -uy * f;
+  const vy = ux * f;
   ctx.fillStyle = c.head;
   ctx.beginPath();
-  ctx.ellipse(hx + ux * h * 0.026 + f * h * 0.012, hy + uy * h * 0.026 + h * 0.012, h * 0.034, h * 0.042, ang, 0, Math.PI * 2);
+  ctx.ellipse(
+    hx + vx * h * 0.03 - ux * h * 0.012,
+    hy + vy * h * 0.03 - uy * h * 0.012,
+    h * 0.034,
+    h * 0.042,
+    ang,
+    0,
+    Math.PI * 2,
+  );
   ctx.fill();
 
   ctx.restore();
