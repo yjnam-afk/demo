@@ -64,13 +64,24 @@ export function TechRow({ tech }: { tech: PublicTech }) {
 
       {/* 본문 — 문제 문장은 자르지 않는다 */}
       <div className="min-w-0">
+        {/*
+          분류는 한 덩어리다 — 대분류와 카테고리를 떼어 놓고 카테고리를
+          회색 잔글씨로 두면 방문자가 목록을 훑을 때 읽지 않는다. 이 사이트의
+          목록은 분류로 찾는 화면이므로, 둘을 축 색 칩 하나로 묶어 세운다.
+        */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-          <span className={cn('flex items-center gap-1.5 font-medium', style.text)}>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded px-2 py-0.5 font-medium',
+              style.text,
+              style.bg,
+            )}
+          >
             <span className={cn('h-1.5 w-1.5 rounded-full', style.dot)} />
             {tech.domain_short}
+            <span className="opacity-40">·</span>
+            {tech.category}
           </span>
-          <span className="text-ink-300">·</span>
-          <span className="text-ink-500">{tech.category}</span>
           <DemoTypeBadge type={tech.demo.type} />
           <VerificationBadge level={tech.verification.level} body={tech.verification.body} />
         </div>
@@ -82,8 +93,17 @@ export function TechRow({ tech }: { tech: PublicTech }) {
           {tech.business.problem ?? tech.summary}
         </p>
 
+        {/* 산업군 — 분류(축·카테고리)와 성격이 달라 문제 문장 뒤에 둔다.
+            "어디에 쓰나" 이므로 이름표를 달아 무엇의 목록인지 밝힌다. */}
         {tech.industries.length > 0 ? (
-          <p className="mt-2.5 text-xs text-ink-500">{tech.industries.join(' · ')}</p>
+          <p className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink-500">
+            <span className="text-ink-400">적용</span>
+            {tech.industries.map((industry) => (
+              <span key={industry} className="rounded bg-ink-100 px-1.5 py-0.5 text-ink-600">
+                {industry}
+              </span>
+            ))}
+          </p>
         ) : null}
       </div>
 
@@ -94,15 +114,19 @@ export function TechRow({ tech }: { tech: PublicTech }) {
             <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
               {headline.label}
             </div>
-            <div className="mt-0.5 flex items-baseline gap-1.5 sm:justify-end">
-              <span className="numeric text-3xl font-semibold text-ink-900">
-                {formatNumber(headline.value)}
-              </span>
-              {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구를 생략한다 */}
-              {evaluated.targetText ? (
-                <span className="text-xs text-ink-500">정량 목표 {evaluated.targetText}</span>
-              ) : null}
+            <div className="mt-0.5 numeric text-3xl font-semibold text-ink-900">
+              {formatNumber(headline.value)}
             </div>
+            {/*
+              목표는 수치 아래 한 줄로 내린다 — 옆에 붙이면 좁은 기둥에서
+              "정량 목표 17.6 / 이하" 처럼 잘려 두 줄이 된다.
+              목표가 없는 지표(인증 성적서 측정값)는 이 줄이 없다.
+            */}
+            {evaluated.targetText ? (
+              <div className="mt-0.5 text-xs whitespace-nowrap text-ink-500">
+                정량 목표 {evaluated.targetText}
+              </div>
+            ) : null}
             {/*
               조건 단서는 목록에 싣지 않는다. 훑는 자리에 시험 조건을 다
               늘어놓으면 소음이 되고, 전체 조건은 클릭 한 번 안쪽 상세

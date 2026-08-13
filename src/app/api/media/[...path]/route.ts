@@ -17,6 +17,16 @@ export const dynamic = 'force-dynamic';
  */
 const TTL_MS = 3_600_000;
 
+/**
+ * 오류를 화면에 실을 수 있는 한 줄로 줄인다.
+ * 서명이 붙은 주소가 그대로 나가지 않도록 URL 은 잘라낸다.
+ */
+function short(err: unknown): string {
+  const name = err instanceof Error ? err.name : '';
+  const message = err instanceof Error ? err.message : String(err);
+  return `${name}:${message}`.replace(/https?:\/\/\S+/g, '<url>').slice(0, 160);
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ path: string[] }> },
@@ -32,11 +42,22 @@ export async function GET(
     return NextResponse.json({ error: '없는 경로입니다.' }, { status: 404 });
   }
 
+  /*
+    실패 지점 기록.
+
+    이 라우트의 모든 실패가 502 한 줄로 뭉개지는 바람에, 파일이 없는
+    것인지·토큰이 없는 것인지·주소를 못 찾은 것인지 구분할 수 없었다.
+    화면에서 원인을 바로 읽을 수 있어야 다음 수를 정할 수 있다.
+  */
+  const trace: string[] = [];
+
   try {
+    trace.push(`token=${blobTokenName()}`);
     const [access, { issueSignedToken, presignUrl, list, get, head }] = await Promise.all([
       resolveBlobAccess(),
       import('@vercel/blob'),
     ]);
+    trace.push(`access=${access}`);
 
     const presignFor = async (target: string) => {
       const issued = await issueSignedToken({
@@ -89,29 +110,41 @@ export async function GET(
         head/list 는 조립 없이 API 로 물어보므로 그 어긋남을 타지 않는다.
         여기서 얻은 실제 주소로만 본문을 받는다.
       */
-      const realUrl = async (target: string): Promise<string | null> => {
-        try {
-          return (await head(target, { token: blobToken() })).url;
-        } catch {
-          return null;
-        }
-      };
+      let url: string | null = null;
+      try {
+        url = (await head(pathname, { token: blobToken() })).url;
+        trace.push('head=ok');
+      } catch (err) {
+        trace.push(`head=${short(err)}`);
+      }
 
-      let url = await realUrl(pathname);
       if (!url) {
         // 접미사가 어긋난 옛 업로드 — 같은 이름 줄기의 실제 파일을 찾는다
-        const stem = pathname.replace(/\.[a-z0-9]+$/i, '');
-        const { blobs } = await list({ prefix: stem, token: blobToken() });
-        url = blobs[0]?.url ?? null;
+        try {
+          const stem = pathname.replace(/\.[a-z0-9]+$/i, '');
+          const { blobs } = await list({ prefix: stem, token: blobToken() });
+          trace.push(`list=${blobs.length}건`);
+          url = blobs[0]?.url ?? null;
+        } catch (err) {
+          trace.push(`list=${short(err)}`);
+        }
       }
-      if (!url) throw new Error('저장소에 파일이 없습니다');
+      if (!url) throw new Error('저장소에 이 파일이 없습니다');
 
       // 공개설정은 주소가 이미 확정돼 있어 캐시 옵션 용도로만 쓰인다.
       // 그래도 어긋남에 대비해 반대값으로 한 번 더 시도한다.
       const other = access === 'private' ? 'public' : 'private';
-      let result = await get(url, { access, token: blobToken() }).catch(() => null);
-      if (!result) result = await get(url, { access: other, token: blobToken() }).catch(() => null);
-      if (!result?.stream) throw new Error('본문을 받지 못했습니다');
+      let result = await get(url, { access, token: blobToken() }).catch((err) => {
+        trace.push(`get(${access})=${short(err)}`);
+        return null;
+      });
+      if (!result) {
+        result = await get(url, { access: other, token: blobToken() }).catch((err) => {
+          trace.push(`get(${other})=${short(err)}`);
+          return null;
+        });
+      }
+      if (!result?.stream) throw new Error('주소는 찾았으나 본문을 받지 못했습니다');
       return new Response(result.stream as unknown as BodyInit, {
         headers: {
           'Content-Type': result.blob.contentType || proxyType,
@@ -128,7 +161,11 @@ export async function GET(
       headers: { 'Cache-Control': 'public, max-age=1800' },
     });
   } catch (err) {
-    console.error('[media] 서명 주소 발급 실패', pathname, err);
-    return NextResponse.json({ error: '미디어를 불러오지 못했습니다.' }, { status: 502 });
+    console.error('[media] 실패', pathname, trace, err);
+    // 원인을 화면에서 바로 읽을 수 있게 실패 지점을 함께 싣는다
+    return NextResponse.json(
+      { error: short(err), trace: trace.join(' | ') },
+      { status: 502 },
+    );
   }
 }

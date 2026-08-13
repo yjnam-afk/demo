@@ -207,16 +207,17 @@ export function TechDetail({
       {/* 1. 헤더 — 카탈로그 히어로와 같은 톤으로 이어 붙인다 */}
       <header className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-12">
+          {/* 분류는 한 덩어리 — 목록과 같은 문법으로, 카테고리도 같은 무게로 선다 */}
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Link
-              href={`/tech?domain=${tech.domain}`}
-              className="inline-flex items-center gap-1.5 font-medium text-white/90 hover:text-white"
+              href={`/?domain=${tech.domain}`}
+              className="inline-flex items-center gap-1.5 rounded border border-white/15 bg-white/10 px-2.5 py-1 font-medium text-white/90 transition-colors hover:border-white/40 hover:text-white"
             >
               <span className={cn('h-1.5 w-1.5 rounded-full', style.dotBright)} />
               {tech.domain_label}
+              <span className="text-white/30">·</span>
+              {tech.category}
             </Link>
-            <span className="text-ink-600">·</span>
-            <span className="text-ink-300">{tech.category}</span>
           </div>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">

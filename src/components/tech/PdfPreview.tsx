@@ -19,6 +19,7 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
   const [httpStatus, setHttpStatus] = useState<number | null>(null);
+  const [detail, setDetail] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,8 +34,14 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
         // 캐시를 거치지 않는다 — 방금 다시 올린 파일이 캐시된 실패에 가려지면 안 된다
         const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) {
+          // 서버가 실패 지점을 함께 보낸다 — 그대로 보여줘야 다음 수를 정할 수 있다
+          const body = (await response.json().catch(() => ({}))) as {
+            error?: string;
+            trace?: string;
+          };
           if (!cancelled) {
             setHttpStatus(response.status);
+            setDetail([body.error, body.trace].filter(Boolean).join(' · ') || null);
             setState('error');
           }
           return;
@@ -75,16 +82,22 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
   return (
     <div ref={wrapRef} className="flex h-full w-full items-center justify-center bg-ink-50">
       {state === 'error' ? (
-        <p className="p-6 text-center text-sm text-ink-400">
-          {httpStatus
-            ? /*
-                파일명을 함께 보여준다. 업로드 파일명에는 올린 시각이 들어
-                있어, 기록이 방금 올린 파일을 가리키는지 옛 경로에 머물러
-                있는지를 이 문구만 보고 판별할 수 있다.
-              */
-              `원본 파일을 불러오지 못했습니다 (HTTP ${httpStatus} · ${url.split('/').pop() ?? url}). 관리자에서 이 자료를 다시 올려 주세요.`
-            : '미리보기를 만들지 못했습니다. 아래에서 원문을 여세요.'}
-        </p>
+        <div className="p-6 text-center">
+          <p className="text-sm text-ink-400">
+            {httpStatus
+              ? /*
+                  파일명을 함께 보여준다. 업로드 파일명에는 올린 시각이 들어
+                  있어, 기록이 방금 올린 파일을 가리키는지 옛 경로에 머물러
+                  있는지를 이 문구만 보고 판별할 수 있다.
+                */
+                `원본 파일을 불러오지 못했습니다 (HTTP ${httpStatus} · ${url.split('/').pop() ?? url}).`
+              : '미리보기를 만들지 못했습니다. 아래에서 원문을 여세요.'}
+          </p>
+          {/* 서버가 보낸 실패 지점 — 원인을 화면에서 바로 읽는다 */}
+          {detail ? (
+            <p className="mt-2 break-all text-xs text-ink-400/80">{detail}</p>
+          ) : null}
+        </div>
       ) : (
         <canvas
           ref={canvasRef}
