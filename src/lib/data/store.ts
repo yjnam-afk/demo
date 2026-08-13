@@ -250,8 +250,20 @@ export class BlobStore implements DocumentStore {
     const hit = this.cache.get(name);
     if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value as T;
 
-    // 방금 실패했다면 묻지 않는다.
-    if (Date.now() < this.degradedUntil) return this.fallbackStore.read(name, fallback);
+    /*
+      읽기가 실패했을 때 배포본(data/*.json)으로 떨어지지 않는다.
+
+      배포본은 개발 초기의 예시 데이터이고, 운영 데이터는 Blob 에 있다.
+      저장소가 잠깐 느리기만 해도 화면이 그 예시로 바뀌었다가 다음
+      새로고침에 되돌아왔다 — 방문자에게는 없는 제품과 옛 이미지가
+      깜빡이는 것으로 보인다. 실패는 마지막으로 읽은 값(만료된 캐시)으로
+      메우고, 그것도 없으면 빈 목록으로 둔다. 배포본은 "한 번도 저장한
+      적 없는 문서" 에만 쓴다 — 그것이 시드의 원래 용도다.
+    */
+    const stale = this.cache.get(name);
+    if (Date.now() < this.degradedUntil) {
+      return stale ? (stale.value as T) : fallback;
+    }
 
     const { get } = await import('@vercel/blob');
     let value: T;
@@ -283,8 +295,9 @@ export class BlobStore implements DocumentStore {
       this.degradedUntil = 0;
     } catch (err) {
       this.degradedUntil = Date.now() + DEGRADED_MS;
-      console.error(`[store] Blob 읽기 실패 (${name}), 배포본으로 대체합니다.`, err);
-      value = await this.fallbackStore.read(name, fallback);
+      console.error(`[store] Blob 읽기 실패 (${name})`, err);
+      // 실패는 마지막으로 읽은 값으로 메운다 — 배포본으로 떨어지지 않는다
+      return stale ? (stale.value as T) : fallback;
     }
 
     this.cache.set(name, { at: Date.now(), value });

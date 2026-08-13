@@ -30,12 +30,6 @@
       "on_premise"
     ],
     "release": "ga",
-    "media": {
-      "thumbnail": "/thumbnails/intrusion-detection.jpg",
-      "loop": "/videos/intrusion-detection.loop.mp4",
-      "loop_webm": "/videos/intrusion-detection.loop.webm",
-      "loop_poster": "/thumbnails/intrusion-detection.loop.jpg"
-    },
     "order": 0,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -63,7 +57,6 @@
       "on_premise"
     ],
     "release": "ga",
-    "media": {},
     "order": 1,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -95,7 +88,6 @@
       "on_premise"
     ],
     "release": "ga",
-    "media": {},
     "order": 2,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -121,7 +113,6 @@
       "on_premise"
     ],
     "release": "ga",
-    "media": {},
     "order": 3,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -153,7 +144,6 @@
       "saas"
     ],
     "release": "ga",
-    "media": {},
     "order": 4,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -181,7 +171,6 @@
       "saas"
     ],
     "release": "ga",
-    "media": {},
     "order": 5,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
@@ -213,7 +202,6 @@
       "on_premise"
     ],
     "release": "ga",
-    "media": {},
     "order": 6,
     "created_at": "2026-08-05T00:00:00.000Z",
     "updated_at": "2026-08-05T00:00:00.000Z",
