@@ -109,6 +109,10 @@ const FIG_TONES = {
   alert: { jacket: 'rgba(224,150,92,0.95)', pants: 'rgba(176,108,62,0.95)', back: 'rgba(140,84,48,0.9)', arm: 'rgba(200,128,74,0.95)', head: 'rgba(238,190,146,0.95)', hair: 'rgba(168,104,56,0.95)' },
   normal: { jacket: 'rgba(188,198,216,0.9)', pants: 'rgba(104,120,152,0.9)', back: 'rgba(88,100,124,0.82)', arm: 'rgba(160,172,194,0.86)', head: 'rgba(226,206,186,0.94)', hair: 'rgba(122,92,62,0.95)' },
   dim: { jacket: 'rgba(150,158,172,0.4)', pants: 'rgba(110,118,132,0.38)', back: 'rgba(92,100,114,0.35)', arm: 'rgba(130,138,152,0.38)', head: 'rgba(170,164,152,0.42)', hair: 'rgba(122,110,96,0.42)' },
+  // 행인 변주 — 군중 장면에서 전원이 같은 옷이면 복제 인간이 된다
+  civA: { jacket: 'rgba(96,108,134,0.92)', pants: 'rgba(66,72,86,0.92)', back: 'rgba(56,62,76,0.85)', arm: 'rgba(84,96,120,0.88)', head: 'rgba(224,202,180,0.94)', hair: 'rgba(58,48,40,0.95)' },
+  civB: { jacket: 'rgba(158,140,114,0.92)', pants: 'rgba(92,82,70,0.92)', back: 'rgba(76,68,58,0.85)', arm: 'rgba(140,124,102,0.88)', head: 'rgba(230,208,186,0.94)', hair: 'rgba(96,70,48,0.95)' },
+  civC: { jacket: 'rgba(122,130,122,0.92)', pants: 'rgba(78,84,80,0.92)', back: 'rgba(64,70,66,0.85)', arm: 'rgba(108,116,108,0.88)', head: 'rgba(222,200,178,0.94)', hair: 'rgba(70,58,46,0.95)' },
 };
 
 function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
@@ -217,6 +221,18 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   };
 
   // 먼 쪽부터 — 팔, 다리 (어두운 톤이 뒤에 깔린다)
+  /*
+    모션 블러 — 빠르게 흔들리는 사지의 잔상. 셔터가 열린 동안 팔다리가
+    지나간 흔적이라, 걷는 속도가 있을 때만 반 박자 이전 자세를 옅게 깐다.
+  */
+  if (walkAmount > 0.55) {
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    arm(phase - 0.5, c.back, h * 0.044, c.back);
+    leg(phase + Math.PI - 0.5, -h * 0.016, c.back);
+    leg(phase - 0.5, h * 0.016, c.pants);
+    ctx.restore();
+  }
   arm(phase, c.back, h * 0.044, c.back);
   leg(phase + Math.PI, -h * 0.016, c.back);
   leg(phase, h * 0.016, c.pants);
