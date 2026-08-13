@@ -96,73 +96,94 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
 
         return (
           <div key={metric.label} className="bg-ink-950 p-6">
-            <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
-              {metric.label}
+            {/*
+              읽는 순서를 셀의 구조로 만든다.
+                1) 무엇을 · 누가 확인했나 — 지표명과 검증 주체를 한 줄에
+                2) 얼마인가 — 큰 수치와 달성 판정
+                3) 무엇에 비해 — 목표와 달성률 (판정의 근거라 판정 아래 잔글씨)
+                4) 어떤 조건에서 — 시험 조건과 데이터셋
+              전에는 목표·달성률이 수치 옆에 붙고 조건이 본문 크기로 서서,
+              가장 큰 글씨(수치) 다음에 읽히는 것이 조건 목록이었다.
+            */}
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+              <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+                {metric.label}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {/*
+                  검증 주체 — 인증 수치와 자체 시험 수치는 무게가 다르고,
+                  그 차이가 이 셀에서 읽혀야 한다.
+                */}
+                {metric.source?.trim() ? (
+                  <span
+                    className={cn(
+                      'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
+                      /인증/.test(metric.source)
+                        ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
+                        : 'border border-white/20 text-ink-400',
+                    )}
+                  >
+                    {metric.source}
+                  </span>
+                ) : null}
+                {/* 수준 주석 — 인증 칩과 혼동되지 않게 테두리 칩으로 */}
+                {metric.benchmark?.trim() ? (
+                  <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-300">
+                    {metric.benchmark}
+                  </span>
+                ) : null}
+              </div>
             </div>
 
-            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="numeric text-4xl font-semibold text-white sm:text-5xl">
                 {formatNumber(metric.value)}
               </span>
-              {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
-              {targetText ? <span className="text-sm text-ink-400">정량 목표 {targetText}</span> : null}
-              {ratePercent ? (
-                <span className="numeric text-sm text-ink-400">달성률 {ratePercent}</span>
-              ) : null}
+              {/* 목표가 없는 지표(인증 성적서 측정값)는 판정이 없다 */}
+              {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-              {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
-              {/*
-                검증 주체는 판정 옆 칩으로 세운다. 하단 잔글씨에 두면 인증이
-                데이터셋 이름에 묻힌다 — 인증 수치와 자체 시험 수치는 무게가
-                다르고, 그 차이가 이 셀에서 읽혀야 한다.
-              */}
-              {metric.source?.trim() ? (
-                <span
-                  className={cn(
-                    'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
-                    /인증/.test(metric.source)
-                      ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
-                      : 'border border-white/20 text-ink-400',
-                  )}
-                >
-                  {metric.source}
-                </span>
-              ) : null}
-              {/*
-                수준 주석 — "세계 최고 수준(SOTA) 준용" 같은 위치 표명.
-                인증 칩과 혼동되지 않게 초록이 아닌 테두리 칩으로 세운다.
-              */}
-              {metric.benchmark?.trim() ? (
-                <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-300">
-                  {metric.benchmark}
-                </span>
-              ) : null}
-            </div>
+            {targetText ? (
+              <div className="mt-1.5 text-xs text-ink-500">
+                정량 목표 {targetText}
+                {ratePercent ? <span className="numeric"> · 달성률 {ratePercent}</span> : null}
+              </div>
+            ) : null}
 
             {/*
-              조건 단서 — 값과 떨어지지 않는다. 칩 줄에 잔글씨로 이어 붙이면
-              묻혀서 안 읽히므로, 한 줄에 하나씩 세우고 본문 크기로 올린다.
-              이 목록이 정직하게 보여야 위의 큰 숫자가 신뢰를 얻는다.
+              시험 조건 — 값의 전제다. 무엇의 목록인지 이름을 붙여야
+              방문자가 "왜 이 줄들이 여기 있는지" 를 묻지 않는다.
             */}
             {metric.conditions.filter((c) => c.trim()).length > 0 ? (
-              <ul className="mt-3 space-y-1 text-sm text-ink-300">
-                {metric.conditions
-                  .filter((c) => c.trim())
-                  .map((c) => (
-                    <li key={c} className="flex gap-2">
-                      <span aria-hidden className="text-ink-500">
-                        ·
-                      </span>
-                      {c}
-                    </li>
-                  ))}
-              </ul>
+              <div className="mt-4 border-t border-white/10 pt-3">
+                <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+                  시험 조건
+                </div>
+                <ul className="mt-1.5 space-y-1 text-sm text-ink-300">
+                  {metric.conditions
+                    .filter((c) => c.trim())
+                    .map((c) => (
+                      <li key={c} className="flex gap-2">
+                        <span aria-hidden className="text-ink-600">
+                          ·
+                        </span>
+                        {c}
+                      </li>
+                    ))}
+                </ul>
+              </div>
             ) : null}
 
             {metric.dataset ? (
-              <div className="mt-3 border-t border-white/10 pt-2.5 text-xs text-ink-500">
+              <div
+                className={cn(
+                  'text-xs text-ink-500',
+                  // 조건 블록이 이미 선을 그었으면 선을 두 번 긋지 않는다
+                  metric.conditions.filter((c) => c.trim()).length > 0
+                    ? 'mt-2.5'
+                    : 'mt-4 border-t border-white/10 pt-3',
+                )}
+              >
                 데이터셋 · {metric.dataset}
               </div>
             ) : null}

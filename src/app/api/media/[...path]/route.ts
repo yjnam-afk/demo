@@ -33,7 +33,7 @@ export async function GET(
   }
 
   try {
-    const [access, { issueSignedToken, presignUrl, list, get }] = await Promise.all([
+    const [access, { issueSignedToken, presignUrl, list, get, head }] = await Promise.all([
       resolveBlobAccess(),
       import('@vercel/blob'),
     ]);
@@ -51,21 +51,6 @@ export async function GET(
         access,
       });
       return presignedUrl;
-    };
-
-    /*
-     * 기록 경로와 저장 경로가 어긋난 파일의 치유.
-     *
-     * 서버 경유 업로드 초기에 저장은 무작위 접미사가 붙은 경로로 되고
-     * 기록은 접미사 없는 경로로 남은 파일들이 있다. 그 경로 그대로는
-     * 영원히 404 라, 같은 이름 줄기(확장자 앞부분)로 시작하는 실제
-     * 파일을 찾아 그쪽을 내준다.
-     */
-    const healPathname = async (): Promise<string | null> => {
-      const stem = pathname.replace(/\.[a-z0-9]+$/i, '');
-      const { blobs } = await list({ prefix: stem, token: blobToken() });
-      const found = blobs.find((b) => b.pathname !== pathname);
-      return found?.pathname ?? null;
     };
 
     /*
@@ -95,14 +80,38 @@ export async function GET(
     const extension = pathname.toLowerCase().split('.').pop() ?? '';
     const proxyType = PROXY_TYPES[extension];
     if (proxyType) {
-      const fetchBlob = (target: string) => get(target, { access, token: blobToken() });
-      // get 은 404 를 null 로 돌려준다 — 그때만 접미사 치유를 시도한다
-      let result = await fetchBlob(pathname);
-      if (!result) {
-        const healed = await healPathname();
-        if (healed) result = await fetchBlob(healed);
+      /*
+        저장소 주소를 우리가 조립하지 않는다.
+
+        경로+공개설정으로 주소를 만들면, 그 공개설정이 실제 저장소와
+        어긋나는 순간 존재하는 파일도 404 가 된다 — 업로드는 저장소가
+        돌려준 주소를 그대로 써서 통과하는데 서빙만 502 로 죽던 원인이다.
+        head/list 는 조립 없이 API 로 물어보므로 그 어긋남을 타지 않는다.
+        여기서 얻은 실제 주소로만 본문을 받는다.
+      */
+      const realUrl = async (target: string): Promise<string | null> => {
+        try {
+          return (await head(target, { token: blobToken() })).url;
+        } catch {
+          return null;
+        }
+      };
+
+      let url = await realUrl(pathname);
+      if (!url) {
+        // 접미사가 어긋난 옛 업로드 — 같은 이름 줄기의 실제 파일을 찾는다
+        const stem = pathname.replace(/\.[a-z0-9]+$/i, '');
+        const { blobs } = await list({ prefix: stem, token: blobToken() });
+        url = blobs[0]?.url ?? null;
       }
-      if (!result?.stream) throw new Error('저장소에 파일이 없습니다');
+      if (!url) throw new Error('저장소에 파일이 없습니다');
+
+      // 공개설정은 주소가 이미 확정돼 있어 캐시 옵션 용도로만 쓰인다.
+      // 그래도 어긋남에 대비해 반대값으로 한 번 더 시도한다.
+      const other = access === 'private' ? 'public' : 'private';
+      let result = await get(url, { access, token: blobToken() }).catch(() => null);
+      if (!result) result = await get(url, { access: other, token: blobToken() }).catch(() => null);
+      if (!result?.stream) throw new Error('본문을 받지 못했습니다');
       return new Response(result.stream as unknown as BodyInit, {
         headers: {
           'Content-Type': result.blob.contentType || proxyType,

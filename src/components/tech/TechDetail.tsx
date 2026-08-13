@@ -222,9 +222,10 @@ export function TechDetail({
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {tech.name_ko}
           </h1>
-          {tech.name_en ? <p className="mt-1.5 text-sm text-ink-500">{tech.name_en}</p> : null}
+          {/* 영문명은 내지 않는다 — 방문자의 판단에 보태는 것이 없다 */}
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">{tech.summary}</p>
 
+          {/* 검증·데모·성숙도는 같은 성격의 표식이다 — 셋 다 같은 칩으로 세운다 */}
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <VerificationBadge
               level={tech.verification.level}
@@ -233,8 +234,8 @@ export function TechDetail({
             />
             <DemoTypeBadge type={tech.demo.type} onDark />
             {business.maturity ? (
-              <span className="text-sm text-ink-400">
-                성숙도 · {MATURITY_LABELS[business.maturity as Maturity]}
+              <span className="inline-flex shrink-0 items-center rounded border border-white/20 bg-white/10 px-2 py-0.5 text-xs font-medium text-white/80">
+                {MATURITY_LABELS[business.maturity as Maturity]}
               </span>
             ) : null}
           </div>
