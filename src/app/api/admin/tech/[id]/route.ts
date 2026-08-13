@@ -18,5 +18,12 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
   }
 
   await repo.remove(id);
+  // 지운 뒤 실제로 사라졌는지 확인한다 — 조용히 되살아나면 안 된다
+  if (await repo.get(id)) {
+    return NextResponse.json(
+      { error: '삭제가 저장소에 반영되지 않았습니다. 잠시 후 다시 시도해 주세요.' },
+      { status: 502 },
+    );
+  }
   return NextResponse.json({ ok: true });
 }
