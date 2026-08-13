@@ -165,14 +165,9 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   const walkAmount = Math.min(1, stride);
   const drop = Math.abs(Math.sin(phase)) * h * 0.018 * walkAmount;
-  /*
-    상체 리듬: 진행 방향으로 기우는 고정 기울임에, 걸음(보폭 2배 주기)에
-    맞춰 앞뒤로 살짝 흔들리는 성분을 더한다. 상체가 병풍처럼 고정된 채
-    다리만 움직이면 걸음 전체가 뻣뻣하게 읽힌다.
-  */
-  const leanX =
-    facing * h * 0.026 * walkAmount +
-    Math.sin(phase * 2 + 0.7) * h * 0.011 * walkAmount * facing;
+  // 걸을 때 상체가 진행 방향으로 살짝 기운다. 걸음마다 흔드는 성분은
+  // 리듬이 아니라 떨림으로 읽혀서 뺐다 — 기울임은 고정값이 낫다.
+  const leanX = facing * h * 0.026 * walkAmount;
   const hipY = y - h * 0.5 + drop;
   const shoulderY = y - h * 0.79 + drop;
   const thigh = h * 0.25;
@@ -188,8 +183,8 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
       크게 접힌다. 두 다리가 같은 굽힘으로 흔들리면 컴퍼스가 된다.
     */
     const swingK = Math.max(0, Math.sin(p - 1.7));
-    // 디딤발은 거의 펴지고(기저 0.05) 스윙 무릎만 또렷하게 접힌다(제곱으로 날카롭게)
-    const bend = (0.05 + 1.18 * swingK * swingK) * stride * 0.85 + 0.03;
+    // 디딤발은 거의 펴지고, 스윙 다리만 무릎이 접힌다 (과하면 껑충거린다)
+    const bend = (0.08 + 1.05 * swingK * swingK) * stride * 0.85 + 0.04;
     const hipX = x + facing * rest * 0.3;
     const kx = x + facing * (Math.sin(swing) * thigh + rest);
     const ky = hipY + Math.cos(swing) * thigh;
@@ -360,20 +355,37 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 function fallFigure(ctx, { x, y, h, facing, tone, k = 1 }) {
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
   const f = facing;
-  const L = (a, b) => a + (b - a) * k;
+  /*
+    붕괴는 2단이다: 무릎이 먼저 꺾여 몸이 수직으로 가라앉고(kh — 초반이
+    빠르다), 상체는 그다음 앞으로 넘어간다(ks — 초반이 느리다). 한 값으로
+    보간하면 몸 전체가 널빤지처럼 통째로 기우는 전도가 된다.
+  */
+  const kh = 1 - Math.pow(1 - k, 1.7);
+  const ks = Math.pow(k, 1.5);
+  const L = (a, b) => a + (b - a) * kh;
+  const Ls = (a, b) => a + (b - a) * ks;
 
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // 그림자 — 누울수록 길어진다
+  // 그림자 — 상체가 넘어가는 만큼 길어진다
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath();
-  ctx.ellipse(x + f * h * 0.3 * k, y + h * 0.012, h * L(0.2, 0.5), h * 0.045, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + f * h * 0.3 * ks, y + h * 0.012, h * Ls(0.2, 0.5), h * 0.045, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const hip = { x: x + f * h * L(0, 0.3), y: y - h * L(0.5, 0.085) };
-  const sho = { x: x + f * h * L(0.01, 0.6), y: y - h * L(0.79, 0.1) };
+  const hip = { x: x + f * h * Ls(0, 0.3), y: y - h * L(0.5, 0.085) };
+  /*
+    어깨는 엉덩이에서 몸통 길이만큼 떨어진 곳 — 앞으로 넘어가는 각도(ks)로
+    회전해 구한다. 좌표를 따로 보간하면 몸통 길이가 중간에 줄었다 늘었다 한다.
+  */
+  const pitch = ks * 1.5;
+  const torsoLen = h * 0.29;
+  const sho = {
+    x: hip.x + f * Math.sin(pitch) * torsoLen,
+    y: hip.y - Math.cos(pitch) * torsoLen,
+  };
 
   // 다리 — 무릎이 굽으며 무너지고, 발은 제자리 근처에 남는다
   const leg = (off, color) => {
@@ -413,28 +425,36 @@ function fallFigure(ctx, { x, y, h, facing, tone, k = 1 }) {
   ctx.fill();
   ctx.restore();
 
-  // 상체 — 엉덩이→어깨 방향 사다리꼴. 두께가 유지되어 납작해지지 않는다.
   const dx = sho.x - hip.x;
   const dy = sho.y - hip.y;
   const len = Math.hypot(dx, dy) || 1;
   const ux = dx / len;
   const uy = dy / len;
-  const nx = -uy;
-  const ny = ux;
-  const wTop = h * 0.082;
-  const wBot = h * 0.064;
+  /*
+    상체 — 걷는 몸과 같은 곡선 실루엣을 엉덩이→어깨 축 위에 세운다.
+    직선 사다리꼴은 어깨·옆구리가 전부 모서리라, 쓰러지는 장면에서만
+    몸통이 각진 판자로 되돌아갔다. 로컬 +x 가 배(가슴) 쪽이다.
+  */
+  ctx.save();
+  ctx.translate(hip.x, hip.y);
+  ctx.rotate(ang);
+  ctx.scale(f, 1);
   ctx.fillStyle = c.jacket;
   ctx.beginPath();
-  ctx.moveTo(hip.x + nx * wBot, hip.y + ny * wBot);
-  ctx.lineTo(sho.x + nx * wTop, sho.y + ny * wTop);
-  ctx.quadraticCurveTo(sho.x + ux * h * 0.03, sho.y + uy * h * 0.03, sho.x - nx * wTop, sho.y - ny * wTop);
-  ctx.lineTo(hip.x - nx * wBot, hip.y - ny * wBot);
+  ctx.moveTo(-h * 0.045, 0);
+  ctx.quadraticCurveTo(-h * 0.056, -len * 0.45, -h * 0.05, -len + h * 0.02);
+  ctx.quadraticCurveTo(-h * 0.028, -len - h * 0.016, h * 0.004, -len - h * 0.017);
+  ctx.quadraticCurveTo(h * 0.032, -len - h * 0.013, h * 0.05, -len + h * 0.014);
+  ctx.bezierCurveTo(h * 0.066, -len + h * 0.055, h * 0.06, -len * 0.45, h * 0.05, -h * 0.05);
+  ctx.quadraticCurveTo(h * 0.052, -h * 0.018, h * 0.043, -h * 0.006);
+  ctx.quadraticCurveTo(0, h * 0.006, -h * 0.045, 0);
   ctx.closePath();
   ctx.fill();
+  ctx.restore();
 
-  // 팔 — 쓰러지며 앞으로 뻗어 바닥을 짚는다
-  const elb = { x: L(sho.x + f * h * 0.015, x + f * h * 0.5), y: y - h * L(0.62, 0.17) };
-  const hand = { x: L(sho.x + f * h * 0.02, x + f * h * 0.44), y: y - h * L(0.46, 0.045) };
+  // 팔 — 초반에는 매달려 있다가, 상체가 넘어갈 때에야 앞으로 뻗어 짚는다
+  const elb = { x: Ls(sho.x + f * h * 0.015, x + f * h * 0.5), y: y - h * Ls(0.62, 0.17) };
+  const hand = { x: Ls(sho.x + f * h * 0.02, x + f * h * 0.44), y: y - h * Ls(0.46, 0.045) };
   ctx.strokeStyle = c.arm;
   ctx.lineWidth = h * 0.048;
   ctx.beginPath();
@@ -1955,9 +1975,25 @@ const SCENES = {
     const detected = t >= DOWN;
 
     if (t < FALL) {
-      const k = t / FALL;
+      /*
+        걷다가 멈춰 선 다음 쓰러진다. 걷던 자세에서 바로 쓰러짐 그림으로
+        바뀌면 벌어져 있던 다리가 한 프레임에 차렷으로 붙는 단절이 생긴다.
+        보폭(stride)을 0 으로 줄이면 다리가 자연스럽게 모여, 쓰러짐의
+        시작 자세(차렷)와 이어진다 — 실신 직전의 멈칫이기도 하다.
+      */
+      const WALK_END = 0.31;
+      const k = Math.min(1, t / WALK_END);
       const px = W * 0.16 + k * (cx - W * 0.16);
-      walker(ctx, { x: px, y, h, phase: t * Math.PI * 24, stride: 0.9, facing: 1, tone: 'normal' });
+      const stopK = t < WALK_END ? 1 : Math.max(0, 1 - (t - WALK_END) / 0.05);
+      walker(ctx, {
+        x: px,
+        y,
+        h,
+        phase: t * Math.PI * 24,
+        stride: 0.9 * stopK,
+        facing: 1,
+        tone: 'normal',
+      });
     } else {
       /*
         무릎이 먼저 꺾이고 상체가 앞으로 무너지는 경로를 관절 보간으로
