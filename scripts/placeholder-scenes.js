@@ -115,6 +115,29 @@ const FIG_TONES = {
   civC: { jacket: 'rgba(122,130,122,0.92)', pants: 'rgba(78,84,80,0.92)', back: 'rgba(64,70,66,0.85)', arm: 'rgba(108,116,108,0.88)', head: 'rgba(222,200,178,0.94)', hair: 'rgba(70,58,46,0.95)' },
 };
 
+/**
+ * 테이퍼 사지 — 시작 굵기 w1 에서 끝 굵기 w2 로 가늘어지는 캡슐.
+ * 위아래 굵기가 같은 획으로 그린 팔다리는 소시지가 된다. 허벅지→무릎→발목,
+ * 어깨→팔꿈치→손목으로 가늘어져야 체격이 사람으로 읽힌다.
+ */
+function limb(ctx, x1, y1, x2, y2, w1, w2, color) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const a = Math.atan2(ny, nx);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x1 + (nx * w1) / 2, y1 + (ny * w1) / 2);
+  ctx.lineTo(x2 + (nx * w2) / 2, y2 + (ny * w2) / 2);
+  ctx.arc(x2, y2, w2 / 2, a, a - Math.PI, true);
+  ctx.lineTo(x1 - (nx * w1) / 2, y1 - (ny * w1) / 2);
+  ctx.arc(x1, y1, w1 / 2, a - Math.PI, a - Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   const c = FIG_TONES[tone] ?? FIG_TONES.normal;
 
@@ -153,28 +176,27 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
 
   const leg = (p, rest, color) => {
     const swing = Math.sin(p) * 0.5 * stride;
-    const bend = Math.max(0, Math.sin(p - 1.1)) * 0.85 * stride + 0.05;
+    /*
+      실제 보행의 비대칭: 디딤발(뒤로 쓸리는 구간)은 거의 곧게 펴진 채
+      몸을 밀고, 무릎은 다리가 뒤에서 앞으로 넘어오는 스윙 구간에만
+      크게 접힌다. 두 다리가 같은 굽힘으로 흔들리면 컴퍼스가 된다.
+    */
+    const swingK = Math.max(0, Math.sin(p - 1.7));
+    const bend = (0.08 + 1.05 * swingK * swingK) * stride * 0.85 + 0.04;
+    const hipX = x + facing * rest * 0.3;
     const kx = x + facing * (Math.sin(swing) * thigh + rest);
     const ky = hipY + Math.cos(swing) * thigh;
     const ax = kx + facing * Math.sin(swing - bend) * shin;
     const ay = ky + Math.cos(swing - bend) * shin;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = h * 0.078;
-    ctx.beginPath();
-    ctx.moveTo(x + facing * rest * 0.3, hipY);
-    ctx.lineTo(kx, ky);
-    ctx.stroke();
-    ctx.lineWidth = h * 0.052;
-    ctx.beginPath();
-    ctx.moveTo(kx, ky);
-    ctx.lineTo(ax, ay);
-    ctx.stroke();
-    // 원통 하이라이트 — 위왼쪽 광원. 평면 획이 다리 부피로 읽히게 한다
+    // 허벅지는 굵게 시작해 무릎에서 좁아지고, 정강이는 발목까지 더 가늘어진다
+    limb(ctx, hipX, hipY, kx, ky, h * 0.088, h * 0.056, color);
+    limb(ctx, kx, ky, ax, ay, h * 0.054, h * 0.032, color);
+    // 원통 하이라이트 — 위왼쪽 광원. 평면이 다리 부피로 읽히게 한다
     ctx.strokeStyle = 'rgba(255,255,255,0.09)';
-    ctx.lineWidth = h * 0.024;
+    ctx.lineWidth = h * 0.02;
     ctx.beginPath();
-    ctx.moveTo(x + facing * rest * 0.3 - h * 0.011, hipY - h * 0.008);
-    ctx.lineTo(kx - h * 0.011, ky - h * 0.008);
+    ctx.moveTo(hipX - h * 0.013, hipY - h * 0.006);
+    ctx.lineTo(kx - h * 0.013, ky - h * 0.008);
     ctx.stroke();
     // 신발 — 앞으로 나갈 때 발끝이 들리고, 뒤로 밀 때 발끝이 처진다
     ctx.save();
@@ -182,41 +204,34 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
     ctx.rotate(-facing * swing * 0.55);
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(facing > 0 ? -h * 0.02 : -h * 0.075, -h * 0.016, h * 0.095, h * 0.03, h * 0.012);
+    ctx.roundRect(facing > 0 ? -h * 0.022 : -h * 0.075, -h * 0.013, h * 0.097, h * 0.028, h * 0.012);
     ctx.fill();
     ctx.restore();
   };
 
   const arm = (p, color, width, handColor) => {
     const swing = Math.sin(p) * 0.42 * stride;
+    // 팔꿈치는 팔이 앞으로 나갈 때 더 접힌다 — 고정 굽힘은 막대 팔이 된다
+    const elbow = 0.32 + 0.3 * Math.max(0, Math.sin(p)) * stride;
     const sx = x + leanX + facing * h * 0.005;
     const sy = shoulderY + h * 0.02;
     const ex = sx + facing * Math.sin(swing) * upperArm;
     const ey = sy + Math.cos(swing) * upperArm;
-    const hx = ex + facing * Math.sin(swing + 0.45) * forearm;
-    const hy = ey + Math.cos(swing + 0.45) * forearm;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(ex, ey);
-    ctx.stroke();
-    // 팔뚝은 위팔보다 가늘다
-    ctx.lineWidth = width * 0.82;
-    ctx.beginPath();
-    ctx.moveTo(ex, ey);
-    ctx.lineTo(hx, hy);
-    ctx.stroke();
+    const hx = ex + facing * Math.sin(swing + elbow) * forearm;
+    const hy = ey + Math.cos(swing + elbow) * forearm;
+    // 어깨에서 팔꿈치, 팔꿈치에서 손목으로 가늘어진다
+    limb(ctx, sx, sy, ex, ey, width, width * 0.72, color);
+    limb(ctx, ex, ey, hx, hy, width * 0.68, width * 0.42, color);
     // 소매 하이라이트 — 위팔 위쪽 모서리에 가는 빛
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = width * 0.3;
+    ctx.lineWidth = width * 0.26;
     ctx.beginPath();
     ctx.moveTo(sx - h * 0.008, sy - h * 0.006);
     ctx.lineTo(ex - h * 0.008, ey - h * 0.006);
     ctx.stroke();
     ctx.fillStyle = handColor;
     ctx.beginPath();
-    ctx.arc(hx, hy + h * 0.012, h * 0.023, 0, Math.PI * 2);
+    ctx.arc(hx, hy + h * 0.01, h * 0.021, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -247,19 +262,20 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
      같은 경로에 명암을 겹쳐 부피를 만든다. */
   const front = facing;
   const torso = () => {
+    // 어깨는 넓고 허리로 오며 좁아진다 — 직사각형 몸통은 판자로 읽힌다
     ctx.beginPath();
-    ctx.moveTo(x + leanX - h * 0.084, shoulderY + h * 0.012);
-    ctx.quadraticCurveTo(x + leanX - h * 0.04, shoulderY - h * 0.018, x + leanX, shoulderY - h * 0.02);
-    ctx.quadraticCurveTo(x + leanX + h * 0.04, shoulderY - h * 0.018, x + leanX + h * 0.084, shoulderY + h * 0.012);
-    // 앞면(진행 방향) — 가슴이 등보다 조금 더 나온다
+    ctx.moveTo(x + leanX - h * 0.092, shoulderY + h * 0.014);
+    ctx.quadraticCurveTo(x + leanX - h * 0.044, shoulderY - h * 0.018, x + leanX, shoulderY - h * 0.02);
+    ctx.quadraticCurveTo(x + leanX + h * 0.044, shoulderY - h * 0.018, x + leanX + h * 0.092, shoulderY + h * 0.014);
+    // 앞면(진행 방향) — 가슴이 나오고 허리에서 살짝 들어간다
     ctx.quadraticCurveTo(
-      x + leanX * 0.5 + h * 0.09 + front * h * 0.012,
-      shoulderY + h * 0.12,
-      x + h * 0.058,
+      x + leanX * 0.5 + h * 0.096 + front * h * 0.012,
+      shoulderY + h * 0.1,
+      x + h * 0.06,
       hipY - h * 0.015,
     );
-    ctx.lineTo(x - h * 0.058, hipY - h * 0.015);
-    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.09, shoulderY + h * 0.12, x + leanX - h * 0.084, shoulderY + h * 0.012);
+    ctx.lineTo(x - h * 0.06, hipY - h * 0.015);
+    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.084, shoulderY + h * 0.1, x + leanX - h * 0.092, shoulderY + h * 0.014);
     ctx.closePath();
   };
   torso();
@@ -2031,14 +2047,15 @@ const SCENES = {
     const S = scaleOf(H);
     hallBg(ctx, W, H, S);
 
+    // hf(키 배율)·tone(옷)이 사람마다 다르다 — 전원이 같으면 복제 인간이 된다
     const PEOPLE = [
-      { s: 0.02, v: 0.6, yy: 0.63, f: 1 },
-      { s: 0.55, v: -0.45, yy: 0.66, f: -1 },
-      { s: 0.3, v: 0.38, yy: 0.7, f: 1 },
-      { s: 0.85, v: -0.6, yy: 0.74, f: -1 },
-      { s: 0.15, v: 0.52, yy: 0.79, f: 1 },
-      { s: 0.7, v: 0.44, yy: 0.84, f: 1 },
-      { s: 0.45, v: -0.36, yy: 0.88, f: -1 },
+      { s: 0.02, v: 0.6, yy: 0.63, f: 1, hf: 1.05, tone: 'civA' },
+      { s: 0.55, v: -0.45, yy: 0.66, f: -1, hf: 0.92, tone: 'civB' },
+      { s: 0.3, v: 0.38, yy: 0.7, f: 1, hf: 1.0, tone: 'normal' },
+      { s: 0.85, v: -0.6, yy: 0.74, f: -1, hf: 1.08, tone: 'civC' },
+      { s: 0.15, v: 0.52, yy: 0.79, f: 1, hf: 0.95, tone: 'civB' },
+      { s: 0.7, v: 0.44, yy: 0.84, f: 1, hf: 1.02, tone: 'civA' },
+      { s: 0.45, v: -0.36, yy: 0.88, f: -1, hf: 0.9, tone: 'civC' },
     ];
 
     let count = 0;
@@ -2050,7 +2067,7 @@ const SCENES = {
       const x = xf * W;
       const y = p.yy * H;
       const scale = 0.5 + ((p.yy - 0.63) / 0.25) * 0.5;
-      const h = H * WALKER_H * scale;
+      const h = H * WALKER_H * scale * p.hf;
       walker(ctx, {
         x,
         y,
@@ -2058,7 +2075,7 @@ const SCENES = {
         phase: (t * 30 * Math.abs(p.v) + p.s * 20) * Math.PI,
         stride: 0.85,
         facing: p.f,
-        tone: 'normal',
+        tone: p.tone,
       });
       // 계수 상자 — 라벨 없는 얇은 파란 상자. 세는 중이라는 표시다.
       ctx.strokeStyle = 'rgba(123,163,208,0.75)';
