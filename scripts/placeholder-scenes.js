@@ -252,30 +252,35 @@ function walker(ctx, { x, y, h, phase, stride, facing, tone }) {
   leg(phase + Math.PI, -h * 0.016, c.back);
   leg(phase, h * 0.016, c.pants);
 
-  // 골반 — 상체와 다리를 잇는 엉덩이 블록. 없으면 다리가 판에서 돋아난다.
+  // 골반 — 상체와 다리를 잇는 엉덩이 블록. 몸통과 같은 측면 두께로 잇는다.
   ctx.fillStyle = c.pants;
   ctx.beginPath();
-  ctx.roundRect(x - h * 0.062, hipY - h * 0.032, h * 0.124, h * 0.078, h * 0.03);
+  ctx.roundRect(x - h * 0.05, hipY - h * 0.032, h * 0.1, h * 0.075, h * 0.028);
   ctx.fill();
 
   /* 상체 — 어깨는 승모근 경사, 가슴 쪽이 등보다 앞으로 나온 옆모습.
      같은 경로에 명암을 겹쳐 부피를 만든다. */
   const front = facing;
   const torso = () => {
-    // 어깨는 넓고 허리로 오며 좁아진다 — 직사각형 몸통은 판자로 읽힌다
+    /*
+      옆모습의 몸통 두께다 — 정면 어깨너비가 아니다. 걷는 인물은 측면으로
+      보이므로 몸통을 정면 폭으로 그리면 앞가슴이 불룩한 판자가 된다.
+      측면 가슴 두께는 정면 어깨너비의 절반쯤이다.
+    */
     ctx.beginPath();
-    ctx.moveTo(x + leanX - h * 0.092, shoulderY + h * 0.014);
-    ctx.quadraticCurveTo(x + leanX - h * 0.044, shoulderY - h * 0.018, x + leanX, shoulderY - h * 0.02);
-    ctx.quadraticCurveTo(x + leanX + h * 0.044, shoulderY - h * 0.018, x + leanX + h * 0.092, shoulderY + h * 0.014);
-    // 앞면(진행 방향) — 가슴이 나오고 허리에서 살짝 들어간다
+    ctx.moveTo(x + leanX - h * 0.05, shoulderY + h * 0.012);
+    ctx.quadraticCurveTo(x + leanX - h * 0.024, shoulderY - h * 0.016, x + leanX + h * 0.004, shoulderY - h * 0.018);
+    ctx.quadraticCurveTo(x + leanX + h * 0.03, shoulderY - h * 0.015, x + leanX + h * 0.052, shoulderY + h * 0.012);
+    // 앞면(진행 방향) — 가슴이 등보다 조금 나오고 허리로 오며 들어간다
     ctx.quadraticCurveTo(
-      x + leanX * 0.5 + h * 0.096 + front * h * 0.012,
+      x + leanX * 0.5 + h * 0.062 + front * h * 0.008,
       shoulderY + h * 0.1,
-      x + h * 0.06,
+      x + h * 0.048,
       hipY - h * 0.015,
     );
-    ctx.lineTo(x - h * 0.06, hipY - h * 0.015);
-    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.084, shoulderY + h * 0.1, x + leanX - h * 0.092, shoulderY + h * 0.014);
+    ctx.lineTo(x - h * 0.048, hipY - h * 0.015);
+    // 등 — 어깨 뒤에서 완만하게 내려온다
+    ctx.quadraticCurveTo(x + leanX * 0.5 - h * 0.058, shoulderY + h * 0.1, x + leanX - h * 0.05, shoulderY + h * 0.012);
     ctx.closePath();
   };
   torso();
