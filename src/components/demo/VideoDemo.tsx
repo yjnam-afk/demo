@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DemoFallback, type FallbackContent } from './DemoFallback';
 import { VideoSources } from '@/components/ui/Video';
-import { driveIdFromPath } from '@/lib/gdrive';
+import { driveIdFromPath, extractDriveFileId } from '@/lib/gdrive';
 
 /**
  * video 타입 데모.
@@ -29,7 +29,14 @@ export function VideoDemo({
     어느 날 갑자기 끊긴다(재생을 반복할수록 빨리 소진된다). 자체 플레이어는
     그 할당의 영향 없이 구글 인프라로 스트리밍하고, API 키도 쓰지 않는다.
   */
-  const driveId = driveIdFromPath(src);
+  /*
+    내부 경로(/api/media/gdrive/<id>)든 붙여넣은 드라이브 원본 주소든 모두
+    받아 준다. 정규화를 거치지 않고 저장된 기록이 있으면 앞의 판별만으로는
+    드라이브 영상인 줄 몰라 옛 스트리밍 경로로 떨어졌다.
+    데모 영상 칸이 비어 있으면 미디어 구간의 전체 영상을 대신 쓴다.
+  */
+  const source = src?.trim() || fallback.video || '';
+  const driveId = driveIdFromPath(source) ?? extractDriveFileId(source);
   if (driveId) {
     return (
       <div className="overflow-hidden rounded-lg border border-ink-200 bg-ink-900">
@@ -72,7 +79,7 @@ export function VideoDemo({
           }
         }}
       >
-        <VideoSources mp4={src} webm={srcWebm} />
+        <VideoSources mp4={source} webm={srcWebm} />
       </video>
     </div>
   );
