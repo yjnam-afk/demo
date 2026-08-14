@@ -171,8 +171,7 @@ export function TechDetail({
   const hasAdoption = Boolean(
     business.io?.input || business.io?.output || business.requirements?.length,
   );
-  // 산업군 칩도 이 구간에 살므로, 자료가 없어도 산업군만으로 구간은 선다
-  const hasResources = tech.resources.length > 0 || related.length > 0 || industries.length > 0;
+  const hasResources = tech.resources.length > 0;
 
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
@@ -184,6 +183,8 @@ export function TechDetail({
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
     { id: 'composition', label: '기술 구성' },
     hasResources ? { id: 'resources', label: '관련 자료' } : null,
+    related.length > 0 ? { id: 'related', label: '함께 쓰는 기술' } : null,
+    industries.length > 0 ? { id: 'industries', label: '적용 산업군' } : null,
   ].filter((jump): jump is { id: string; label: string } => jump !== null);
 
   const mailto = `mailto:${BRAND.contact.email}?subject=${encodeURIComponent(
@@ -581,39 +582,44 @@ export function TechDetail({
                 </ul>
               ) : null}
 
-              {related.length > 0 ? (
-                <div className={tech.resources.length > 0 ? 'mt-6' : ''}>
-                  <h3 className="text-base font-semibold tracking-tight text-ink-900">함께 쓰는 기술</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {related.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/tech/${item.id}`}
-                        className="rounded border border-ink-200 bg-white px-3 py-2 text-sm text-ink-700 hover:border-ink-400"
-                      >
-                        {item.name_ko}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
+            </Section>
+          ) : null}
 
-              {/* 적용 산업군 — 상단에서 내려온 자리. 문제 문장 곁을 비우고 연결 정보끼리 모은다 */}
-              {industries.length > 0 ? (
-                <div className={tech.resources.length > 0 || related.length > 0 ? 'mt-6' : ''}>
-                  <h3 className="text-base font-semibold tracking-tight text-ink-900">적용 산업군</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {industries.map((industry) => (
-                      <span
-                        key={industry}
-                        className="rounded bg-ink-100 px-2.5 py-1 text-sm text-ink-700"
-                      >
-                        {industry}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
+          {/*
+            함께 쓰는 기술·적용 산업군은 관련 자료의 하위 항목이 아니라 같은
+            급의 구간이다. 작은 제목으로 안에 끼워 두니 칩 무더기에 묻혀
+            무엇의 목록인지 읽히지 않았다 — 다른 구간과 같은 제목 문법
+            (축 색 틱 + 큰 제목)으로 세운다.
+          */}
+          {related.length > 0 ? (
+            <Section id="related" title="함께 쓰는 기술" tick={style.bar}>
+              <div className="flex flex-wrap gap-2">
+                {related.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/tech/${item.id}`}
+                    className="rounded border border-ink-200 bg-white px-3 py-2 text-sm text-ink-700 hover:border-ink-400"
+                  >
+                    {item.name_ko}
+                  </Link>
+                ))}
+              </div>
+            </Section>
+          ) : null}
+
+          {/* 적용 산업군 — 상단에서 내려온 자리. 문제 문장 곁을 비우고 연결 정보끼리 모은다 */}
+          {industries.length > 0 ? (
+            <Section id="industries" title="적용 산업군" tick={style.bar}>
+              <div className="flex flex-wrap gap-2">
+                {industries.map((industry) => (
+                  <span
+                    key={industry}
+                    className="rounded bg-ink-100 px-2.5 py-1 text-sm text-ink-700"
+                  >
+                    {industry}
+                  </span>
+                ))}
+              </div>
             </Section>
           ) : null}
 
