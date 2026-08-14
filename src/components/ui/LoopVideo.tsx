@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { driveIdFromPath, driveThumbnailUrl } from '@/lib/gdrive';
 
 /**
  * 동시 재생 수 제한.
@@ -53,20 +54,41 @@ function acquire(video: HTMLVideoElement, start: () => void): (() => void) | nul
  *
  * 모션을 줄이도록 설정한 사용자에게는 아예 재생하지 않고 포스터만 남긴다.
  */
-export function LoopVideo({
-  mp4,
-  webm,
-  poster,
-  className,
-  priority = false,
-}: {
+type LoopProps = {
   mp4: string;
   webm?: string;
   poster?: string;
   className?: string;
   /** 히어로 배경처럼 항상 움직여야 하는 자리. 동시 재생 제한을 받지 않는다. */
   priority?: boolean;
-}) {
+};
+
+export function LoopVideo(props: LoopProps) {
+  /*
+    드라이브에 올린 영상은 카드에서 스트리밍하지 않는다.
+
+    드라이브 본문 주소(alt=media)는 파일별 전송 할당이 있어, 카드가 화면에
+    들어올 때마다 조금씩 깎이다가 어느 날 갑자기 재생이 끊긴다 — 목록은
+    한 번 열 때 여러 카드가 동시에 재생되므로 특히 빨리 소진된다.
+    카드에서는 드라이브가 만들어 주는 정지 썸네일을 쓰고, 실제 재생은
+    상세 화면의 드라이브 자체 플레이어에 맡긴다(할당의 영향이 없다).
+  */
+  const driveId = driveIdFromPath(props.mp4);
+  if (driveId) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={props.poster ?? driveThumbnailUrl(driveId)}
+        alt=""
+        loading="lazy"
+        className={props.className}
+      />
+    );
+  }
+  return <LoopPlayer {...props} />;
+}
+
+function LoopPlayer({ mp4, webm, poster, className, priority = false }: LoopProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const [allowed, setAllowed] = useState(true);
 

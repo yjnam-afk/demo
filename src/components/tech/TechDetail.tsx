@@ -583,7 +583,7 @@ export function TechDetail({
 
               {related.length > 0 ? (
                 <div className={tech.resources.length > 0 ? 'mt-6' : ''}>
-                  <h3 className="text-sm font-medium text-ink-700">함께 쓰는 기술</h3>
+                  <h3 className="text-base font-semibold tracking-tight text-ink-900">함께 쓰는 기술</h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {related.map((item) => (
                       <Link
@@ -601,7 +601,7 @@ export function TechDetail({
               {/* 적용 산업군 — 상단에서 내려온 자리. 문제 문장 곁을 비우고 연결 정보끼리 모은다 */}
               {industries.length > 0 ? (
                 <div className={tech.resources.length > 0 || related.length > 0 ? 'mt-6' : ''}>
-                  <h3 className="text-sm font-medium text-ink-700">적용 산업군</h3>
+                  <h3 className="text-base font-semibold tracking-tight text-ink-900">적용 산업군</h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {industries.map((industry) => (
                       <span
