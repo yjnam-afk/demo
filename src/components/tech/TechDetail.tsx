@@ -172,12 +172,18 @@ export function TechDetail({
     business.io?.input || business.io?.output || business.requirements?.length,
   );
   const hasResources = tech.resources.length > 0;
+  /*
+    데모 블록을 세울지. 지표만 있는 기술은 바로 아래 성능 지표 블록과 같은
+    숫자가 두 번 서므로 생략하지만, 미디어 구간에 영상이 있으면 그것만으로
+    데모가 성립한다 — 데모 타입이 기본값인 채 영상만 올린 기술이 화면에서
+    영상을 통째로 잃던 자리다.
+  */
+  const hasDemo =
+    (tech.demo.type !== 'metric' && tech.demo.type !== 'none') || Boolean(tech.media.video);
 
   /* 레일의 바로가기 — 실제로 존재하는 블록만 나열한다 */
   const jumps = [
-    tech.demo.type !== 'metric' && tech.demo.type !== 'none'
-      ? { id: 'demo', label: '데모' }
-      : null,
+    hasDemo ? { id: 'demo', label: '데모' } : null,
     tech.metrics.length > 0 || restricted ? { id: 'metrics', label: '성능 지표' } : null,
     certified ? { id: 'certification', label: '인증' } : null,
     hasAdoption ? { id: 'adoption', label: '도입 정보' } : null,
@@ -310,7 +316,7 @@ export function TechDetail({
             metric 타입은 여기서 내지 않는다 — 보여줄 것이 지표뿐이라, 바로
             아래 성능 지표 블록과 같은 숫자가 두 번 서게 된다.
           */}
-          {tech.demo.type !== 'metric' && tech.demo.type !== 'none' ? (
+          {hasDemo ? (
             <Section id="demo" title="데모" tick={style.bar}>
               <DemoSlot tech={tech} />
             </Section>

@@ -45,12 +45,34 @@ export function DemoSlot({ tech }: { tech: PublicTech }) {
           fallback={fallback}
         />
       );
-    case 'metric':
-      return <MetricDemo metrics={tech.metrics} highlight={tech.demo.highlight_metric} />;
     case 'gallery':
       return <GalleryDemo items={tech.demo.items} />;
-    // 'none' 은 상세 페이지가 데모 블록 자체를 생략하므로 여기 오지 않는다
+    /*
+      데모 타입이 지표·없음이어도 미디어 구간에 영상이 있으면 그 영상을 튼다.
+
+      데모 영상 칸과 미디어 영상 칸이 갈려 있어, 영상을 미디어 쪽에만 올린
+      기술은 데모 타입이 기본값(성능 지표)으로 남아 화면에 영상이 설 자리가
+      없었다 — 올렸는데 안 나오는 대표적인 경우다.
+    */
+    case 'metric':
+      return tech.media.video ? (
+        <VideoDemo
+          src={tech.media.video}
+          srcWebm={tech.media.video_webm}
+          poster={tech.media.thumbnail}
+          fallback={fallback}
+        />
+      ) : (
+        <MetricDemo metrics={tech.metrics} highlight={tech.demo.highlight_metric} />
+      );
     case 'none':
-      return null;
+      return tech.media.video ? (
+        <VideoDemo
+          src={tech.media.video}
+          srcWebm={tech.media.video_webm}
+          poster={tech.media.thumbnail}
+          fallback={fallback}
+        />
+      ) : null;
   }
 }
