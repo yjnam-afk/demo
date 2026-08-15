@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DemoFallback, type FallbackContent } from './DemoFallback';
 import { VideoSources } from '@/components/ui/Video';
-import { driveIdFromPath, extractDriveFileId } from '@/lib/gdrive';
+import { driveIdFromPath, driveViewUrl, extractDriveFileId } from '@/lib/gdrive';
 
 /**
  * video 타입 데모.
@@ -47,6 +47,22 @@ export function VideoDemo({
           allow="autoplay; fullscreen"
           allowFullScreen
         />
+        {/*
+          임베드 안에서 재생이 막히는 경우가 있다 — 브라우저가 서드파티
+          쿠키를 차단하면 드라이브 플레이어가 다른 사이트 안에서 "동영상을
+          로드할 수 없습니다" 로 끝난다. 방문자를 막다른 길에 두지 않도록
+          원본을 새 탭에서 여는 길을 항상 함께 둔다.
+        */}
+        <div className="flex justify-end border-t border-white/10 px-4 py-2">
+          <a
+            href={driveViewUrl(driveId)}
+            target="_blank"
+            rel="noopener"
+            className="text-sm text-ink-400 hover:text-white"
+          >
+            재생되지 않으면 새 창에서 열기 ↗
+          </a>
+        </div>
       </div>
     );
   }
