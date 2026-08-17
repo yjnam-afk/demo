@@ -51,7 +51,7 @@ export default async function HomePage({
       <Hero />
 
       {/* 성과 요약 — 주장 바로 다음에 근거를 놓는다 */}
-      <section>
+      <section data-reveal>
         <div className="mx-auto max-w-6xl px-4 py-10">
           <TrustBar summary={summary} />
         </div>
@@ -80,7 +80,7 @@ export default async function HomePage({
           제품에서 시작하는 이야기는 회사 공식 사이트가 맡는다.
         */}
         {products.length > 0 ? (
-          <section className="mt-16 border-t border-ink-200 pt-10">
+          <section data-reveal className="mt-16 border-t border-ink-200 pt-10">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <h2 className="text-lg font-semibold tracking-tight text-ink-900">
                 이 기술들이 들어간 제품

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
 import { LoopVideo } from '@/components/ui/LoopVideo';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
@@ -40,7 +41,7 @@ export function TechRow({ tech }: { tech: PublicTech }) {
         <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-ink-200 bg-ink-950">
           {tech.media.loop ? (
             <LoopVideo
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               mp4={tech.media.loop}
               webm={tech.media.loop_webm}
               poster={tech.media.loop_poster ?? tech.media.thumbnail}
@@ -51,7 +52,7 @@ export function TechRow({ tech }: { tech: PublicTech }) {
               src={tech.media.thumbnail}
               alt=""
               loading="lazy"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -114,8 +115,12 @@ export function TechRow({ tech }: { tech: PublicTech }) {
             <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
               {headline.label}
             </div>
-            <div className="mt-0.5 numeric text-3xl font-semibold text-ink-900">
-              {formatNumber(headline.value)}
+            <div className="mt-0.5">
+              <AnimatedNumber
+                value={headline.value}
+                formatted={formatNumber(headline.value)}
+                className="numeric text-3xl font-semibold text-ink-900"
+              />
             </div>
             {/*
               목표는 수치 아래 한 줄로 내린다 — 옆에 붙이면 좁은 기둥에서

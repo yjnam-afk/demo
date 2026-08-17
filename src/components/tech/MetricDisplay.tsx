@@ -1,3 +1,4 @@
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { evaluateMetric, formatNumber, formatRate } from '@/lib/domain/metric';
 import type { Metric, PublicMetric } from '@/lib/domain/types';
 import { cn } from '@/lib/ui/domain';
@@ -52,14 +53,14 @@ export function MetricStat({
     <div>
       <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">{metric.label}</div>
       <div className="mt-1 flex items-baseline gap-2">
-        <span
+        <AnimatedNumber
+          value={metric.value}
+          formatted={formatNumber(metric.value)}
           className={cn(
             'numeric font-semibold text-ink-900',
             size === 'lg' ? 'text-5xl' : 'text-3xl',
           )}
-        >
-          {formatNumber(metric.value)}
-        </span>
+        />
         {/* 목표가 없는 지표(인증 성적서 측정값)는 목표 문구·판정을 생략한다 */}
         {targetText ? <span className="text-sm text-ink-500">정량 목표 {targetText}</span> : null}
       </div>
@@ -137,9 +138,11 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
 
                 {/* 수치와 목표는 한 줄 — 목표는 수치의 해석이라 붙어 있어야 한다 */}
                 <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                  <span className="numeric text-4xl font-semibold text-white sm:text-5xl">
-                    {formatNumber(metric.value)}
-                  </span>
+                  <AnimatedNumber
+                    value={metric.value}
+                    formatted={formatNumber(metric.value)}
+                    className="numeric text-4xl font-semibold text-white sm:text-5xl"
+                  />
                   {/* 목표가 없는 지표(인증 성적서 측정값)는 판정이 없다 */}
                   {achieved !== null ? (
                     <span className="self-center">

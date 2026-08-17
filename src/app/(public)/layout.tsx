@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { MainNav } from '@/components/site/MainNav';
+import { RevealManager } from '@/components/ui/Reveal';
 import { BRAND } from '@/lib/brand';
 
 function Header() {
   return (
-    // 헤더는 히어로와 같은 색이다. 스크롤 전에는 경계가 보이지 않다가
-    // 본문 구간으로 넘어가면 자연스럽게 분리된다.
-    <header className="sticky top-0 z-20 border-b border-white/5 bg-ink-950">
+    // 헤더는 히어로와 같은 색의 유리판이다. 히어로(같은 잉크색) 위에서는
+    // 경계가 보이지 않다가, 본문 구간으로 스크롤이 넘어가면 밝은 내용이
+    // 유리 밑으로 흐릿하게 비쳐 지나가며 자연스럽게 분리된다.
+    <header className="glass-dark sticky top-0 z-20 border-b border-white/5">
       {/*
         높이는 본사 사이트의 GNB 에 맞춰 잡는다. 하위 사이트만 헤더가 얕으면
         본사에서 넘어온 방문자에게 다른 사이트로 읽힌다.
@@ -76,6 +78,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Header />
+      {/* data-reveal 구간 떠오름은 공개 사이트 전용이다 — 관리자 화면에는 없다 */}
+      <RevealManager />
       <main>{children}</main>
       <Footer />
     </>

@@ -34,7 +34,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-40 border-t border-ink-200 pt-8">
+    // data-reveal — 스크롤로 들어올 때 살짝 떠오른다(ui/Reveal.tsx)
+    <section id={id} data-reveal className="scroll-mt-40 border-t border-ink-200 pt-8">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex items-center gap-2.5">
           {tick ? <span className={cn('h-4 w-1 rounded-full', tick)} /> : null}
@@ -270,7 +271,7 @@ export function TechDetail({
             이 문장만 상자 없이 큰 글자로 세우면 그 대비가 곧 강조가 된다.
             이 기술이 존재하는 이유라서 본문에서 가장 큰 글자를 가져간다.
           */}
-          <section>
+          <section data-reveal>
             {/* 제목 줄은 아래 구간들과 같은 문법(틱+제목)으로 선다 */}
             <div className="flex items-center gap-2.5">
               <span className={cn('h-4 w-1 rounded-full', style.bar)} />
@@ -290,7 +291,7 @@ export function TechDetail({
 
           {/* 이 기술이 들어간 제품 — 기술을 보러 온 방문자를 구매 단위로 안내한다 */}
           {usedIn.length > 0 ? (
-            <section className="rounded-lg border border-ink-200 bg-white p-5">
+            <section data-reveal className="rounded-lg border border-ink-200 bg-white p-5">
               <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                 이 기술이 들어간 제품
               </h2>
@@ -607,7 +608,7 @@ export function TechDetail({
                   <Link
                     key={item.id}
                     href={`/tech/${item.id}`}
-                    className="group rounded-lg border border-ink-200 bg-white p-4 transition-colors hover:border-ink-400"
+                    className="group rounded-lg border border-ink-200 bg-white p-4 transition-[border-color,translate,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-ink-400 hover:shadow-md hover:shadow-ink-900/5"
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-ink-900">{item.name_ko}</span>
@@ -656,7 +657,7 @@ export function TechDetail({
             사이트에나 있어 읽고 나면 남는 것이 없다. 무엇을 받게 되는지와
             문의처만 사실대로 적는다.
           */}
-          <section className="rounded-lg bg-ink-950 p-6 sm:p-8">
+          <section data-reveal className="rounded-lg bg-ink-950 p-6 sm:p-8">
             <h2 className="text-lg font-semibold text-white">도입 문의</h2>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
               기술 자료와 적용 사례, 도입 조건을 안내해 드립니다.

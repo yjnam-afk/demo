@@ -7,7 +7,8 @@ import { BRAND } from '@/lib/brand';
 export function ContactCta() {
   return (
     <section id="contact" className="grid-backdrop scroll-mt-24 bg-ink-950">
-      <div className="mx-auto max-w-6xl px-4 py-20">
+      {/* 떠오름은 내용에만 건다 — 어두운 판 자체가 투명해지면 뒤가 비쳐 얼룩진다 */}
+      <div data-reveal className="mx-auto max-w-6xl px-4 py-20">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           적용 가능성을 함께 검토해 드립니다
         </h2>

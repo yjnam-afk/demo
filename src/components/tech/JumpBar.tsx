@@ -56,7 +56,7 @@ export function JumpBar({ jumps }: { jumps: { id: string; label: string }[] }) {
   return (
     <nav
       aria-label="구간 바로가기"
-      className="sticky top-20 z-10 border-b border-ink-200 bg-ink-50/95 sm:top-24"
+      className="glass-light sticky top-20 z-10 border-b border-ink-200/70 sm:top-24"
     >
       <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
         {jumps.map((jump) => (
