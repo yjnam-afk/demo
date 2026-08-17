@@ -56,7 +56,7 @@ export function Hero() {
         <h1 className="headline max-w-3xl text-4xl font-semibold text-white sm:text-5xl">
           {BRAND.headline}
         </h1>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-700">{BRAND.intro}</p>
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-300">{BRAND.intro}</p>
 
         {/*
           버튼은 두지 않는다. 도입 문의는 GNB 에 항상 떠 있고, 기술 카탈로그는

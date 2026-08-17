@@ -40,13 +40,13 @@ export function ExpandableChips({ items }: { items: ChipItem[] }) {
           className={cn(
             'rounded border px-3 py-1.5 text-sm transition-colors',
             item.active
-              ? 'border-ink-800 bg-ink-800 text-ink-50'
-              : 'border-ink-300 bg-white/5 text-ink-600 hover:border-ink-500',
+              ? 'border-ink-700 bg-ink-700 text-white'
+              : 'border-ink-300 bg-white text-ink-600 hover:border-ink-500',
           )}
         >
           {item.label}
-          {item.note ? <span className="ml-1 text-xs text-ink-500">{item.note}</span> : null}
-          <span className="numeric ml-1 text-xs text-ink-500">{item.count}</span>
+          {item.note ? <span className="ml-1 text-xs text-ink-400">{item.note}</span> : null}
+          <span className="numeric ml-1 text-xs text-ink-400">{item.count}</span>
         </Link>
       ))}
 

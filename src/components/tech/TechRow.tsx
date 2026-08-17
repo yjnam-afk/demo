@@ -98,7 +98,7 @@ export function TechRow({ tech }: { tech: PublicTech }) {
             "어디에 쓰나" 이므로 이름표를 달아 무엇의 목록인지 밝힌다. */}
         {tech.industries.length > 0 ? (
           <p className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink-500">
-            <span className="text-ink-500">적용</span>
+            <span className="text-ink-400">적용</span>
             {tech.industries.map((industry) => (
               <span key={industry} className="rounded bg-ink-100 px-1.5 py-0.5 text-ink-600">
                 {industry}
@@ -139,7 +139,7 @@ export function TechRow({ tech }: { tech: PublicTech }) {
             */}
           </>
         ) : (
-          <div className="text-xs leading-relaxed text-ink-500 sm:pt-3">
+          <div className="text-xs leading-relaxed text-ink-400 sm:pt-3">
             정량 지표 없음
             {/* 데모 없는 기술에 "데모로 확인" 은 거짓 안내가 된다 */}
             {tech.demo.type !== 'none' ? (

@@ -16,7 +16,7 @@ function Cell({
     <div className="glass-card flex flex-col p-6 sm:p-7">
       {/* 라벨 옆 틱은 상세 화면 구간 제목과 같은 문법 — 브랜드색 하나로 통일 */}
       <div className="flex items-center gap-2">
-        <span aria-hidden className="h-3.5 w-1 rounded-full bg-[var(--color-brand-bright)]" />
+        <span aria-hidden className="h-3.5 w-1 rounded-full bg-[var(--color-brand)]" />
         <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">{label}</span>
       </div>
       <div className="mt-3 flex items-baseline gap-1.5">

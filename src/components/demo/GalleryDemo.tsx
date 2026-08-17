@@ -33,7 +33,7 @@ export function GalleryDemo({ items }: { items: GalleryItem[] }) {
                 'rounded border px-3 py-1.5 text-sm transition-colors',
                 i === Math.min(index, usable.length - 1)
                   ? 'border-ink-900 bg-ink-900 text-white'
-                  : 'border-ink-300 bg-white/5 text-ink-700 hover:border-ink-500',
+                  : 'border-ink-300 bg-white text-ink-700 hover:border-ink-500',
               )}
             >
               {item.label || `샘플 ${i + 1}`}
@@ -50,7 +50,7 @@ export function GalleryDemo({ items }: { items: GalleryItem[] }) {
         )}
       >
         <figure className="overflow-hidden glass-card rounded-lg border border-ink-200/70">
-          <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-500 uppercase">
+          <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
             입력
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -61,12 +61,12 @@ export function GalleryDemo({ items }: { items: GalleryItem[] }) {
           />
         </figure>
 
-        <div className="hidden items-center text-xl text-ink-600 sm:flex" aria-hidden>
+        <div className="hidden items-center text-xl text-ink-300 sm:flex" aria-hidden>
           →
         </div>
 
         <figure className="overflow-hidden glass-card rounded-lg border border-ink-200/70">
-          <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-500 uppercase">
+          <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
             식별 결과
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}

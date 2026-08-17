@@ -56,7 +56,7 @@ export function DemoTypeBadge({ type, onDark = false }: { type: DemoType; onDark
       className={`inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium ${
         onDark
           ? 'border-white/20 bg-white/10 text-white/80 backdrop-blur-md'
-          : 'border-ink-300 bg-white/5 text-ink-600'
+          : 'border-ink-300 bg-white text-ink-600'
       }`}
     >
       {DEMO_TYPE_LABELS[type]}

@@ -27,7 +27,7 @@ export function MetricDemo({
     <div className="glass-card rounded-lg border border-ink-200/70 p-6">
       <MetricStat metric={headline} size="lg" />
       {headline.dataset ? (
-        <p className="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-500">
+        <p className="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-400">
           평가 데이터셋 · {headline.dataset}
           {headline.source ? ` · ${headline.source}` : ''}
         </p>

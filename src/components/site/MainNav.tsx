@@ -19,7 +19,7 @@ export function MainNav() {
         href={BRAND.site.url}
         target="_blank"
         rel="noreferrer"
-        className="flex items-center gap-1 px-3 py-2 text-ink-500 transition-colors hover:text-white"
+        className="flex items-center gap-1 px-3 py-2 text-ink-400 transition-colors hover:text-white"
       >
         {BRAND.site.label}
         <span aria-hidden className="text-xs">
@@ -29,7 +29,7 @@ export function MainNav() {
 
       <Link
         href="/#contact"
-        className="ml-1.5 rounded bg-white px-3.5 py-2 font-medium text-ink-50 transition-colors hover:bg-ink-800 sm:ml-3"
+        className="ml-1.5 rounded bg-white px-3.5 py-2 font-medium text-ink-900 transition-colors hover:bg-ink-200 sm:ml-3"
       >
         {BRAND.contact.label}
       </Link>

@@ -83,7 +83,7 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
     <div ref={wrapRef} className="flex h-full w-full items-center justify-center bg-ink-50">
       {state === 'error' ? (
         <div className="p-6 text-center">
-          <p className="text-sm text-ink-500">
+          <p className="text-sm text-ink-400">
             {httpStatus
               ? /*
                   파일명을 함께 보여준다. 업로드 파일명에는 올린 시각이 들어
@@ -95,7 +95,7 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
           </p>
           {/* 서버가 보낸 실패 지점 — 원인을 화면에서 바로 읽는다 */}
           {detail ? (
-            <p className="mt-2 break-all text-xs text-ink-500/80">{detail}</p>
+            <p className="mt-2 break-all text-xs text-ink-400/80">{detail}</p>
           ) : null}
         </div>
       ) : (
@@ -105,7 +105,7 @@ export function PdfPreview({ url, label }: { url: string; label: string }) {
           className={state === 'ok' ? 'max-h-full w-auto max-w-full' : 'hidden'}
         />
       )}
-      {state === 'loading' ? <p className="text-sm text-ink-500">미리보기 준비 중…</p> : null}
+      {state === 'loading' ? <p className="text-sm text-ink-400">미리보기 준비 중…</p> : null}
     </div>
   );
 }

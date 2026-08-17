@@ -24,9 +24,9 @@ export default async function ProductsPage() {
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-14">
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">제품</h1>
-            <span className="numeric text-sm text-ink-500">{products.length}개</span>
+            <span className="numeric text-sm text-ink-400">{products.length}개</span>
           </div>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-700">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
             각 제품을 이루는 기술입니다. 단계별 구성과 성능은 제품별 화면에 있습니다.
           </p>
         </div>
@@ -34,7 +34,7 @@ export default async function ProductsPage() {
 
       <div className="mx-auto max-w-6xl px-4">
         {products.length === 0 ? (
-          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white/5 px-6 py-16 text-center text-sm text-ink-500">
+          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
             공개된 제품이 없습니다.
           </div>
         ) : (

@@ -62,20 +62,20 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
             {industry.label}
           </h1>
           {industry.description ? (
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-700">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-300">
               {industry.description}
             </p>
           ) : null}
 
           <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-6 text-sm">
-            <span className="text-ink-500">
+            <span className="text-ink-400">
               제품 <span className="numeric font-semibold text-white">{relatedProducts.length}</span>
             </span>
-            <span className="text-ink-500">
+            <span className="text-ink-400">
               현장 구성{' '}
               <span className="numeric font-semibold text-white">{relatedScenarios.length}</span>
             </span>
-            <span className="text-ink-500">
+            <span className="text-ink-400">
               기술 <span className="numeric font-semibold text-white">{techs.length}</span>
             </span>
           </div>
@@ -84,7 +84,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
 
       <div className="mx-auto max-w-6xl px-4">
         {empty ? (
-          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white/5 px-6 py-16 text-center text-sm text-ink-500">
+          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
             이 산업에 공개된 항목이 아직 없습니다.
           </div>
         ) : null}
@@ -102,7 +102,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
                   <div className="flex flex-wrap items-baseline gap-2">
                     <h3 className="text-lg font-semibold text-ink-900">{offering.title}</h3>
                     {offering.name_en && offering.name_en !== offering.title ? (
-                      <span className="text-xs text-ink-500">{offering.name_en}</span>
+                      <span className="text-xs text-ink-400">{offering.name_en}</span>
                     ) : null}
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
@@ -131,7 +131,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
                 <Link
                   key={offering.id}
                   href="/solutions"
-                  className="rounded border border-ink-300 bg-white/5 px-4 py-2 text-sm text-ink-700 hover:border-ink-500"
+                  className="rounded border border-ink-300 bg-white px-4 py-2 text-sm text-ink-700 hover:border-ink-500"
                 >
                   {offering.title}
                 </Link>

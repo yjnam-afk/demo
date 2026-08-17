@@ -53,9 +53,9 @@ export function TechGrid({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-ink-300 bg-white/5 px-6 py-16 text-center">
+      <div className="rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center">
         <p className="text-sm text-ink-600">조건에 맞는 기술이 없습니다.</p>
-        <p className="mt-1 text-sm text-ink-500">필터를 줄여 다시 확인해 보십시오.</p>
+        <p className="mt-1 text-sm text-ink-400">필터를 줄여 다시 확인해 보십시오.</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function TechGrid({
       <TechRowList techs={items} />
 
       <div className="mt-8 flex flex-col items-center gap-2">
-        <p className="numeric text-xs text-ink-500">
+        <p className="numeric text-xs text-ink-400">
           {items.length} / {total}
         </p>
         {error ? <p className="text-sm text-[var(--color-signal-fail)]">{error}</p> : null}
@@ -74,7 +74,7 @@ export function TechGrid({
             type="button"
             onClick={() => void loadMore()}
             disabled={loading}
-            className="rounded border border-ink-300 bg-white/5 px-6 py-2 text-sm text-ink-700 hover:border-ink-500 disabled:opacity-60"
+            className="rounded border border-ink-300 bg-white px-6 py-2 text-sm text-ink-700 hover:border-ink-500 disabled:opacity-60"
           >
             {loading ? '불러오는 중…' : '더보기'}
           </button>

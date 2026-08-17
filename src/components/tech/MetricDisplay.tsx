@@ -109,7 +109,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
             <div>
               <div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+                  <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                     {metric.label}
                   </span>
                   {/*
@@ -122,7 +122,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                         'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
                         /인증/.test(metric.source)
                           ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
-                          : 'border border-white/20 text-ink-600',
+                          : 'border border-white/20 text-ink-400',
                       )}
                     >
                       {metric.source}
@@ -130,7 +130,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   ) : null}
                   {/* 수준 주석 — 인증 칩과 혼동되지 않게 테두리 칩으로 */}
                   {metric.benchmark?.trim() ? (
-                    <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-700">
+                    <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-300">
                       {metric.benchmark}
                     </span>
                   ) : null}
@@ -176,7 +176,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                       {metric.conditions
                         .filter((c) => c.trim())
                         .map((c, index) => (
-                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-700">
+                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-300">
                             {index > 0 ? (
                               <span aria-hidden className="text-ink-600">
                                 ·

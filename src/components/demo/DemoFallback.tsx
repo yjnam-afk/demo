@@ -36,7 +36,7 @@ export function DemoFallback({
           <button
             type="button"
             onClick={onRetry}
-            className="rounded border border-[var(--color-signal-warn)]/40 px-3 py-1 text-sm text-[var(--color-signal-warn)] hover:bg-white/10"
+            className="rounded border border-[var(--color-signal-warn)]/40 px-3 py-1 text-sm text-[var(--color-signal-warn)] hover:bg-white"
           >
             다시 시도
           </button>

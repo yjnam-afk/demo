@@ -18,11 +18,11 @@ export default async function SolutionsPage() {
     <>
       <section className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-14">
-          <p className="text-sm font-medium tracking-wide text-ink-500 uppercase">구성</p>
+          <p className="text-sm font-medium tracking-wide text-ink-400 uppercase">구성</p>
           <h1 className="mt-3 max-w-2xl text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             현장 구성
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-700">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">
             아직 하나의 제품은 아니지만, 한 현장에서 함께 쓰이는 기술 조합입니다.
           </p>
         </div>
@@ -30,7 +30,7 @@ export default async function SolutionsPage() {
 
       <div className="mx-auto max-w-6xl px-4">
         {scenarios.length === 0 ? (
-          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white/5 px-6 py-16 text-center text-sm text-ink-500">
+          <div className="my-16 rounded-lg border border-dashed border-ink-300 bg-white px-6 py-16 text-center text-sm text-ink-500">
   공개된 구성이 아직 없습니다.
           </div>
         ) : (

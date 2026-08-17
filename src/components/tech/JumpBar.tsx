@@ -56,7 +56,7 @@ export function JumpBar({ jumps }: { jumps: { id: string; label: string }[] }) {
   return (
     <nav
       aria-label="구간 바로가기"
-      className="glass-dark sticky top-20 z-10 border-b border-ink-200/70 sm:top-24"
+      className="glass-light sticky top-20 z-10 border-b border-ink-200/70 sm:top-24"
     >
       <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
         {jumps.map((jump) => (
@@ -67,8 +67,8 @@ export function JumpBar({ jumps }: { jumps: { id: string; label: string }[] }) {
             className={cn(
               'flex shrink-0 items-center rounded border px-3 py-1.5 text-sm transition-colors',
               active === jump.id
-                ? 'border-ink-900 bg-ink-900 font-medium text-ink-50'
-                : 'border-ink-300 bg-white/5 text-ink-700 hover:border-ink-500 hover:text-ink-900',
+                ? 'border-ink-900 bg-ink-900 font-medium text-white'
+                : 'border-ink-300 bg-white/70 text-ink-700 hover:border-ink-500 hover:text-ink-900',
             )}
           >
             {jump.label}

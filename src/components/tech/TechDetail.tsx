@@ -58,7 +58,7 @@ function Section({
 function ValueCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="glass-card p-5">
-      <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">{label}</div>
+      <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">{label}</div>
       <div className="mt-1.5 text-base font-medium text-ink-900">{children}</div>
     </div>
   );
@@ -232,7 +232,7 @@ export function TechDetail({
             {tech.name_ko}
           </h1>
           {/* 영문명은 내지 않는다 — 방문자의 판단에 보태는 것이 없다 */}
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-700">{tech.summary}</p>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-300">{tech.summary}</p>
 
           {/* 검증·데모·성숙도는 같은 성격의 표식이다 — 셋 다 같은 칩으로 세운다 */}
           <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -292,7 +292,7 @@ export function TechDetail({
           {/* 이 기술이 들어간 제품 — 기술을 보러 온 방문자를 구매 단위로 안내한다 */}
           {usedIn.length > 0 ? (
             <section data-reveal className="glass-card rounded-lg border border-ink-200/70 p-5">
-              <h2 className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+              <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                 이 기술이 들어간 제품
               </h2>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -304,7 +304,7 @@ export function TechDetail({
                   >
                     {product.title}
                     {product.name_en && product.name_en !== product.title ? (
-                      <span className="ml-1.5 text-xs font-normal text-ink-500">
+                      <span className="ml-1.5 text-xs font-normal text-ink-400">
                         {product.name_en}
                       </span>
                     ) : null}
@@ -425,7 +425,7 @@ export function TechDetail({
                     </div>
                   ) : null}
                   {business.io?.input && business.io?.output ? (
-                    <div className="hidden items-center text-xl text-ink-600 sm:flex" aria-hidden>
+                    <div className="hidden items-center text-xl text-ink-300 sm:flex" aria-hidden>
                       →
                     </div>
                   ) : null}
@@ -443,7 +443,7 @@ export function TechDetail({
               */}
               {business.requirements?.length ? (
                 <div className="glass-card mt-2 rounded-lg border border-ink-200/70 p-5">
-                  <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+                  <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                     도입 조건 및 제약
                   </div>
                   <ul className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
@@ -584,7 +584,7 @@ export function TechDetail({
                           className="glass-card flex items-center justify-between gap-3 rounded-lg border border-ink-200/70 px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
                         >
                           <span className="truncate">{resource.label}</span>
-                          <span className="shrink-0 text-ink-500" aria-hidden>↗</span>
+                          <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
                         </a>
                       </li>
                     ))}
@@ -613,7 +613,7 @@ export function TechDetail({
                     <span className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-ink-900">{item.name_ko}</span>
                       <span
-                        className="shrink-0 text-ink-600 transition-colors group-hover:text-ink-900"
+                        className="shrink-0 text-ink-300 transition-colors group-hover:text-ink-600"
                         aria-hidden
                       >
                         →
@@ -659,12 +659,12 @@ export function TechDetail({
           */}
           <section data-reveal className="rounded-lg bg-ink-950 p-6 sm:p-8">
             <h2 className="text-lg font-semibold text-white">도입 문의</h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-500">
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
               기술 자료와 적용 사례, 도입 조건을 안내해 드립니다.
             </p>
             <a
               href={mailto}
-              className="numeric mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-50 transition-colors hover:bg-ink-800"
+              className="numeric mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
             >
               {BRAND.contact.email}
             </a>

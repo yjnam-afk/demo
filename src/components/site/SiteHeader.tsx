@@ -46,7 +46,7 @@ export function SiteHeader() {
           <img src="/brand/infiniq-wordmark.png" alt={BRAND.nameEn} className="h-5 w-auto sm:h-6" />
           <span aria-hidden className="hidden h-5 w-px bg-white/20 sm:inline-block" />
           {/* 부제는 국문 문장이 아니라 표기로 둔다 — 워드마크 옆에서 문장이 되면 무겁다 */}
-          <span className="hidden text-xs tracking-[0.18em] text-ink-500 uppercase sm:inline">
+          <span className="hidden text-xs tracking-[0.18em] text-ink-400 uppercase sm:inline">
             {BRAND.productNameEn}
           </span>
         </Link>
