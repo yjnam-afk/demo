@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { DemoTypeBadge, VerificationBadge } from '@/components/ui/Badge';
 import { LoopVideo } from '@/components/ui/LoopVideo';
 import { evaluateMetric, formatNumber, pickHeadlineMetric } from '@/lib/domain/metric';
@@ -115,12 +114,9 @@ export function TechRow({ tech }: { tech: PublicTech }) {
             <div className="text-xs font-medium tracking-wide text-ink-500 uppercase">
               {headline.label}
             </div>
-            <div className="mt-0.5">
-              <AnimatedNumber
-                value={headline.value}
-                formatted={formatNumber(headline.value)}
-                className="numeric text-3xl font-semibold text-ink-900"
-              />
+            {/* 목록 수치는 움직이지 않는다 — 행마다 차오르면 훑는 화면이 어수선해진다 */}
+            <div className="mt-0.5 numeric text-3xl font-semibold text-ink-900">
+              {formatNumber(headline.value)}
             </div>
             {/*
               목표는 수치 아래 한 줄로 내린다 — 옆에 붙이면 좁은 기둥에서

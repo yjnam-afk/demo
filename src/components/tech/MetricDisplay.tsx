@@ -109,7 +109,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
             <div>
               <div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
+                  <span className="text-xs font-medium tracking-wide text-ink-300 uppercase">
                     {metric.label}
                   </span>
                   {/*
@@ -122,7 +122,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                         'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
                         /인증/.test(metric.source)
                           ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
-                          : 'border border-white/20 text-ink-400',
+                          : 'border border-white/20 text-ink-300',
                       )}
                     >
                       {metric.source}
@@ -150,7 +150,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                     </span>
                   ) : null}
                   {targetText ? (
-                    <span className="text-xs text-ink-500">
+                    <span className="text-xs text-ink-400">
                       정량 목표 {targetText}
                       {ratePercent ? <span className="numeric"> · 달성률 {ratePercent}</span> : null}
                     </span>
@@ -170,15 +170,15 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                 <div className="mt-4 border-t border-white/10 pt-3">
                   {metric.conditions.filter((c) => c.trim()).length > 0 ? (
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-                      <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">
+                      <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                         시험 조건
                       </span>
                       {metric.conditions
                         .filter((c) => c.trim())
                         .map((c, index) => (
-                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-300">
+                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-200">
                             {index > 0 ? (
-                              <span aria-hidden className="text-ink-600">
+                              <span aria-hidden className="text-ink-500">
                                 ·
                               </span>
                             ) : null}
@@ -190,7 +190,7 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
                   {metric.dataset ? (
                     <div
                       className={cn(
-                        'text-xs text-ink-500',
+                        'text-xs text-ink-400',
                         metric.conditions.filter((c) => c.trim()).length > 0 ? 'mt-2.5' : '',
                       )}
                     >
