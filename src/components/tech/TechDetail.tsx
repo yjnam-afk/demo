@@ -270,11 +270,13 @@ export function TechDetail({
             이 문장만 상자 없이 큰 글자로 세우면 그 대비가 곧 강조가 된다.
             이 기술이 존재하는 이유라서 본문에서 가장 큰 글자를 가져간다.
           */}
-          <section className={cn('border-l-4 py-1 pl-5 sm:pl-6', style.border)}>
-            <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
-              해결하는 문제
-            </h2>
-            <p className="mt-3 max-w-3xl text-2xl leading-snug font-semibold tracking-tight text-ink-900 sm:text-3xl">
+          <section>
+            {/* 제목 줄은 아래 구간들과 같은 문법(틱+제목)으로 선다 */}
+            <div className="flex items-center gap-2.5">
+              <span className={cn('h-4 w-1 rounded-full', style.bar)} />
+              <h2 className="text-lg font-semibold tracking-tight text-ink-900">해결하는 문제</h2>
+            </div>
+            <p className="mt-4 max-w-3xl text-2xl leading-snug font-semibold tracking-tight text-ink-900 sm:text-3xl">
               {business.problem ?? tech.summary}
             </p>
 
@@ -478,7 +480,7 @@ export function TechDetail({
             </div>
           </Section>
 
-          {/* 7. 관련 자료 및 함께 쓰는 기술 */}
+          {/* 7. 관련 자료 */}
           {hasResources ? (
             <Section id="resources" title="관련 자료" tick={style.bar}>
               {/*
@@ -595,18 +597,32 @@ export function TechDetail({
             함께 쓰는 기술·적용 산업군은 관련 자료의 하위 항목이 아니라 같은
             급의 구간이다. 작은 제목으로 안에 끼워 두니 칩 무더기에 묻혀
             무엇의 목록인지 읽히지 않았다 — 다른 구간과 같은 제목 문법
-            (축 색 틱 + 큰 제목)으로 세운다.
+            (축 색 틱 + 큰 제목)으로 세운다. 기술 이름만 서면 여전히 칩
+            무더기라, 이름 옆에 한 줄 요약을 실은 카드로 눌러볼 이유를 준다.
           */}
           {related.length > 0 ? (
             <Section id="related" title="함께 쓰는 기술" tick={style.bar}>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {related.map((item) => (
                   <Link
                     key={item.id}
                     href={`/tech/${item.id}`}
-                    className="rounded border border-ink-200 bg-white px-3 py-2 text-sm text-ink-700 hover:border-ink-400"
+                    className="group rounded-lg border border-ink-200 bg-white p-4 transition-colors hover:border-ink-400"
                   >
-                    {item.name_ko}
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-ink-900">{item.name_ko}</span>
+                      <span
+                        className="shrink-0 text-ink-300 transition-colors group-hover:text-ink-600"
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </span>
+                    {item.summary ? (
+                      <span className="mt-1.5 line-clamp-2 block text-sm leading-relaxed text-ink-500">
+                        {item.summary}
+                      </span>
+                    ) : null}
                   </Link>
                 ))}
               </div>

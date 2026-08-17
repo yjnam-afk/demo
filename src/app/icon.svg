@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    브라우저 탭 아이콘 — INFINIQ 의 Q.
+
+    16px 로 줄어든 상태에서 읽히는 것이 전부라, 글자 하나만 크게 세운다.
+    바탕은 브랜드 파랑(globals.css --color-brand)의 타일 — 흰 배경 탭에서도
+    어두운 탭에서도 같은 모양으로 보이게 한다. 꼬리는 원 밖으로 길게 빼서
+    작게 봐도 O 가 아니라 Q 로 읽히게 한다.
+  -->
+  <rect width="32" height="32" rx="7" fill="#003c7f" />
+  <circle cx="15.4" cy="14.9" r="6.7" fill="none" stroke="#ffffff" stroke-width="3.1" />
+  <line x1="19.2" y1="18.7" x2="24.2" y2="23.7" stroke="#ffffff" stroke-width="3.1" stroke-linecap="round" />
+</svg>
