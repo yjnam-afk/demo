@@ -3,19 +3,20 @@ import { blobToken, blobTokenName, resolveBlobAccess } from '@/lib/data/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+/** 긴 영상 스트리밍이 기본 실행 시간(10초)에 잘리지 않게 한다. */
+export const maxDuration = 120;
 
 /**
  * Blob 에 올라간 미디어를 공개 화면에 내보내는 경로.
  *
- * 저장소가 private 이면 Blob 주소는 그냥 열리지 않는다. 그래서 업로드된
- * 미디어는 /api/media/<경로> 로 참조하고, 이 라우트가 서명된 임시 주소를
- * 만들어 그리로 보낸다. 영상 본문은 함수를 거치지 않고 CDN 에서 바로
- * 내려간다 — 40MB 영상을 함수로 중계하면 실행 시간 제한에 걸린다.
+ * 문서·이미지·영상 전부 이 함수가 본문을 중계한다. 저장소 도메인
+ * (*.blob.vercel-storage.com)을 막는 사내망이 있어, 리다이렉트로 보내면
+ * 그 망의 방문자는 아무것도 받지 못한다 — 같은 origin 인 이 함수가
+ * 내주면 그 차단을 지난다. 영상은 Range 요청을 그대로 전달해 탐색이 된다.
  *
  * uploads/ 밖은 내주지 않는다. 같은 저장소에 데이터 문서(data/*.json)가
  * 살고 있어서, 경로를 제한하지 않으면 이 라우트가 문서 공개 통로가 된다.
  */
-const TTL_MS = 3_600_000;
 
 /**
  * 오류를 화면에 실을 수 있는 한 줄로 줄인다.
@@ -28,13 +29,14 @@ function short(err: unknown): string {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path: parts } = await params;
   const pathname = parts.join('/');
 
-  if (!pathname.startsWith('uploads/') || pathname.includes('..')) {
+  // uploads/tmp 는 조각 업로드의 중간 저장소다 — 완성 파일이 아니므로 내주지 않는다
+  if (!pathname.startsWith('uploads/') || pathname.startsWith('uploads/tmp/') || pathname.includes('..')) {
     return NextResponse.json({ error: '없는 경로입니다.' }, { status: 404 });
   }
   // 파일 저장 환경에서는 업로드가 /uploads/ 정적 경로로 바로 서빙된다.
@@ -53,26 +55,11 @@ export async function GET(
 
   try {
     trace.push(`token=${blobTokenName()}`);
-    const [access, { issueSignedToken, presignUrl, list, get, head }] = await Promise.all([
+    const [access, { list, get, head }] = await Promise.all([
       resolveBlobAccess(),
       import('@vercel/blob'),
     ]);
     trace.push(`access=${access}`);
-
-    const presignFor = async (target: string) => {
-      const issued = await issueSignedToken({
-        pathname: target,
-        operations: ['get'],
-        validUntil: Date.now() + TTL_MS,
-        token: blobToken(),
-      });
-      const { presignedUrl } = await presignUrl(issued, {
-        operation: 'get',
-        pathname: target,
-        access,
-      });
-      return presignedUrl;
-    };
 
     /*
       문서와 이미지는 함수가 본문을 중계한다. 두 가지 이유다:
@@ -154,12 +141,41 @@ export async function GET(
       });
     }
 
-    const presignedUrl = await presignFor(pathname);
-    return NextResponse.redirect(presignedUrl, {
-      status: 302,
-      // 서명 유효기간(1시간)보다 짧게 캐시한다. 재생 중 만료로 끊기지 않게 여유를 둔다.
-      headers: { 'Cache-Control': 'public, max-age=1800' },
+    /*
+      영상도 함수가 중계한다. 302 로 저장소 도메인에 보내면 그 도메인을
+      막는 사내망에서는 재생이 안 된다 — 문서가 그랬던 것과 같은 벽이다.
+      탐색(구간 이동)이 되도록 브라우저의 Range 요청을 그대로 전달하고
+      저장소의 206 응답을 그대로 돌려준다.
+    */
+    let mediaUrl: string;
+    try {
+      mediaUrl = (await head(pathname, { token: blobToken() })).url;
+      trace.push('head=ok');
+    } catch (err) {
+      trace.push(`head=${short(err)}`);
+      throw new Error('저장소에 이 파일이 없습니다');
+    }
+    const range = request.headers.get('range');
+    // 비공개 저장소의 주소는 인증 없이 열리지 않는다 — SDK 와 같은 방식으로 토큰을 싣는다
+    const upstream = await fetch(mediaUrl, {
+      headers: {
+        authorization: `Bearer ${blobToken() ?? ''}`,
+        ...(range ? { range } : {}),
+      },
     });
+    if (!upstream.ok && upstream.status !== 206) {
+      trace.push(`fetch=${upstream.status}`);
+      throw new Error('저장소에서 본문을 받지 못했습니다');
+    }
+    const headers = new Headers({
+      'Cache-Control': 'public, max-age=1800',
+      'Accept-Ranges': 'bytes',
+    });
+    for (const name of ['content-type', 'content-length', 'content-range']) {
+      const value = upstream.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    return new Response(upstream.body, { status: upstream.status, headers });
   } catch (err) {
     console.error('[media] 실패', pathname, trace, err);
     // 원인을 화면에서 바로 읽을 수 있게 실패 지점을 함께 싣는다

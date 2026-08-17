@@ -82,64 +82,52 @@ export function MediaUpload({
   }
 
   /**
-   * Blob 환경 — 브라우저가 Blob 에 직접 올린다.
+   * Blob 환경의 대용량 — 조각 업로드.
    *
-   * 서버를 거치면 Vercel 함수의 요청 크기 제한(약 4.5MB)에 걸려 영상이
-   * 통과하지 못한다. 서버는 토큰만 내준다(/api/admin/upload/blob).
-   * 올라간 파일은 /api/media/ 경로로 참조한다 — private 저장소의 Blob
-   * 주소는 그냥 열리지 않아, 그 경로가 서명된 주소로 이어 준다.
+   * 브라우저→저장소 직접 업로드는 저장소 도메인을 막는 사내망에서 영원히
+   * 멈추고, 서버 경유 한 방은 함수 요청 크기 제한(약 4.5MB)에 걸린다.
+   * 그래서 파일을 3.8MB 조각으로 잘라 같은 origin 서버로 차례로 보내고,
+   * 서버가 저장소 안에서 이어붙인다. 조각마다 실패하면 한 번씩 재시도한다.
    */
-  async function uploadToBlob(file: File, access: 'public' | 'private') {
-    const extension = MEDIA_EXTENSIONS[file.type];
-    if (!extension) {
-      setError('지원하지 않는 형식입니다. 이미지(jpg/png/webp/svg) 또는 영상(mp4/webm)만 올릴 수 있습니다.');
-      return;
-    }
+  async function uploadChunked(file: File) {
+    const PIECE = 3_800_000;
+    const pieces = Math.ceil(file.size / PIECE);
+    const key = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
-    /*
-      정체 감시. 사내망 중에는 Blob 저장소 도메인을 막는 곳이 있는데,
-      그 환경에서는 업로드가 실패하는 것이 아니라 68% 같은 지점에서
-      영원히 멈춘다. 진행이 한동안 없으면 끊고, 어디로 가야 하는지 말한다.
-    */
-    const controller = new AbortController();
-    let stallTimer: ReturnType<typeof setTimeout> | null = null;
-    const armStallTimer = () => {
-      if (stallTimer) clearTimeout(stallTimer);
-      stallTimer = setTimeout(() => controller.abort(), 25_000);
-    };
-    armStallTimer();
-
-    try {
-      const { upload: blobUpload } = await import('@vercel/blob/client');
-      const result = await blobUpload(`uploads/${techId}/${kind}-${Date.now()}.${extension}`, file, {
-        access,
-        handleUploadUrl: '/api/admin/upload/blob',
-        contentType: file.type,
-        abortSignal: controller.signal,
-        /*
-          큰 파일은 조각으로 나눠 올린다. 한 덩어리 PUT 은 수십 MB 전송 중
-          연결이 한 번만 흔들려도 전체가 멈추는데, 조각 업로드는 조각별로
-          재시도하므로 중간에 끊겨도 이어서 간다. 작은 이미지까지 조각내면
-          요청 수만 늘어나므로 경계를 둔다.
-        */
-        multipart: file.size > 8 * 1024 * 1024,
-        onUploadProgress: ({ percentage }) => {
-          armStallTimer();
-          setProgress(Math.round(percentage));
-        },
-      });
-      onChange(`/api/media/${result.pathname}`);
-    } catch (err) {
-      if (controller.signal.aborted) {
-        setError(
-          '업로드가 진행되지 않아 중단했습니다. 지금 계신 네트워크가 저장소 접근을 막고 있을 가능성이 큽니다 — 파일을 구글 드라이브에 올리고 공유 링크를 경로 칸에 붙여넣으세요.',
-        );
+    for (let i = 0; i < pieces; i++) {
+      const body = file.slice(i * PIECE, (i + 1) * PIECE);
+      let response = await fetch(
+        `/api/admin/upload/chunk?action=piece&key=${key}&index=${i}`,
+        { method: 'POST', body },
+      ).catch(() => null);
+      if (!response?.ok) {
+        // 순간적인 끊김은 한 번 더 — 사내망은 특히 자주 흔들린다
+        response = await fetch(
+          `/api/admin/upload/chunk?action=piece&key=${key}&index=${i}`,
+          { method: 'POST', body },
+        ).catch(() => null);
+      }
+      if (!response?.ok) {
+        const detail = (await response?.json().catch(() => ({}))) as { error?: string };
+        setError(detail?.error ?? `업로드가 ${i + 1}/${pieces} 조각에서 끊겼습니다. 다시 시도해 주세요.`);
         return;
       }
-      throw err;
-    } finally {
-      if (stallTimer) clearTimeout(stallTimer);
+      // 조립(마지막 단계)에 걸리는 시간을 남겨 두려고 95% 까지만 채운다
+      setProgress(Math.round(((i + 1) / pieces) * 95));
     }
+
+    const done = await fetch('/api/admin/upload/chunk?action=complete', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key, pieces, techId, kind, contentType: file.type }),
+    });
+    const body = (await done.json().catch(() => ({}))) as { path?: string; error?: string };
+    if (!done.ok || !body.path) {
+      setError(body.error ?? '조각 조립에 실패했습니다. 다시 시도해 주세요.');
+      return;
+    }
+    setProgress(100);
+    onChange(body.path);
   }
 
   async function upload(file: File) {
@@ -165,7 +153,7 @@ export function MediaUpload({
         때문에 경계는 4MB — 그보다 크면 브라우저 직접 업로드로 간다.
       */
       if (target.mode === 'blob' && file.size > 4 * 1024 * 1024) {
-        await uploadToBlob(file, target.access ?? 'public');
+        await uploadChunked(file);
       } else {
         await uploadToServer(file);
       }
