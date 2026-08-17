@@ -34,7 +34,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <>
       <section className="grid-backdrop bg-ink-950">
         <div className="mx-auto max-w-6xl px-4 py-12">
-          <Link href="/products" className="text-sm text-ink-400 hover:text-white">
+          <Link href="/products" className="text-sm text-ink-500 hover:text-white">
             ← 제품 목록
           </Link>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -57,14 +57,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <section className="mb-20 rounded-lg bg-ink-950 p-6 sm:p-8">
           <h2 className="text-lg font-semibold text-white">도입 문의</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-400">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-500">
             제품 자료와 적용 사례, 도입 조건을 안내해 드립니다.
           </p>
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent(
               `[도입 문의] ${found.offering.title}`,
             )}`}
-            className="numeric mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
+            className="numeric mt-5 inline-block rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-50 transition-colors hover:bg-ink-800"
           >
             {BRAND.contact.email}
           </a>

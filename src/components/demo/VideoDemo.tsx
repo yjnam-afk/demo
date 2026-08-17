@@ -39,7 +39,7 @@ export function VideoDemo({
   const driveId = driveIdFromPath(source) ?? extractDriveFileId(source);
   if (driveId) {
     return (
-      <div className="overflow-hidden rounded-lg border border-ink-200 bg-ink-900">
+      <div className="overflow-hidden rounded-lg border border-ink-200 bg-ink-950">
         <iframe
           src={`https://drive.google.com/file/d/${driveId}/preview`}
           title="데모 영상"
@@ -58,7 +58,7 @@ export function VideoDemo({
             href={driveViewUrl(driveId)}
             target="_blank"
             rel="noopener"
-            className="text-sm text-ink-400 hover:text-white"
+            className="text-sm text-ink-500 hover:text-white"
           >
             재생되지 않으면 새 창에서 열기 ↗
           </a>
@@ -78,7 +78,7 @@ export function VideoDemo({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-ink-200 bg-ink-900">
+    <div className="overflow-hidden rounded-lg border border-ink-200 bg-ink-950">
       <video
         className="aspect-video w-full"
         poster={poster}

@@ -12,7 +12,7 @@ export function ContactCta() {
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           적용 가능성을 함께 검토해 드립니다
         </h2>
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-300">
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-700">
           현장 조건을 알려주시면 적용 가능한 기술과 도입 조건을 정리해 회신드립니다.
         </p>
 
@@ -24,11 +24,11 @@ export function ContactCta() {
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <a
             href={`mailto:${BRAND.contact.email}?subject=${encodeURIComponent('[도입 문의]')}`}
-            className="rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-200"
+            className="rounded bg-white px-5 py-2.5 text-sm font-medium text-ink-50 transition-colors hover:bg-ink-800"
           >
             {BRAND.contact.label}
           </a>
-          <span className="numeric text-sm text-ink-400">{BRAND.contact.email}</span>
+          <span className="numeric text-sm text-ink-500">{BRAND.contact.email}</span>
         </div>
       </div>
     </section>

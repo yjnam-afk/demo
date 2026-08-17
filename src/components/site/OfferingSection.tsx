@@ -54,7 +54,7 @@ export function OfferingBody({ item }: { item: ResolvedOffering }) {
 
       {industryLabels.length > 0 ? (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">대상</span>
+          <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">대상</span>
           {industryLabels.map((industry) => (
             <Link
               key={industry.id}
@@ -68,7 +68,7 @@ export function OfferingBody({ item }: { item: ResolvedOffering }) {
       ) : null}
 
       {steps.length === 0 ? (
-        <p className="mt-8 text-sm text-ink-400">상세 구성과 도입 사례는 문의 주시면 보내드립니다.</p>
+        <p className="mt-8 text-sm text-ink-500">상세 구성과 도입 사례는 문의 주시면 보내드립니다.</p>
       ) : (
         <div className="mt-8">
           {/* 하나뿐이면 "1단계" 라고 쓰지 않는다 — 순서가 없는데 순서를 말하는 꼴이 된다. */}
@@ -107,14 +107,14 @@ export function OfferingSection({
   return (
     <section className="border-b border-ink-200 py-14 last:border-b-0">
       <div className="mb-3 flex flex-wrap items-baseline gap-3">
-        <span className="numeric text-sm font-semibold text-ink-400">
+        <span className="numeric text-sm font-semibold text-ink-500">
           {String(index + 1).padStart(2, '0')}
         </span>
         <Heading className="text-2xl font-semibold tracking-tight text-ink-900">
           {offering.title}
         </Heading>
         {offering.name_en && offering.name_en !== offering.title ? (
-          <span className="text-sm text-ink-400">{offering.name_en}</span>
+          <span className="text-sm text-ink-500">{offering.name_en}</span>
         ) : null}
       </div>
 

@@ -132,7 +132,7 @@ export function ApiDemo({
       <div className="border-b border-ink-200 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-ink-700">샘플로 실행해보기</span>
-          <span className="text-xs text-ink-400">{INPUT_KIND_LABELS[inputKind]}</span>
+          <span className="text-xs text-ink-500">{INPUT_KIND_LABELS[inputKind]}</span>
         </div>
 
         {samples.length > 0 ? (
@@ -216,7 +216,7 @@ export function ApiDemo({
             ) : (
               state.outputs.map((output, index) => <OutputView key={index} output={output} />)
             )}
-            <p className="numeric text-xs text-ink-400">처리 시간 {state.elapsed} ms</p>
+            <p className="numeric text-xs text-ink-500">처리 시간 {state.elapsed} ms</p>
           </div>
         ) : (
           <div className="flex h-48 items-center justify-center rounded bg-ink-50 text-sm text-ink-500">

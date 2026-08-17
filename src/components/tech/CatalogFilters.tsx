@@ -14,7 +14,7 @@ export interface Facets {
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
-      <span className="w-20 shrink-0 pt-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
+      <span className="w-20 shrink-0 pt-2 text-xs font-medium tracking-wide text-ink-500 uppercase">
         {label}
       </span>
       <div className="min-w-0 flex-1">{children}</div>
@@ -79,8 +79,8 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
           className={cn(
             'rounded border px-4 py-2 text-sm font-medium',
             selectedDomain === null
-              ? 'border-ink-700 bg-ink-700 text-white'
-              : 'border-ink-300 bg-white/70 text-ink-600 hover:border-ink-500',
+              ? 'border-ink-800 bg-ink-800 text-ink-50'
+              : 'border-ink-300 bg-white/5 text-ink-600 hover:border-ink-500',
           )}
         >
           전체
@@ -97,12 +97,12 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
                 'flex items-center gap-2 rounded border px-4 py-2 text-sm font-medium',
                 active
                   ? cn(style.border, style.bg, style.text)
-                  : 'border-ink-300 bg-white/70 text-ink-600 hover:border-ink-500',
+                  : 'border-ink-300 bg-white/5 text-ink-600 hover:border-ink-500',
               )}
             >
               <span className={cn('h-2 w-2 rounded-full', style.dot)} />
               {label}
-              <span className="numeric text-xs text-ink-400">{count}</span>
+              <span className="numeric text-xs text-ink-500">{count}</span>
             </Link>
           );
         })}

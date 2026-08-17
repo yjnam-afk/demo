@@ -1,25 +1,29 @@
 @import 'tailwindcss';
 
 /**
- * 디자인 토큰.
+ * 디자인 토큰 — 다크 인프라, 전면 다크.
  *
- * 톤: 다크 인프라. 헤더와 히어로 구간은 진한 잉크색, 본문은 밝게 전환한다.
+ * 공개 사이트 전체가 어두운 바탕이다(Linear/Vercel 계열의 절제된 다크).
+ * 잉크 사다리는 숫자가 클수록 밝다: 50 이 바탕, 900 이 본문 글자.
  * 국방·공공 자료가 포함되므로 채도를 억제하고 대비와 여백으로 위계를 만든다.
  * 그라디언트·네온 계열은 정의하지 않는다 — 정의가 없으면 쓸 수도 없다.
+ *
+ * 관리자 화면은 .theme-light 로 이 토큰들을 밝은 값으로 되돌려 쓴다
+ * (아래 블록). 공개 화면의 어휘(text-ink-900 = 본문 글자)가 그대로 통한다.
  */
 @theme {
-  --color-ink-50: #f6f7f9;
-  --color-ink-100: #eceef2;
-  --color-ink-200: #dcdfe6;
-  --color-ink-300: #bfc5d0;
-  --color-ink-400: #8e97a6;
-  --color-ink-500: #667084;
-  --color-ink-600: #4b5566;
-  --color-ink-700: #363e4c;
-  --color-ink-800: #232a35;
-  --color-ink-900: #151a22;
-  /* 히어로·헤더 배경 전용. 900 보다 한 단계 더 내려 영상과 수치가 떠 보이게 한다. */
-  --color-ink-950: #0c1017;
+  --color-ink-50: #0b0e14;
+  --color-ink-100: #121721;
+  --color-ink-200: #1c2230;
+  --color-ink-300: #2a3242;
+  --color-ink-400: #5b6577;
+  --color-ink-500: #7d8798;
+  --color-ink-600: #9aa4b4;
+  --color-ink-700: #b9c1cd;
+  --color-ink-800: #d6dbe3;
+  --color-ink-900: #eef1f5;
+  /* 띠 구간(히어로·지표 판·문의) 전용. 바탕보다 한 단계 떠 있는 어두운 판. */
+  --color-ink-950: #10151f;
 
   /*
    * 브랜드 강조색.
@@ -30,15 +34,80 @@
   --color-brand: #003c7f;
   --color-brand-bright: #6f9fd8;
 
-  /* 축 구분색 — 밝은 배경용 */
   /*
     축 강조색 팔레트. 축 자체는 관리자에서 만들지만 색은 이 목록에서만
     고른다 — 임의 hex 를 허용하면 채도 높은 색이 들어와 화면이 무너진다.
 
-    청색이 기준이다(인피닉 대표색이 파란색). 청색 계열을 셋(청·남·하늘)
-    두고 나머지는 그 채도 수준에 맞춰 억제한다. 목록을 늘릴 때는
+    기본값이 어두운 바탕용 밝은 톤이고, soft 는 같은 색의 어두운 바탕 틴트다.
+    청색이 기준이다(인피닉 대표색이 파란색). 목록을 늘릴 때는
     lib/ui/domain.ts 와 lib/domain/enums.ts 를 함께 늘린다.
   */
+  --color-accent-blue: #7ba3d0;
+  --color-accent-blue-soft: #172230;
+  --color-accent-teal: #5faa9d;
+  --color-accent-teal-soft: #132622;
+  --color-accent-bronze: #bf9a6a;
+  --color-accent-bronze-soft: #292118;
+  --color-accent-plum: #b089a6;
+  --color-accent-plum-soft: #271e26;
+  --color-accent-slate: #8fa3b3;
+  --color-accent-slate-soft: #1b2229;
+  --color-accent-navy: #8b9ccb;
+  --color-accent-navy-soft: #191e2f;
+  --color-accent-sky: #6fb4d4;
+  --color-accent-sky-soft: #15242e;
+  --color-accent-green: #7fb98d;
+  --color-accent-green-soft: #17261b;
+  --color-accent-wine: #cc8b96;
+  --color-accent-wine-soft: #2b191d;
+  --color-accent-indigo: #a09ad2;
+  --color-accent-indigo-soft: #1e1c30;
+
+  /* bright 변형 — 전면 다크에서는 기본값과 같은 계열이다. 호환을 위해 남긴다. */
+  --color-accent-blue-bright: #7ba3d0;
+  --color-accent-teal-bright: #5faa9d;
+  --color-accent-bronze-bright: #bf9a6a;
+  --color-accent-plum-bright: #b089a6;
+  --color-accent-slate-bright: #8fa3b3;
+  --color-accent-navy-bright: #8b9ccb;
+  --color-accent-sky-bright: #6fb4d4;
+  --color-accent-green-bright: #7fb98d;
+  --color-accent-wine-bright: #cc8b96;
+  --color-accent-indigo-bright: #a09ad2;
+
+  --color-signal-ok: #5aa683;
+  --color-signal-ok-soft: #13271c;
+  --color-signal-ok-bright: #5aa683;
+  --color-signal-warn: #c9a45f;
+  --color-signal-warn-soft: #2a2314;
+  --color-signal-fail: #cf8b8b;
+  --color-signal-fail-soft: #2c1a1c;
+
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', system-ui,
+    sans-serif;
+  /* 지표 숫자는 자릿수가 흔들리지 않도록 폭이 고정된 글꼴을 쓴다 */
+  --font-numeric: 'SF Mono', 'Roboto Mono', 'Consolas', ui-monospace, monospace;
+}
+
+/*
+  관리자 화면 전용 밝은 테마.
+  공개 사이트가 전면 다크로 넘어가도 관리 작업 화면은 문서 편집에 가까우므로
+  밝은 값을 유지한다 — 토큰만 되돌리면 화면 코드는 한 글자도 다르지 않다.
+*/
+.theme-light {
+  --color-ink-50: #f6f7f9;
+  --color-ink-100: #eceef2;
+  --color-ink-200: #dcdfe6;
+  --color-ink-300: #bfc5d0;
+  --color-ink-400: #8e97a6;
+  --color-ink-500: #667084;
+  --color-ink-600: #4b5566;
+  --color-ink-700: #363e4c;
+  --color-ink-800: #232a35;
+  --color-ink-900: #151a22;
+  --color-ink-950: #0c1017;
+
   --color-accent-blue: #315e97;
   --color-accent-blue-soft: #e9eff7;
   --color-accent-teal: #2f6f66;
@@ -60,31 +129,16 @@
   --color-accent-indigo: #514b86;
   --color-accent-indigo-soft: #edecf4;
 
-  /* 축 구분색 — 어두운 배경용. 같은 색을 그대로 쓰면 대비가 무너진다. */
-  --color-accent-blue-bright: #7ba3d0;
-  --color-accent-teal-bright: #5faa9d;
-  --color-accent-bronze-bright: #bf9a6a;
-  --color-accent-plum-bright: #b089a6;
-  --color-accent-slate-bright: #8fa3b3;
-  --color-accent-navy-bright: #8b9ccb;
-  --color-accent-sky-bright: #6fb4d4;
-  --color-accent-green-bright: #7fb98d;
-  --color-accent-wine-bright: #cc8b96;
-  --color-accent-indigo-bright: #a09ad2;
-
   --color-signal-ok: #2f6b4f;
   --color-signal-ok-soft: #e7f0eb;
-  --color-signal-ok-bright: #5aa683;
   --color-signal-warn: #8a6320;
   --color-signal-warn-soft: #f6efe1;
   --color-signal-fail: #8d3b3b;
   --color-signal-fail-soft: #f6e9e9;
 
-  --font-sans:
-    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', system-ui,
-    sans-serif;
-  /* 지표 숫자는 자릿수가 흔들리지 않도록 폭이 고정된 글꼴을 쓴다 */
-  --font-numeric: 'SF Mono', 'Roboto Mono', 'Consolas', ui-monospace, monospace;
+  background-color: var(--color-ink-50);
+  background-image: none;
+  color: var(--color-ink-900);
 }
 
 html {
@@ -94,15 +148,16 @@ html {
 body {
   background-color: var(--color-ink-50);
   /*
-    유리가 굴절시킬 모노크롬 명암 층. 색은 쓰지 않고 밝고 어두운 무리만
-    깐다 — 민무늬 바탕에서는 유리 카드를 깔아도 비칠 것이 없어 재질이
-    죽는다. fixed 라서 스크롤하면 카드 뒤로 명암이 흘러 유리가 드러난다.
+    유리가 굴절시킬 모노크롬 명암 층. 색은 쓰지 않고 어두운 바탕 위에
+    밝은 무리만 낮게 깐다 — 민무늬 바탕에서는 유리 카드를 깔아도 비칠
+    것이 없어 재질이 죽는다. fixed 라서 스크롤하면 카드 뒤로 명암이 흘러
+    유리가 드러난다.
   */
   background-image:
-    radial-gradient(48rem 32rem at 10% -8%, rgba(255, 255, 255, 0.95), transparent 62%),
-    radial-gradient(56rem 36rem at 92% 10%, rgba(191, 197, 208, 0.5), transparent 64%),
-    radial-gradient(46rem 32rem at 24% 62%, rgba(255, 255, 255, 0.8), transparent 60%),
-    radial-gradient(52rem 34rem at 82% 96%, rgba(191, 197, 208, 0.45), transparent 62%);
+    radial-gradient(48rem 32rem at 10% -8%, rgba(148, 163, 190, 0.14), transparent 62%),
+    radial-gradient(56rem 36rem at 92% 10%, rgba(120, 134, 160, 0.1), transparent 64%),
+    radial-gradient(46rem 32rem at 24% 62%, rgba(148, 163, 190, 0.09), transparent 60%),
+    radial-gradient(52rem 34rem at 82% 96%, rgba(120, 134, 160, 0.1), transparent 62%);
   background-attachment: fixed;
   color: var(--color-ink-900);
   font-family: var(--font-sans);
@@ -130,44 +185,35 @@ body {
   반투명 회색 판일 뿐이므로 일반 구간에는 쓰지 않는다. 채도 보정은
   밑을 지나는 축 색 틱·칩이 살짝 비쳐 보이는 정도로 억제한다.
 */
-.glass-light {
-  background: rgba(255, 255, 255, 0.62);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  backdrop-filter: blur(16px) saturate(1.5);
-  /* 윗면 하이라이트 — 판이 아니라 유리로 읽히게 하는 한 줄 */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
-}
 .glass-dark {
-  /* ink-950 의 유리판. 어두운 히어로 위에서는 경계가 보이지 않는다. */
-  background: rgba(12, 16, 23, 0.68);
+  /* 띠 구간과 같은 계열의 유리판. 어두운 히어로 위에서는 경계가 보이지 않는다. */
+  background: rgba(13, 17, 26, 0.6);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
   backdrop-filter: blur(16px) saturate(1.4);
+  /* 윗면 하이라이트 — 판이 아니라 유리로 읽히게 하는 한 줄 */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 /*
-  유리 카드 — 본문의 흰 카드 면을 대신하는 재질. 바탕의 명암 층을
-  흐릿하게 통과시키고, 윗면 하이라이트로 유리 두께를 만든다.
-  글자는 전부 카드 위에 있으므로 대비는 흰 카드와 거의 같다.
+  유리 카드 — 본문 카드 면의 재질. 바탕의 명암 층을 흐릿하게 통과시키고,
+  윗면 하이라이트로 유리 두께를 만든다. 글자는 전부 카드 위에 있으므로
+  대비는 불투명 판과 거의 같다.
 */
 .glass-card {
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.045);
   -webkit-backdrop-filter: blur(14px) saturate(1.35);
   backdrop-filter: blur(14px) saturate(1.35);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    0 1px 2px rgba(12, 16, 23, 0.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* 유리를 못 그리는 브라우저는 원래의 불투명판으로 되돌린다 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-light {
-    background: rgba(246, 247, 249, 0.97);
-  }
   .glass-dark {
     background: var(--color-ink-950);
   }
   .glass-card {
-    background: #ffffff;
+    background: var(--color-ink-100);
   }
 }
 

@@ -39,7 +39,7 @@ export function CompositionFlow({
                   'flex shrink-0 items-center justify-center rounded-full',
                   style.bar,
                   ordered
-                    ? 'numeric h-7 w-7 text-xs font-semibold text-white'
+                    ? 'numeric h-7 w-7 text-xs font-semibold text-ink-50'
                     : 'mt-2 h-2.5 w-2.5',
                 )}
               >

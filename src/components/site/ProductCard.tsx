@@ -37,7 +37,7 @@ export function ProductRow({ item }: { item: ResolvedOffering }) {
             {offering.title}
           </h3>
           {offering.name_en && offering.name_en !== offering.title ? (
-            <span className="text-xs text-ink-400">{offering.name_en}</span>
+            <span className="text-xs text-ink-500">{offering.name_en}</span>
           ) : null}
         </div>
 

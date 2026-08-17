@@ -69,7 +69,7 @@ export function EmbedDemo({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-lg border border-ink-200 bg-white">
+    <div className="relative overflow-hidden rounded-lg border border-ink-200 bg-ink-950">
       {!loaded ? (
         <div className="absolute inset-0 flex items-center justify-center bg-ink-50 text-sm text-ink-500">
           데모 화면을 불러오는 중입니다…
