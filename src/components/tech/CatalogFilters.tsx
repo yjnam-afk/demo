@@ -68,7 +68,7 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
   const hasAnyFilter = [...params.keys()].some((key) => key !== 'offset');
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-ink-200 bg-white p-4">
+    <div className="glass-card flex flex-col gap-4 rounded-lg border border-ink-200/70 p-4">
       {/* 대분류 — 단일 선택 */}
       <div className="flex flex-wrap gap-2">
         <Link
@@ -80,7 +80,7 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
             'rounded border px-4 py-2 text-sm font-medium',
             selectedDomain === null
               ? 'border-ink-700 bg-ink-700 text-white'
-              : 'border-ink-300 bg-white text-ink-600 hover:border-ink-500',
+              : 'border-ink-300 bg-white/70 text-ink-600 hover:border-ink-500',
           )}
         >
           전체
@@ -97,7 +97,7 @@ export function CatalogFilters({ facets, params }: { facets: Facets; params: URL
                 'flex items-center gap-2 rounded border px-4 py-2 text-sm font-medium',
                 active
                   ? cn(style.border, style.bg, style.text)
-                  : 'border-ink-300 bg-white text-ink-600 hover:border-ink-500',
+                  : 'border-ink-300 bg-white/70 text-ink-600 hover:border-ink-500',
               )}
             >
               <span className={cn('h-2 w-2 rounded-full', style.dot)} />

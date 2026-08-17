@@ -1,54 +1,6 @@
-import Link from 'next/link';
-import { Suspense } from 'react';
-import { MainNav } from '@/components/site/MainNav';
+import { SiteHeader } from '@/components/site/SiteHeader';
 import { RevealManager } from '@/components/ui/Reveal';
 import { BRAND } from '@/lib/brand';
-
-function Header() {
-  return (
-    // 헤더는 히어로와 같은 색의 유리판이다. 히어로(같은 잉크색) 위에서는
-    // 경계가 보이지 않다가, 본문 구간으로 스크롤이 넘어가면 밝은 내용이
-    // 유리 밑으로 흐릿하게 비쳐 지나가며 자연스럽게 분리된다.
-    <header className="glass-dark sticky top-0 z-20 border-b border-white/5">
-      {/*
-        높이는 본사 사이트의 GNB 에 맞춰 잡는다. 하위 사이트만 헤더가 얕으면
-        본사에서 넘어온 방문자에게 다른 사이트로 읽힌다.
-      */}
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:h-24">
-        {/*
-          워드마크는 회사 자산 이미지를 쓴다. 글꼴로 흉내 내면 자간과 Q 의
-          꼬리가 달라 다른 회사 로고처럼 보인다.
-          원본 SVG 를 받으면 public/brand 의 파일만 교체하면 된다.
-
-          포털 이름은 구분선으로 나눈다. 나란히만 두면 "INFINIQ 기술 데모
-          포털" 이라는 하나의 제품명으로 읽혀 본사와의 관계가 드러나지 않는다.
-        */}
-        <Link href="/" className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/infiniq-wordmark.png"
-            alt={BRAND.nameEn}
-            className="h-5 w-auto sm:h-6"
-          />
-          <span aria-hidden className="hidden h-5 w-px bg-white/20 sm:inline-block" />
-          {/* 부제는 국문 문장이 아니라 표기로 둔다 — 워드마크 옆에서 문장이 되면 무겁다 */}
-          <span className="hidden text-xs tracking-[0.18em] text-ink-400 uppercase sm:inline">
-            {BRAND.productNameEn}
-          </span>
-        </Link>
-
-        {/*
-          보기 기준 전환은 GNB 에서만 한다. 헤더가 고정되어 있어 본문 어디서든
-          닿으므로, 본문에 같은 전환 버튼을 두면 같은 일을 하는 조작이 둘이 된다.
-          useSearchParams 를 쓰므로 Suspense 로 감싼다.
-        */}
-        <Suspense fallback={<div className="h-8" />}>
-          <MainNav />
-        </Suspense>
-      </div>
-    </header>
-  );
-}
 
 function Footer() {
   return (
@@ -77,7 +29,7 @@ function Footer() {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Header />
+      <SiteHeader />
       {/* data-reveal 구간 떠오름은 공개 사이트 전용이다 — 관리자 화면에는 없다 */}
       <RevealManager />
       <main>{children}</main>

@@ -27,7 +27,7 @@ export function DemoFallback({
   onRetry?: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-ink-200 bg-white">
+    <div className="glass-card rounded-lg border border-ink-200/70">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200 bg-[var(--color-signal-warn-soft)] px-4 py-3">
         <p className="text-sm text-[var(--color-signal-warn)]">
           {message} 아래 자료로 대신 확인하실 수 있습니다.

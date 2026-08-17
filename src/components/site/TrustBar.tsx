@@ -13,7 +13,7 @@ function Cell({
   note?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col bg-white p-6 sm:p-7">
+    <div className="glass-card flex flex-col p-6 sm:p-7">
       {/* 라벨 옆 틱은 상세 화면 구간 제목과 같은 문법 — 브랜드색 하나로 통일 */}
       <div className="flex items-center gap-2">
         <span aria-hidden className="h-3.5 w-1 rounded-full bg-[var(--color-brand)]" />

@@ -97,7 +97,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ id: s
                 <Link
                   key={offering.id}
                   href={`/products/${offering.id}`}
-                  className="flex flex-col rounded-lg border border-ink-200 bg-white p-5 transition-colors hover:border-ink-400"
+                  className="flex flex-col glass-card rounded-lg border border-ink-200/70 p-5 transition-colors hover:border-ink-400"
                 >
                   <div className="flex flex-wrap items-baseline gap-2">
                     <h3 className="text-lg font-semibold text-ink-900">{offering.title}</h3>

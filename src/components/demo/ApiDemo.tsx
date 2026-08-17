@@ -128,7 +128,7 @@ export function ApiDemo({
   const showUpload = inputKind === 'video_upload' || inputKind === 'image_upload';
 
   return (
-    <div className="rounded-lg border border-ink-200 bg-white">
+    <div className="glass-card rounded-lg border border-ink-200/70">
       <div className="border-b border-ink-200 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-ink-700">샘플로 실행해보기</span>

@@ -19,11 +19,11 @@ const VERIFICATION_STYLES: Record<VerificationLevel, string> = {
     'bg-[var(--color-signal-warn-soft)] text-[var(--color-signal-warn)] border-[var(--color-signal-warn)]/25',
 };
 
-/** 어두운 배경(카드 썸네일 위) 전용 변형 */
+/** 어두운 배경(카드 썸네일 위) 전용 변형 — 반투명 유리 칩 */
 const VERIFICATION_STYLES_DARK: Record<VerificationLevel, string> = {
-  third_party: 'bg-white/10 text-[var(--color-signal-ok-bright)] border-white/20',
-  self_test: 'bg-white/10 text-white/80 border-white/20',
-  in_development: 'bg-white/10 text-white/70 border-white/20',
+  third_party: 'bg-white/10 text-[var(--color-signal-ok-bright)] border-white/20 backdrop-blur-md',
+  self_test: 'bg-white/10 text-white/80 border-white/20 backdrop-blur-md',
+  in_development: 'bg-white/10 text-white/70 border-white/20 backdrop-blur-md',
 };
 
 export function VerificationBadge({
@@ -55,7 +55,7 @@ export function DemoTypeBadge({ type, onDark = false }: { type: DemoType; onDark
     <span
       className={`inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium ${
         onDark
-          ? 'border-white/20 bg-white/10 text-white/80'
+          ? 'border-white/20 bg-white/10 text-white/80 backdrop-blur-md'
           : 'border-ink-300 bg-white text-ink-600'
       }`}
     >

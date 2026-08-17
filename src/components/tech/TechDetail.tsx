@@ -57,7 +57,7 @@ function Section({
  */
 function ValueCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white p-5">
+    <div className="glass-card p-5">
       <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">{label}</div>
       <div className="mt-1.5 text-base font-medium text-ink-900">{children}</div>
     </div>
@@ -74,7 +74,7 @@ function ValueCell({ label, children }: { label: string; children: React.ReactNo
  */
 function DriveResourceFigure({ id, label }: { id: string; label: string }) {
   return (
-    <figure className="overflow-hidden rounded-lg border border-ink-200 bg-white">
+    <figure className="glass-card overflow-hidden rounded-lg border border-ink-200/70">
       <a href={driveViewUrl(id)} target="_blank" rel="noopener">
         {/*
           고정 높이 영역에 문서 전체를 담는다(contain). 인증서·성적서는 A4
@@ -219,7 +219,7 @@ export function TechDetail({
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <Link
               href={`/?domain=${tech.domain}`}
-              className="inline-flex items-center gap-1.5 rounded border border-white/15 bg-white/10 px-2.5 py-1 font-medium text-white/90 transition-colors hover:border-white/40 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded border border-white/15 bg-white/10 px-2.5 py-1 font-medium text-white/90 backdrop-blur-md transition-colors hover:border-white/40 hover:text-white"
             >
               <span className={cn('h-1.5 w-1.5 rounded-full', style.dotBright)} />
               {tech.domain_label}
@@ -243,7 +243,7 @@ export function TechDetail({
             />
             <DemoTypeBadge type={tech.demo.type} onDark />
             {business.maturity ? (
-              <span className="inline-flex shrink-0 items-center rounded border border-white/20 bg-white/10 px-2 py-0.5 text-xs font-medium text-white/80">
+              <span className="inline-flex shrink-0 items-center rounded border border-white/20 bg-white/10 px-2 py-0.5 text-xs font-medium text-white/80 backdrop-blur-md">
                 {MATURITY_LABELS[business.maturity as Maturity]}
               </span>
             ) : null}
@@ -291,7 +291,7 @@ export function TechDetail({
 
           {/* 이 기술이 들어간 제품 — 기술을 보러 온 방문자를 구매 단위로 안내한다 */}
           {usedIn.length > 0 ? (
-            <section data-reveal className="rounded-lg border border-ink-200 bg-white p-5">
+            <section data-reveal className="glass-card rounded-lg border border-ink-200/70 p-5">
               <h2 className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                 이 기술이 들어간 제품
               </h2>
@@ -442,7 +442,7 @@ export function TechDetail({
                 보여 준다. 이 목록이 정직해야 위의 수치가 신뢰를 얻는다.
               */}
               {business.requirements?.length ? (
-                <div className="mt-2 rounded-lg border border-ink-200 bg-white p-5">
+                <div className="glass-card mt-2 rounded-lg border border-ink-200/70 p-5">
                   <div className="text-xs font-medium tracking-wide text-ink-400 uppercase">
                     도입 조건 및 제약
                   </div>
@@ -502,7 +502,7 @@ export function TechDetail({
                       return (
                         <figure
                           key={resource.url}
-                          className="overflow-hidden rounded-lg border border-ink-200 bg-white"
+                          className="glass-card overflow-hidden rounded-lg border border-ink-200/70"
                         >
                           <a href={resource.url} target="_blank" rel="noopener">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -530,7 +530,7 @@ export function TechDetail({
                       return (
                         <figure
                           key={resource.url}
-                          className="overflow-hidden rounded-lg border border-ink-200 bg-white"
+                          className="glass-card overflow-hidden rounded-lg border border-ink-200/70"
                         >
                           {/*
                             내장 뷰어(<object>)를 쓰지 않는다 — iOS 사파리가
@@ -581,7 +581,7 @@ export function TechDetail({
                           href={resource.url}
                           target="_blank"
                           rel="noopener"
-                          className="flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
+                          className="glass-card flex items-center justify-between gap-3 rounded-lg border border-ink-200/70 px-4 py-3 text-sm font-medium text-ink-800 transition-colors hover:border-ink-500"
                         >
                           <span className="truncate">{resource.label}</span>
                           <span className="shrink-0 text-ink-400" aria-hidden>↗</span>
@@ -608,7 +608,7 @@ export function TechDetail({
                   <Link
                     key={item.id}
                     href={`/tech/${item.id}`}
-                    className="group rounded-lg border border-ink-200 bg-white p-4 transition-[border-color,translate,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-ink-400 hover:shadow-md hover:shadow-ink-900/5"
+                    className="glass-card group rounded-lg border border-ink-200/70 p-4 transition-[border-color,translate,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-ink-400 hover:shadow-md hover:shadow-ink-900/5"
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-ink-900">{item.name_ko}</span>

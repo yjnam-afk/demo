@@ -49,7 +49,7 @@ export function GalleryDemo({ items }: { items: GalleryItem[] }) {
           usable.length > 1 && 'mt-4',
         )}
       >
-        <figure className="overflow-hidden rounded-lg border border-ink-200 bg-white">
+        <figure className="overflow-hidden glass-card rounded-lg border border-ink-200/70">
           <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
             입력
           </div>
@@ -65,7 +65,7 @@ export function GalleryDemo({ items }: { items: GalleryItem[] }) {
           →
         </div>
 
-        <figure className="overflow-hidden rounded-lg border border-ink-200 bg-white">
+        <figure className="overflow-hidden glass-card rounded-lg border border-ink-200/70">
           <div className="border-b border-ink-100 px-4 py-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
             식별 결과
           </div>

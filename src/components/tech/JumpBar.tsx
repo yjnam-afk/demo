@@ -68,7 +68,7 @@ export function JumpBar({ jumps }: { jumps: { id: string; label: string }[] }) {
               'flex shrink-0 items-center rounded border px-3 py-1.5 text-sm transition-colors',
               active === jump.id
                 ? 'border-ink-900 bg-ink-900 font-medium text-white'
-                : 'border-ink-300 bg-white text-ink-700 hover:border-ink-500 hover:text-ink-900',
+                : 'border-ink-300 bg-white/70 text-ink-700 hover:border-ink-500 hover:text-ink-900',
             )}
           >
             {jump.label}
