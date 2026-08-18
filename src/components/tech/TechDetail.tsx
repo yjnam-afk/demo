@@ -267,19 +267,22 @@ export function TechDetail({
           {/*
             2. 해결하는 문제 — 지표보다 먼저 온다.
 
-            카드에 담지 않는다. 이 페이지의 다른 모든 정보는 상자 안에 있으므로,
-            이 문장만 상자 없이 큰 글자로 세우면 그 대비가 곧 강조가 된다.
             이 기술이 존재하는 이유라서 본문에서 가장 큰 글자를 가져간다.
+            제목 줄은 다른 구간과 같은 문법(틱+제목)으로 두되, 문장이 앉는
+            바닥만 다르게 한다 — 다른 구간의 카드는 흰 유리인데 여기는 축
+            색을 옅게 깐 판이다. 형태를 새로 만들지 않고 재질만 바꾸므로
+            구간 위계는 그대로이면서 이 문장이 다른 것임은 한눈에 읽힌다.
           */}
           <section data-reveal>
-            {/* 제목 줄은 아래 구간들과 같은 문법(틱+제목)으로 선다 */}
             <div className="flex items-center gap-2.5">
               <span className={cn('h-4 w-1 rounded-full', style.bar)} />
               <h2 className="text-lg font-semibold tracking-tight text-ink-900">해결하는 문제</h2>
             </div>
-            <p className="mt-4 max-w-3xl text-2xl leading-snug font-semibold tracking-tight text-ink-900 sm:text-3xl">
-              {business.problem ?? tech.summary}
-            </p>
+            <div className={cn('mt-4 rounded-xl px-5 py-6 sm:px-7', style.bg)}>
+              <p className="max-w-3xl text-2xl leading-snug font-semibold tracking-tight text-ink-900 sm:text-3xl">
+                {business.problem ?? tech.summary}
+              </p>
+            </div>
 
             {/*
               산업군 칩은 여기 두지 않는다 — 상단은 문제 문장이 주인공이고,

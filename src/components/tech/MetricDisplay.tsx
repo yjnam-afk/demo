@@ -94,112 +94,107 @@ export function MetricStatGrid({ metrics }: { metrics: AnyMetric[] }) {
       {metrics.map((metric) => {
         const { achieved, rate, targetText } = evaluateMetric(metric as Metric);
         const ratePercent = formatRate(rate);
+        const conditions = metric.conditions.filter((c) => c.trim());
 
         return (
+          /*
+            읽는 순서를 셀의 구조로 만든다. 한 줄에 여러 정보를 이어 붙이면
+            좁은 화면에서 아무 데서나 접혀 무엇이 무엇의 설명인지 흐려진다.
+              1) 무엇을 · 누가 확인했나 — 지표명과 검증 칩
+              2) 얼마인가 — 큰 수치와 달성 판정
+              3) 무엇에 비해 — 목표와 달성률
+              4) 어떤 조건에서 — 시험 조건과 데이터셋
+
+            글자색은 흰색 계열만 쓴다. 잉크 사다리(ink-400/500)는 밝은
+            배경용 중간 회색이라 이 어두운 판 위에서는 읽히지 않았다.
+          */
           <div key={metric.label} className="bg-ink-950 p-6">
-            {/*
-              읽는 순서를 셀의 구조로 만든다.
-                1) 무엇을 · 누가 확인했나 — 지표명과 검증 칩을 붙여 한 덩어리로
-                2) 얼마인가 — 큰 수치와 달성 판정
-                3) 무엇에 비해 — 목표와 달성률
-                4) 어떤 조건에서 — 시험 조건과 데이터셋
-              지표가 하나면 넓은 화면에서 좌우로 나눈다. 한 칸짜리 셀에
-              모든 것을 왼쪽에 쌓으면 화면 절반이 빈 채로 남는다.
-            */}
-            <div>
-              <div>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-xs font-medium tracking-wide text-ink-300 uppercase">
-                    {metric.label}
-                  </span>
-                  {/*
-                    검증 주체 — 지표명 바로 옆이다. 셀 반대쪽 끝으로 보내면
-                    "이 수치를 누가 확인했나" 가 수치와 떨어져 겉돈다.
-                  */}
-                  {metric.source?.trim() ? (
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
-                        /인증/.test(metric.source)
-                          ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
-                          : 'border border-white/20 text-ink-300',
-                      )}
-                    >
-                      {metric.source}
-                    </span>
-                  ) : null}
-                  {/* 수준 주석 — 인증 칩과 혼동되지 않게 테두리 칩으로 */}
-                  {metric.benchmark?.trim() ? (
-                    <span className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-ink-300">
-                      {metric.benchmark}
-                    </span>
-                  ) : null}
-                </div>
-
-                {/* 수치와 목표는 한 줄 — 목표는 수치의 해석이라 붙어 있어야 한다 */}
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                  <AnimatedNumber
-                    value={metric.value}
-                    formatted={formatNumber(metric.value)}
-                    className="numeric text-4xl font-semibold text-white sm:text-5xl"
-                  />
-                  {/* 목표가 없는 지표(인증 성적서 측정값)는 판정이 없다 */}
-                  {achieved !== null ? (
-                    <span className="self-center">
-                      <AchievementMark achieved={achieved} />
-                    </span>
-                  ) : null}
-                  {targetText ? (
-                    <span className="text-xs text-ink-400">
-                      정량 목표 {targetText}
-                      {ratePercent ? <span className="numeric"> · 달성률 {ratePercent}</span> : null}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+              <span className="text-xs font-semibold tracking-[0.1em] text-white/70 uppercase">
+                {metric.label}
+              </span>
               {/*
-                전제 — 시험 조건과 데이터셋.
-
-                세로 목록을 옆 칸에 세웠더니 왼쪽은 아래가 텅 비고 오른쪽만
-                길어져 두 칸의 키가 맞지 않았다. 조건은 짧은 구절들이므로
-                가로로 흘려 전체 폭을 한 줄기로 쓴다 — 수치 아래에 놓이는
-                띠 하나가 되어 읽는 순서도 위에서 아래로 단순해진다.
+                검증 주체 — 지표명 바로 옆이다. 셀 반대쪽 끝으로 보내면
+                "이 수치를 누가 확인했나" 가 수치와 떨어져 겉돈다.
               */}
-              {metric.conditions.filter((c) => c.trim()).length > 0 || metric.dataset ? (
-                <div className="mt-4 border-t border-white/10 pt-3">
-                  {metric.conditions.filter((c) => c.trim()).length > 0 ? (
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-                      <span className="text-xs font-medium tracking-wide text-ink-400 uppercase">
-                        시험 조건
-                      </span>
-                      {metric.conditions
-                        .filter((c) => c.trim())
-                        .map((c, index) => (
-                          <span key={c} className="flex items-baseline gap-3 text-sm text-ink-200">
-                            {index > 0 ? (
-                              <span aria-hidden className="text-ink-500">
-                                ·
-                              </span>
-                            ) : null}
-                            {c}
-                          </span>
-                        ))}
-                    </div>
-                  ) : null}
-                  {metric.dataset ? (
-                    <div
-                      className={cn(
-                        'text-xs text-ink-400',
-                        metric.conditions.filter((c) => c.trim()).length > 0 ? 'mt-2.5' : '',
-                      )}
-                    >
-                      데이터셋 · {metric.dataset}
-                    </div>
-                  ) : null}
-                </div>
+              {metric.source?.trim() ? (
+                <span
+                  className={cn(
+                    'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium',
+                    /인증/.test(metric.source)
+                      ? 'bg-[var(--color-signal-ok-soft)] text-[var(--color-signal-ok)]'
+                      : 'border border-white/25 text-white/75',
+                  )}
+                >
+                  {metric.source}
+                </span>
+              ) : null}
+              {/* 수준 주석 — 인증 칩과 혼동되지 않게 테두리 칩으로 */}
+              {metric.benchmark?.trim() ? (
+                <span className="inline-flex items-center rounded border border-white/25 px-1.5 py-0.5 text-xs font-medium text-white/75">
+                  {metric.benchmark}
+                </span>
               ) : null}
             </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <AnimatedNumber
+                value={metric.value}
+                formatted={formatNumber(metric.value)}
+                className="numeric text-4xl font-semibold text-white sm:text-5xl"
+              />
+              {/* 목표가 없는 지표(인증 성적서 측정값)는 판정이 없다 */}
+              {achieved !== null ? <AchievementMark achieved={achieved} /> : null}
+            </div>
+
+            {/* 목표는 수치의 해석이므로 바로 아래 한 줄로 따라붙는다 */}
+            {targetText ? (
+              <p className="mt-2 text-sm text-white/70">
+                정량 목표 <span className="numeric text-white/90">{targetText}</span>
+                {ratePercent ? (
+                  <>
+                    <span aria-hidden className="mx-1.5 text-white/30">
+                      ·
+                    </span>
+                    달성률 <span className="numeric text-white/90">{ratePercent}</span>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+
+            {/*
+              전제 — 시험 조건과 데이터셋.
+
+              조건을 점(·)으로 이어 흘렸더니 어디까지가 한 조건인지 끊어
+              읽히지 않았다. 조건 하나가 칩 하나다 — 개수와 경계가 눈으로
+              세어진다. 값과 같은 셀 안이라 전제가 빠진 수치가 되지 않는다.
+            */}
+            {conditions.length > 0 || metric.dataset ? (
+              <div className="mt-5 border-t border-white/15 pt-4">
+                {conditions.length > 0 ? (
+                  <>
+                    <div className="text-xs font-semibold tracking-[0.1em] text-white/55 uppercase">
+                      시험 조건
+                    </div>
+                    <ul className="mt-2 flex flex-wrap gap-1.5">
+                      {conditions.map((condition) => (
+                        <li
+                          key={condition}
+                          className="rounded border border-white/15 bg-white/5 px-2 py-1 text-sm text-white/85"
+                        >
+                          {condition}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                {metric.dataset ? (
+                  <p className={cn('text-xs text-white/55', conditions.length > 0 ? 'mt-3' : '')}>
+                    데이터셋 <span className="text-white/80">{metric.dataset}</span>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         );
       })}
