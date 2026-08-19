@@ -1,0 +1,48 @@
+# 데모 모델 서버 앞단 — HTTPS 종단 + 리버스 프록시
+#
+# /etc/caddy/Caddyfile 로 복사하고 도메인만 바꾼 뒤 `systemctl reload caddy`.
+# 인증서 발급·갱신은 Caddy 가 알아서 한다 (80 포트가 잠깐 열려 있어야 한다).
+
+demo-ai.infiniq.co.kr {
+	encode gzip
+
+	# 업로드 상한 — 큰 파일 하나가 GPU 큐를 오래 막지 않게 한다
+	request_body {
+		max_size 20MB
+	}
+
+	reverse_proxy 127.0.0.1:7865 {
+		# Gradio 5 는 진행 상황을 SSE 로 흘린다(protocol: sse_v3).
+		# 버퍼링을 끄지 않으면 추론이 끝날 때까지 화면이 멈춘 것처럼 보인다.
+		flush_interval -1
+
+		# 원 요청 정보를 넘겨 준다 — Gradio 가 만드는 파일 주소가
+		# 내부 주소로 새지 않도록.
+		header_up Host {upstream_hostport}
+		header_up X-Forwarded-Host {host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# 추론은 초 단위가 걸린다. 기본 타임아웃으로는 긴 요청이 잘린다.
+	timeouts {
+		read_body 5m
+		write 5m
+		idle 10m
+	}
+
+	log {
+		output file /var/log/caddy/demo-ai.log
+		format json
+	}
+}
+
+# 속도 제한이 필요하면 rate_limit 플러그인을 넣은 Caddy 빌드에서 아래를 켠다.
+# 표준 빌드에는 포함되어 있지 않다 — xcaddy 로 빌드하거나, 앞단 방화벽에서 건다.
+#
+#	rate_limit {
+#		zone demo {
+#			key    {remote_host}
+#			events 30
+#			window 1m
+#		}
+#	}

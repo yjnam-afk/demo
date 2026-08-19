@@ -1,0 +1,44 @@
+# Gradio 데모 앱 상시 가동
+#
+# /etc/systemd/system/aetem-demo.service 로 복사하고 경로·사용자만 채운 뒤
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now aetem-demo
+#
+# 대문자로 표시한 곳이 서버마다 다른 값이다.
+
+[Unit]
+Description=AETEM 모델 데모 (Gradio)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=AETEM_USER
+WorkingDirectory=/opt/aetem-demo
+
+# 가상환경의 파이썬을 직접 부른다 — `source activate` 는 서비스에서 쓸 수 없다
+ExecStart=/opt/aetem-demo/.venv/bin/python app.py
+
+# 앱 안에서 launch() 인자로 지정하는 편이 확실하지만, 환경변수로도 준다.
+#   demo.launch(server_name="127.0.0.1", server_port=7865)
+# 바깥에는 직접 열지 않는다 — 앞단(Caddy 또는 터널)만 통하게 한다.
+Environment=GRADIO_SERVER_NAME=127.0.0.1
+Environment=GRADIO_SERVER_PORT=7865
+Environment=GRADIO_ANALYTICS_ENABLED=False
+
+# GPU 를 여러 장 쓰는 서버라면 이 데모가 쓸 장치를 못 박는다
+#Environment=CUDA_VISIBLE_DEVICES=0
+
+# 모델 로딩에 시간이 걸린다. 뜨는 중에 실패로 보지 않도록 여유를 준다.
+TimeoutStartSec=300
+
+# 죽으면 다시 띄운다 — 영업 링크는 아무 때나 열린다
+Restart=always
+RestartSec=5
+
+# 로그는 journald 로 — `journalctl -u aetem-demo -f`
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

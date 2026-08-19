@@ -1,0 +1,42 @@
+# 아웃바운드 터널 상시 가동 (갈래 B — 방화벽 인바운드를 열지 않는 경우)
+#
+# 준비:
+#   cloudflared tunnel login
+#   cloudflared tunnel create aetem-demo
+#   # ~/.cloudflared/<UUID>.json 이 생긴다. 아래 config 에 그 UUID 를 적는다.
+#
+# /etc/cloudflared/config.yml
+#   tunnel: <UUID>
+#   credentials-file: /etc/cloudflared/<UUID>.json
+#   ingress:
+#     - hostname: demo-ai.infiniq.co.kr
+#       service: http://127.0.0.1:7865
+#       originRequest:
+#         # Gradio 5 는 SSE 로 진행 상황을 흘린다 — 버퍼링을 끈다
+#         disableChunkedEncoding: false
+#         connectTimeout: 30s
+#         # 추론이 길어질 수 있으므로 넉넉히
+#         noHappyEyeballs: false
+#     - service: http_status:404
+#
+#   그리고 DNS 를 터널에 붙인다:
+#     cloudflared tunnel route dns aetem-demo demo-ai.infiniq.co.kr
+#
+# 설치:
+#   sudo cp cloudflared.service /etc/systemd/system/
+#   sudo systemctl enable --now cloudflared
+
+[Unit]
+Description=Cloudflare Tunnel (AETEM 데모)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/cloudflared --config /etc/cloudflared/config.yml --no-autoupdate tunnel run
+Restart=always
+RestartSec=5
+User=cloudflared
+
+[Install]
+WantedBy=multi-user.target
