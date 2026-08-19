@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DemoFallback, type FallbackContent } from './DemoFallback';
 import { INPUT_KIND_LABELS, type InputKind } from '@/lib/domain/enums';
-import type { DemoSample } from '@/lib/domain/types';
+import type { DemoSample, PublicDemoModel } from '@/lib/domain/types';
 
 type Output =
   | { kind: 'image'; url: string }
@@ -51,22 +51,32 @@ export function ApiDemo({
   techId,
   inputKind,
   samples,
+  allowUpload = false,
+  models = [],
   fallback,
 }: {
   techId: string;
   inputKind: InputKind;
   samples: DemoSample[];
+  /** 방문자 파일 업로드 허용. 기본은 꺼짐 — 준비된 샘플만 돌린다. */
+  allowUpload?: boolean;
+  /** 고를 수 있는 모델. 이름과 열쇠뿐이며 주소는 서버에만 있다. */
+  models?: PublicDemoModel[];
   fallback: FallbackContent;
 }) {
   const [state, setState] = useState<State>({ phase: 'idle' });
   const [selected, setSelected] = useState(0);
+  const [model, setModel] = useState<string | null>(models[0]?.key ?? null);
   const [text, setText] = useState(samples[0]?.text ?? '');
   const fileRef = useRef<HTMLInputElement>(null);
   const autoRunDone = useRef(false);
 
   const run = useCallback(
-    async (payload: { sample?: DemoSample; file?: File; text?: string }) => {
+    async (payload: { sample?: DemoSample; file?: File; text?: string; model?: string | null }) => {
       setState({ phase: 'running' });
+      // 모델은 화면 상태보다 호출부가 넘긴 값이 우선이다 — 방금 누른 모델로
+      // 곧바로 돌려야 하는데 상태 반영은 다음 렌더에나 도착한다.
+      const target = payload.model !== undefined ? payload.model : model;
 
       try {
         let response: Response;
@@ -74,6 +84,7 @@ export function ApiDemo({
         if (payload.file) {
           const form = new FormData();
           form.append('file', payload.file);
+          if (target !== null) form.append('model', target);
           response = await fetch(`/api/demo/${techId}/run`, { method: 'POST', body: form });
         } else {
           response = await fetch(`/api/demo/${techId}/run`, {
@@ -82,6 +93,7 @@ export function ApiDemo({
             body: JSON.stringify({
               sample: payload.sample?.path,
               text: payload.text ?? payload.sample?.text,
+              model: target,
             }),
           });
         }
@@ -98,7 +110,7 @@ export function ApiDemo({
         setState({ phase: 'failed', message: '데모 서버에 연결하지 못했습니다.' });
       }
     },
-    [techId],
+    [techId, model],
   );
 
   // 진입 시 첫 샘플로 한 번 실행해 방문자가 아무것도 하지 않아도 결과를 본다.
@@ -125,10 +137,60 @@ export function ApiDemo({
   }
 
   const uploadLabel = inputKind === 'video_upload' ? '영상' : '이미지';
-  const showUpload = inputKind === 'video_upload' || inputKind === 'image_upload';
+  /*
+    업로드 버튼은 관리자가 켠 기술에서만 선다. 전시 자리에서 임의 파일을
+    받으면 결과 품질을 예측할 수 없고, 그 한 번의 나쁜 결과가 수치보다 오래
+    남는다 — 기본값은 준비된 샘플만이다.
+  */
+  const showUpload = allowUpload && (inputKind === 'video_upload' || inputKind === 'image_upload');
 
   return (
     <div className="glass-card rounded-lg border border-ink-200/70">
+      {/*
+        모델 선택 — 고를 것이 둘 이상일 때만 세운다.
+
+        같은 입력을 다른 모델에 넣어 결과를 견주는 것이 이 데모의 설득력이라
+        입력 줄보다 위에 둔다. 고르는 즉시 지금 선택된 샘플로 다시 돌려서
+        "고르고 또 실행을 눌러야 하는" 두 단계를 없앤다.
+      */}
+      {models.length > 1 ? (
+        <div className="border-b border-ink-200 px-4 py-3">
+          <span className="text-xs font-medium tracking-wide text-ink-500 uppercase">모델</span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {models.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                disabled={state.phase === 'running'}
+                onClick={() => {
+                  setModel(item.key);
+                  const sample = samples[selected];
+                  if (inputKind === 'none') void run({ model: item.key });
+                  else if (inputKind === 'text_input') void run({ text, model: item.key });
+                  else if (sample) void run({ sample, text: sample.text, model: item.key });
+                }}
+                className={
+                  item.key === model
+                    ? 'rounded border border-ink-700 bg-ink-700 px-3 py-1.5 text-sm text-white disabled:opacity-60'
+                    : 'rounded border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-700 hover:border-ink-500 disabled:opacity-60'
+                }
+              >
+                {item.label}
+                {item.note ? (
+                  <span
+                    className={
+                      item.key === model ? 'ml-1.5 text-xs text-ink-300' : 'ml-1.5 text-xs text-ink-500'
+                    }
+                  >
+                    {item.note}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="border-b border-ink-200 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-ink-700">샘플로 실행해보기</span>

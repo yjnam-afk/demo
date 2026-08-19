@@ -14,6 +14,7 @@ import {
 import { normalizeMediaPath } from '@/lib/gdrive';
 import type {
   Demo,
+  DemoModel,
   DemoSample,
   DomainDef,
   Metric,
@@ -137,6 +138,27 @@ function parseSamples(value: unknown): DemoSample[] {
 }
 
 
+/**
+ * 고를 수 있는 모델 목록.
+ * 이름과 주소가 모두 있어야 목록에 세운다 — 둘 중 하나가 빈 항목은 고르는
+ * 순간 실패하므로 읽기 경계에서 떨군다.
+ */
+function parseModels(value: unknown): DemoModel[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      const raw = asRecord(item, '데모 모델');
+      return {
+        label: str(raw.label),
+        endpoint: str(raw.endpoint),
+        api_name: str(raw.api_name) || '/predict',
+        note: str(raw.note) || undefined,
+      };
+    })
+    .filter((model) => model.label && model.endpoint);
+}
+
 /** 미디어 경로 문자열. 드라이브 공유 링크는 재생 가능한 내부 경로로 바꿔 저장한다. */
 function mediaStr(value: unknown): string {
   return normalizeMediaPath(str(value));
@@ -147,14 +169,18 @@ function parseDemo(value: unknown): Demo {
   const type = pick(DEMO_TYPES, raw.type, '데모 타입');
 
   switch (type) {
-    case 'api':
+    case 'api': {
+      const models = parseModels(raw.models);
       return {
         type,
         endpoint: str(raw.endpoint),
         api_name: str(raw.api_name) || '/predict',
         input_kind: pick(INPUT_KINDS, raw.input_kind, '입력 형태'),
         samples: parseSamples(raw.samples),
+        allow_upload: raw.allow_upload === true,
+        models: models.length > 0 ? models : undefined,
       };
+    }
     case 'embed': {
       const params = raw.chromeless_params;
       const chromeless: Record<string, string> = {};

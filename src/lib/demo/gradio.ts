@@ -89,15 +89,42 @@ function normalize(data: unknown, tech: Tech, endpoint: string): DemoOutput[] {
 }
 
 /**
+ * 방문자가 고른 모델을 실제 호출 주소로 바꾼다.
+ *
+ * 화면이 보내는 것은 목록에서의 자리(key)뿐이다. 주소를 클라이언트가 정하게
+ * 하면 임의 서버를 대신 호출해 주는 통로가 되므로, 변환은 서버에서만 한다.
+ * 모르는 key 는 거절하지 않고 첫 모델로 떨어뜨린다 — 관리자가 목록을 줄인
+ * 뒤 옛 화면에서 누른 경우까지 실패로 만들 이유는 없다.
+ */
+function resolveTarget(
+  demo: Extract<Tech['demo'], { type: 'api' }>,
+  modelKey?: string | null,
+): { endpoint: string; api_name: string } {
+  const models = demo.models ?? [];
+  if (models.length === 0) return { endpoint: demo.endpoint, api_name: demo.api_name };
+
+  const index = Number(modelKey);
+  const model = Number.isInteger(index) && models[index] ? models[index] : models[0];
+  return { endpoint: model.endpoint, api_name: model.api_name };
+}
+
+/**
  * 추론 호출. 서버에서만 실행되며 endpoint 는 이 함수 밖으로 나가지 않는다.
  * 실패는 모두 DemoUnavailableError 로 모아 호출부가 폴백 한 갈래만 처리하게 한다.
  */
-export async function runDemo(tech: Tech, input: unknown): Promise<DemoRunResult> {
+export async function runDemo(
+  tech: Tech,
+  input: unknown,
+  modelKey?: string | null,
+): Promise<DemoRunResult> {
   if (tech.demo.type !== 'api') {
     throw new DemoUnavailableError('api 타입 데모가 아닙니다.');
   }
 
-  const { endpoint, api_name } = tech.demo;
+  const { endpoint, api_name } = resolveTarget(tech.demo, modelKey);
+  if (!endpoint) {
+    throw new DemoUnavailableError('호출 주소가 설정되지 않았습니다.');
+  }
   const started = Date.now();
 
   try {
@@ -125,9 +152,10 @@ export async function runDemo(tech: Tech, input: unknown): Promise<DemoRunResult
 export async function checkHealth(
   tech: Tech,
 ): Promise<{ status: 'ok' | 'fail'; latency_ms: number; message?: string }> {
+  /* 모델을 여럿 등록했으면 첫 모델을 대표로 찍는다 — 전부 두드리면 모델 서버에 부담이 간다 */
   const target =
     tech.demo.type === 'api'
-      ? tech.demo.endpoint
+      ? resolveTarget(tech.demo).endpoint
       : tech.demo.type === 'embed'
         ? tech.demo.embed_url
         : null;

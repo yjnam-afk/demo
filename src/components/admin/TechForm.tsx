@@ -969,10 +969,13 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
       {demo.type === 'api' ? (
         <>
           <Row>
-            <Field label="엔드포인트" required hint="내부망 주소입니다. 외부 화면에 노출되지 않습니다.">
+            <Field
+              label="엔드포인트"
+              hint="모델을 아래에 등록하지 않았을 때 쓰는 기본 주소입니다. 외부 화면에 노출되지 않습니다."
+            >
               <TextInput
                 value={demo.endpoint}
-                placeholder="http://10.100.110.102:9999"
+                placeholder="http://10.100.110.102:7865"
                 onChange={(event) => set({ demo: { ...demo, endpoint: event.target.value } })}
               />
             </Field>
@@ -985,6 +988,81 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
             </Field>
           </Row>
 
+          {/*
+            모델 선택 — 하나의 기술에 견줘 볼 모델이 여럿일 때 쓴다.
+            비워 두면 위의 엔드포인트 하나만 쓰고 화면에 선택 줄도 서지 않는다.
+          */}
+          <Field
+            label="고를 수 있는 모델"
+            hint="둘 이상 등록하면 데모 화면 위에 모델 선택 줄이 생기고, 방문자가 같은 샘플을 모델별로 돌려 볼 수 있습니다. 주소는 외부에 노출되지 않습니다."
+          >
+            <div className="flex flex-col gap-2">
+              {(demo.models ?? []).map((model, index) => {
+                const models = demo.models ?? [];
+                const update = (patch: Partial<typeof model>) => {
+                  const next = [...models];
+                  next[index] = { ...next[index], ...patch };
+                  set({ demo: { ...demo, models: next } });
+                };
+                return (
+                  <div key={index} className="flex flex-wrap gap-2">
+                    <TextInput
+                      value={model.label}
+                      placeholder="모델 이름 (예: 배회 감지 v2)"
+                      onChange={(event) => update({ label: event.target.value })}
+                      className="min-w-36 flex-1"
+                    />
+                    <TextInput
+                      value={model.endpoint}
+                      placeholder="http://10.100.110.102:7865"
+                      onChange={(event) => update({ endpoint: event.target.value })}
+                      className="min-w-52 flex-1"
+                    />
+                    <TextInput
+                      value={model.api_name}
+                      placeholder="/predict"
+                      onChange={(event) => update({ api_name: event.target.value })}
+                      className="min-w-28"
+                    />
+                    <TextInput
+                      value={model.note ?? ''}
+                      placeholder="한 줄 단서 (선택)"
+                      onChange={(event) => update({ note: event.target.value })}
+                      className="min-w-36 flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        set({ demo: { ...demo, models: models.filter((_, i) => i !== index) } })
+                      }
+                      className="rounded border border-ink-300 px-2.5 py-2 text-sm text-ink-500 hover:border-ink-500"
+                      aria-label="삭제"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() =>
+                  set({
+                    demo: {
+                      ...demo,
+                      models: [
+                        ...(demo.models ?? []),
+                        { label: '', endpoint: '', api_name: '/predict' },
+                      ],
+                    },
+                  })
+                }
+                className="w-fit rounded border border-ink-300 px-3 py-1.5 text-sm text-ink-600 hover:border-ink-500"
+              >
+                + 모델 추가
+              </button>
+            </div>
+          </Field>
+
           <Field label="입력 형태" required>
             <Select
               value={demo.input_kind}
@@ -992,6 +1070,22 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
               onChange={(input_kind) => set({ demo: { ...demo, input_kind } })}
             />
           </Field>
+
+          {demo.input_kind === 'image_upload' || demo.input_kind === 'video_upload' ? (
+            <Field
+              label="방문자 업로드"
+              hint="꺼 두면 아래 샘플만 돌립니다. 전시·영업 자리에서 임의 파일을 받으면 결과 품질을 예측할 수 없습니다."
+            >
+              <label className="flex items-center gap-2 text-sm text-ink-700">
+                <input
+                  type="checkbox"
+                  checked={demo.allow_upload === true}
+                  onChange={(event) => set({ demo: { ...demo, allow_upload: event.target.checked } })}
+                />
+                방문자가 직접 파일을 올려 돌려볼 수 있게 허용
+              </label>
+            </Field>
+          ) : null}
 
           <Field
             label="샘플 입력"

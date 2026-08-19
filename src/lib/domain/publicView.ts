@@ -10,7 +10,21 @@ import { isListed, isReachableByLink } from './enums';
 function toPublicDemo(demo: Demo): PublicDemo {
   switch (demo.type) {
     case 'api':
-      return { type: 'api', input_kind: demo.input_kind, samples: demo.samples };
+      return {
+        type: 'api',
+        input_kind: demo.input_kind,
+        samples: demo.samples,
+        allow_upload: demo.allow_upload,
+        /*
+          모델은 이름만 내보낸다. 주소는 서버에 남고, 화면은 목록에서의
+          자리(key)로 "이걸 돌려 달라"고만 말한다.
+        */
+        models: demo.models?.map((model, index) => ({
+          key: String(index),
+          label: model.label,
+          note: model.note,
+        })),
+      };
     case 'embed':
       // embed_url 과 chromeless_params 는 서버의 리버스 프록시만 사용한다.
       return { type: 'embed' };

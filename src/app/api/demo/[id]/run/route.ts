@@ -37,12 +37,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   try {
     let input: unknown = null;
+    // 방문자가 고른 모델의 자리(색인). 주소가 아니라 열쇠만 받는다.
+    let modelKey: string | null = null;
     const contentType = request.headers.get('content-type') ?? '';
 
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
       const file = form.get('file');
       const sample = form.get('sample');
+      const model = form.get('model');
+      if (typeof model === 'string') modelKey = model;
 
       if (file instanceof File) {
         if (file.size > MAX_UPLOAD_BYTES) {
@@ -53,7 +57,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         input = await readSample(sample);
       }
     } else if (contentType.includes('application/json')) {
-      const body = (await request.json()) as { text?: string; sample?: string };
+      const body = (await request.json()) as { text?: string; sample?: string; model?: string };
+      if (typeof body.model === 'string') modelKey = body.model;
 
       if (tech.demo.input_kind === 'text_input') {
         input = body.text ?? '';
@@ -64,7 +69,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     if (tech.demo.input_kind === 'none') input = null;
 
-    const result = await runDemo(tech, input);
+    const result = await runDemo(tech, input, modelKey);
     return NextResponse.json(result);
   } catch (err) {
     if (err instanceof DemoUnavailableError) {

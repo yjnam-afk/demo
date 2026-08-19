@@ -31,6 +31,8 @@ export function DemoSlot({ tech }: { tech: PublicTech }) {
           techId={tech.id}
           inputKind={tech.demo.input_kind}
           samples={tech.demo.samples}
+          allowUpload={tech.demo.allow_upload}
+          models={tech.demo.models}
           fallback={fallback}
         />
       );

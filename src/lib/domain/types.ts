@@ -78,6 +78,19 @@ export interface GalleryItem {
 }
 
 /**
+ * api 데모가 고를 수 있는 모델 한 항목.
+ * endpoint / api_name 은 서버 전용이며 공개 직렬화에서 제거된다.
+ */
+export interface DemoModel {
+  /** 방문자에게 보이는 이름. 예: "배회 감지 v2" */
+  label: string;
+  endpoint: string;
+  api_name: string;
+  /** 이름 옆에 붙는 한 줄 단서. 예: "경량 모델 · 엣지 장비용" */
+  note?: string;
+}
+
+/**
  * 데모는 판별 유니온이다. 목록 외의 분기는 타입 레벨에서 불가능하다.
  * endpoint / embed_url 은 서버에서만 읽으며 공개 직렬화 과정에서 제거된다.
  */
@@ -88,6 +101,23 @@ export type Demo =
       api_name: string;
       input_kind: InputKind;
       samples: DemoSample[];
+      /**
+       * 방문자 파일 업로드 허용 여부.
+       *
+       * 기본은 꺼짐 — 준비된 샘플만 돌린다. 전시·영업 자리에서 임의 파일을
+       * 받으면 결과 품질을 예측할 수 없고, 그 한 번의 나쁜 결과가 수치보다
+       * 오래 남는다. 필요할 때만 관리자가 켠다.
+       */
+      allow_upload?: boolean;
+      /**
+       * 고를 수 있는 모델들.
+       *
+       * 같은 입력을 여러 모델(용도별·경량/정밀·버전별)에 넣어 보이는 것이
+       * 이 포털의 데모가 하는 일이라, 기술 하나에 엔드포인트가 여럿일 수
+       * 있다. 비어 있으면 위의 endpoint 하나만 쓰고 선택 UI 도 세우지
+       * 않는다 — 고를 것이 하나뿐인 목록은 조작이 아니라 장식이다.
+       */
+      models?: DemoModel[];
     }
   | {
       type: 'embed';
@@ -214,8 +244,24 @@ export interface Tech {
  * 내부망 엔드포인트, 내부 문서 링크, 평가 데이터 원본 링크가 제거되어 있다.
  * 데모 호출에 필요한 정보는 기술 id 뿐이며 실제 주소는 서버가 조회한다.
  */
+/**
+ * 공개용 모델 항목 — 주소는 없고 이름과 고를 때 쓰는 열쇠만 남는다.
+ * key 는 목록에서의 자리(색인)라 내부 정보를 담지 않는다.
+ */
+export interface PublicDemoModel {
+  key: string;
+  label: string;
+  note?: string;
+}
+
 export type PublicDemo =
-  | { type: 'api'; input_kind: InputKind; samples: DemoSample[] }
+  | {
+      type: 'api';
+      input_kind: InputKind;
+      samples: DemoSample[];
+      allow_upload?: boolean;
+      models?: PublicDemoModel[];
+    }
   | { type: 'embed' }
   | { type: 'video'; src: string; src_webm?: string; poster?: string }
   | { type: 'metric'; highlight_metric?: string }
