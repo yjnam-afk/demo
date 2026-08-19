@@ -108,15 +108,16 @@ export function validateForPublish(tech: Tech): ValidationIssue[] {
     호출 주소는 기본 엔드포인트나 모델 목록 중 한쪽에만 있으면 된다.
     모델을 여럿 등록한 기술은 기본 엔드포인트를 비워 두는 것이 자연스럽다.
   */
+  const apiModels = tech.demo.type === 'api' ? (tech.demo.models ?? []) : [];
   if (
     tech.demo.type === 'api' &&
     !tech.demo.endpoint.trim() &&
-    !(tech.demo.models ?? []).some((model) => model.endpoint.trim())
+    !(apiModels.length > 0 && apiModels.every((model) => model.endpoint?.trim()))
   ) {
     issues.push({
       field: 'demo.endpoint',
       label: '데모 엔드포인트',
-      message: 'api 데모는 호출 주소가 필요합니다. 모델을 등록했다면 모델의 주소를 채우세요.',
+      message: 'api 데모는 호출 주소가 필요합니다. 모델마다 서버가 다르면 모델의 주소를 모두 채우세요.',
     });
   }
 

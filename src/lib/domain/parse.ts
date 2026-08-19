@@ -151,12 +151,17 @@ function parseModels(value: unknown): DemoModel[] {
       const raw = asRecord(item, '데모 모델');
       return {
         label: str(raw.label),
-        endpoint: str(raw.endpoint),
-        api_name: str(raw.api_name) || '/predict',
+        endpoint: str(raw.endpoint) || undefined,
+        api_name: str(raw.api_name) || undefined,
+        value: str(raw.value) || undefined,
         note: str(raw.note) || undefined,
       };
     })
-    .filter((model) => model.label && model.endpoint);
+    /*
+      이름은 필수고, 주소나 인자값 중 하나는 있어야 한다. 둘 다 없으면
+      기본 엔드포인트를 같은 인자로 두 번 부르는 항목이라 고를 의미가 없다.
+    */
+    .filter((model) => model.label && (model.endpoint || model.value));
 }
 
 /** 미디어 경로 문자열. 드라이브 공유 링크는 재생 가능한 내부 경로로 바꿔 저장한다. */

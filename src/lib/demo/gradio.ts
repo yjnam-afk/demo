@@ -99,13 +99,21 @@ function normalize(data: unknown, tech: Tech, endpoint: string): DemoOutput[] {
 function resolveTarget(
   demo: Extract<Tech['demo'], { type: 'api' }>,
   modelKey?: string | null,
-): { endpoint: string; api_name: string } {
+): { endpoint: string; api_name: string; value?: string } {
   const models = demo.models ?? [];
   if (models.length === 0) return { endpoint: demo.endpoint, api_name: demo.api_name };
 
   const index = Number(modelKey);
   const model = Number.isInteger(index) && models[index] ? models[index] : models[0];
-  return { endpoint: model.endpoint, api_name: model.api_name };
+  /*
+    주소와 api 이름은 모델이 정하지 않았으면 데모의 기본값을 물려받는다 —
+    한 엔드포인트가 모델을 인자로 받는 앱에서는 주소가 하나뿐이다.
+  */
+  return {
+    endpoint: model.endpoint || demo.endpoint,
+    api_name: model.api_name || demo.api_name,
+    value: model.value,
+  };
 }
 
 /**
@@ -121,7 +129,7 @@ export async function runDemo(
     throw new DemoUnavailableError('api 타입 데모가 아닙니다.');
   }
 
-  const { endpoint, api_name } = resolveTarget(tech.demo, modelKey);
+  const { endpoint, api_name, value } = resolveTarget(tech.demo, modelKey);
   if (!endpoint) {
     throw new DemoUnavailableError('호출 주소가 설정되지 않았습니다.');
   }
@@ -129,7 +137,15 @@ export async function runDemo(
 
   try {
     const client = await withTimeout(Client.connect(endpoint), CONNECT_TIMEOUT_MS, '데모 서버 연결');
-    const payload = input === null || input === undefined ? [] : [input];
+    /*
+      인자 순서는 모델 → 입력이다. 모델을 인자로 받는 앱은 그 값을 첫
+      자리에서 읽는다(예: process_img(model_selector, image)). 모델을
+      주소로 가르는 앱은 value 가 없으므로 입력 하나만 넘어간다.
+    */
+    const payload = [
+      ...(value === undefined ? [] : [value]),
+      ...(input === null || input === undefined ? [] : [input]),
+    ];
     const result = await withTimeout(
       client.predict(api_name, payload),
       PREDICT_TIMEOUT_MS,

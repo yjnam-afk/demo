@@ -82,11 +82,24 @@ export interface GalleryItem {
  * endpoint / api_name 은 서버 전용이며 공개 직렬화에서 제거된다.
  */
 export interface DemoModel {
-  /** 방문자에게 보이는 이름. 예: "배회 감지 v2" */
+  /** 방문자에게 보이는 이름. 예: "RTMDet" */
   label: string;
-  endpoint: string;
-  api_name: string;
-  /** 이름 옆에 붙는 한 줄 단서. 예: "경량 모델 · 엣지 장비용" */
+  /**
+   * 이 모델만의 호출 주소. 비우면 데모의 기본 endpoint 를 쓴다 —
+   * 한 앱이 모델을 인자로 받는 경우(아래 value)가 그렇다.
+   */
+  endpoint?: string;
+  /** 비우면 데모의 기본 api_name 을 쓴다. */
+  api_name?: string;
+  /**
+   * 모델을 고르는 인자값.
+   *
+   * 모델마다 서버를 따로 띄우는 앱도 있지만, 한 엔드포인트가 모델 이름을
+   * 첫 인자로 받아 갈아 끼우는 앱도 있다(Gradio 의 Radio 입력이 대표적이다).
+   * 그 경우 주소는 그대로 두고 이 값만 바꿔 호출한다.
+   */
+  value?: string;
+  /** 이름 옆에 붙는 한 줄 단서. 예: "mAP 82.2" */
   note?: string;
 }
 

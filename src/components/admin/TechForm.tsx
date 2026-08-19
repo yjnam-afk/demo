@@ -994,7 +994,7 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
           */}
           <Field
             label="고를 수 있는 모델"
-            hint="둘 이상 등록하면 데모 화면 위에 모델 선택 줄이 생기고, 방문자가 같은 샘플을 모델별로 돌려 볼 수 있습니다. 주소는 외부에 노출되지 않습니다."
+            hint="둘 이상 등록하면 데모 화면 위에 모델 선택 줄이 생기고, 방문자가 같은 샘플을 모델별로 돌려 볼 수 있습니다. 한 앱이 모델을 인자로 받으면(예: Gradio 의 Select Model) 주소는 비우고 모델 값만 채우세요 — 그 값이 호출의 첫 인자로 들어갑니다. 모델마다 서버가 다르면 반대로 주소를 채웁니다. 주소는 외부에 노출되지 않습니다."
           >
             <div className="flex flex-col gap-2">
               {(demo.models ?? []).map((model, index) => {
@@ -1013,16 +1013,16 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
                       className="min-w-36 flex-1"
                     />
                     <TextInput
-                      value={model.endpoint}
-                      placeholder="http://10.100.110.102:7865"
-                      onChange={(event) => update({ endpoint: event.target.value })}
-                      className="min-w-52 flex-1"
+                      value={model.value ?? ''}
+                      placeholder="모델 값 (예: RTMDet)"
+                      onChange={(event) => update({ value: event.target.value })}
+                      className="min-w-36 flex-1"
                     />
                     <TextInput
-                      value={model.api_name}
-                      placeholder="/predict"
-                      onChange={(event) => update({ api_name: event.target.value })}
-                      className="min-w-28"
+                      value={model.endpoint ?? ''}
+                      placeholder="주소 (비우면 위 기본 주소)"
+                      onChange={(event) => update({ endpoint: event.target.value })}
+                      className="min-w-52 flex-1"
                     />
                     <TextInput
                       value={model.note ?? ''}
@@ -1049,10 +1049,7 @@ function DemoSection({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>
                   set({
                     demo: {
                       ...demo,
-                      models: [
-                        ...(demo.models ?? []),
-                        { label: '', endpoint: '', api_name: '/predict' },
-                      ],
+                      models: [...(demo.models ?? []), { label: '', value: '' }],
                     },
                   })
                 }
